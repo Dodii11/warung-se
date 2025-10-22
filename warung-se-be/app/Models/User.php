@@ -46,3 +46,35 @@ class User extends Authenticatable
         ];
     }
 }
+
+/* nganggo kode iki nek meh nggawe model user dewe
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
+class User extends Authenticatable
+{
+    use HasFactory;
+
+    protected $primaryKey = 'id_user';
+    protected $table = 'users';
+    
+    protected $fillable = [
+        'nama_user',
+        'no_telp',
+        'password',
+    ];
+
+    protected $hidden = [
+        'password',
+    ];
+
+    public function pesanans()
+    {
+        // Parameter ke-2: FK di tabel 'pesanans', Parameter ke-3: PK di tabel 'users'
+        return $this->hasMany(Pesanan::class, 'id_user', 'id_user');
+    }
+} */
