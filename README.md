@@ -14,13 +14,21 @@ Tujuannya adalah untuk menyediakan sistem manajemen warung / toko sederhana — 
 
 ---
 
+## 🧑‍💻 Pengembang
+
+| Nama | Role |
+|------|------|
+| **Dodii11** | Fullstack Developer |
+
+---
+
 ## ⚙️ Tech Stack
 
 | Layer | Teknologi | Deskripsi |
 |-------|------------|------------|
 | 🖥️ Frontend | [Vue.js 3](https://vuejs.org/) + [Vite](https://vitejs.dev/) | SPA (Single Page Application) modern |
-| ⚙️ Backend | [Laravel 11](https://laravel.com/) | RESTful API & business logic |
-| 🗄️ Database | MySQL / PostgreSQL | Penyimpanan data utama |
+| ⚙️ Backend | [Laravel 12](https://laravel.com/) | RESTful API & business logic |
+| 🗄️ Database | MySQL | Penyimpanan data utama |
 | 🔐 Auth | Laravel Sanctum | Token-based authentication |
 | 💅 Styling | TailwindCSS | Desain responsif dan ringan |
 
@@ -110,17 +118,9 @@ Frontend akan berjalan di:
 
 ---
 
-## 🧑‍💻 Pengembang
-
-| Nama | Role |
-|------|------|
-| **Dodii11** | Fullstack Developer |
-
----
-
 ## 📄 Lisensi
 Proyek ini dilisensikan di bawah [MIT License](LICENSE).
 
 ---
 
-> 💬 _“Bangun solusi kecil hari ini, untuk masalah besar besok.”_
+> 💬 _“Jangan lupa makan.”_
