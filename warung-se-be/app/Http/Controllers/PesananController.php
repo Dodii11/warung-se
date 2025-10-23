@@ -68,7 +68,9 @@ class PesananController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $pesanan = Pesanan::findOrFail($id);
-        $pesanan->update(['status' => $request->status]);
-        return redirect()->back()->with('success', 'Status pesanan diperbarui.');
+        $pesanan->status = $request->status;
+        $pesanan->save();
+
+        return redirect()->route('pesanan.index')->with('success', 'Status pesanan berhasil diperbarui!');
     }
 }

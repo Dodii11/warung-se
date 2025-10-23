@@ -4,6 +4,10 @@
 <div class="container mt-4">
     <h2>Daftar Pesanan</h2>
 
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
     <table class="table table-bordered mt-3">
         <thead>
             <tr>
@@ -21,7 +25,18 @@
                     <td>{{ $p->id_pesanan }}</td>
                     <td>{{ $p->tanggal_pesanan }}</td>
                     <td>Rp {{ number_format($p->total_harga, 0, ',', '.') }}</td>
-                    <td>{{ ucfirst($p->status) }}</td>
+                    <td>
+                        @php
+                            $badgeClass = match($p->status) {
+                                'proses' => 'warning',
+                                'diantar' => 'info',
+                                'selesai' => 'success',
+                                'batal' => 'danger',
+                                default => 'secondary'
+                            };
+                        @endphp
+                        <span class="badge bg-{{ $badgeClass }}">{{ ucfirst($p->status) }}</span>
+                    </td>
                     <td>{{ $p->metode_bayar }}</td>
                     <td>
                         <button class="btn btn-info btn-sm"
@@ -35,7 +50,7 @@
         </tbody>
     </table>
 
-    <!-- ✅ Modal harus di luar tabel -->
+    <!-- Modal Detail Pesanan -->
     @foreach ($pesanan as $p)
         <div class="modal fade" id="detailModal{{ $p->id_pesanan }}" tabindex="-1">
             <div class="modal-dialog modal-lg">
@@ -67,6 +82,21 @@
                         <p><strong>Metode Bayar:</strong> {{ $p->metode_bayar }}</p>
                         <p><strong>Alamat:</strong> {{ $p->alamat }}</p>
                         <p><strong>Catatan:</strong> {{ $p->catatan }}</p>
+
+                        <hr>
+                        <h5>Ubah Status Pesanan</h5>
+                        <form action="{{ route('pesanan.updateStatus', $p->id_pesanan) }}" method="POST">
+                            @csrf
+                            <div class="input-group">
+                                <select name="status" class="form-select" required>
+                                    <option value="proses" {{ $p->status == 'proses' ? 'selected' : '' }}>Proses</option>
+                                    <option value="diantar" {{ $p->status == 'diantar' ? 'selected' : '' }}>Diantar</option>
+                                    <option value="selesai" {{ $p->status == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                    <option value="batal" {{ $p->status == 'batal' ? 'selected' : '' }}>Batal</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary">Simpan</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
