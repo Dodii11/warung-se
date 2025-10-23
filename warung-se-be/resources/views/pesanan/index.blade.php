@@ -1,5 +1,5 @@
 @extends('layout')
-
+@section('title', 'Daftar Pesanan')
 @section('content')
 <div class="container mt-4">
     <h2>Daftar Pesanan</h2>
