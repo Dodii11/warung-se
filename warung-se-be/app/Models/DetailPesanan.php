@@ -9,9 +9,8 @@ class DetailPesanan extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'id_detail';
     protected $table = 'detail_pesanans';
-
+    protected $primaryKey = 'id_detail';
     protected $fillable = [
         'id_pesanan',
         'id_menu',
@@ -19,17 +18,13 @@ class DetailPesanan extends Model
         'subtotal',
     ];
 
-    /**
-     * Relasi: DetailPesanan dimiliki oleh satu Pesanan
-     */
+    // ✅ Relasi ke pesanan
     public function pesanan()
     {
         return $this->belongsTo(Pesanan::class, 'id_pesanan', 'id_pesanan');
     }
 
-    /**
-     * Relasi: DetailPesanan milik satu Menu
-     */
+    // ✅ Relasi ke menu
     public function menu()
     {
         return $this->belongsTo(Menu::class, 'id_menu', 'id_menu');

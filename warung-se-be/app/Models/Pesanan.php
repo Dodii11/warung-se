@@ -9,9 +9,8 @@ class Pesanan extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'id_pesanan';
     protected $table = 'pesanans';
-
+    protected $primaryKey = 'id_pesanan';
     protected $fillable = [
         'id_user',
         'tanggal_pesanan',
@@ -22,20 +21,16 @@ class Pesanan extends Model
         'catatan',
     ];
 
-    /**
-     * Relasi: Pesanan dimiliki oleh satu User
-     */
+    // ✅ Relasi ke user
     public function user()
     {
-        // Parameter ke-2: FK di tabel 'pesanans', Parameter ke-3: PK di tabel 'users'
         return $this->belongsTo(User::class, 'id_user', 'id_user');
     }
 
-    /**
-     * Relasi: Pesanan memiliki banyak DetailPesanan
-     */
-    public function detailPesanans()
+    // ✅ Relasi ke detail pesanan
+    public function detail()
     {
         return $this->hasMany(DetailPesanan::class, 'id_pesanan', 'id_pesanan');
     }
 }
+
