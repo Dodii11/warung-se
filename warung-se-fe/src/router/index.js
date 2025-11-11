@@ -1,40 +1,46 @@
+// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
-
-// Import halaman
-import HomeView from '@/views/Home.vue'
-import LoginView from '@/views/Login.vue'
-import Admin from '@/views/Admin.vue'
-import Orders from '@/views/Orders.vue'
+import Login from '@/views/Login.vue'
 
 const routes = [
-  { path: '/', name: 'Home', component: HomeView },
-  { path: '/login', name: 'Login', component: LoginView },
   {
-    path: '/admin',
-    name: 'Admin',
-    component: Admin,
-    meta: { role: 'admin' } // Tandai: HANYA untuk admin
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { title: 'Login - Warung SE', requiresAuth: false },
   },
   {
-    path: '/orders',
-    name: 'Orders',
-    component: Orders,
-    meta: { role: 'user' } // Tandai: HANYA untuk user
-  }
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/Register.vue'),
+    meta: { title: 'Register - Warung SE', requiresAuth: false },
+  },
+  {
+    path: '/admin/dashboard',
+    name: 'AdminDashboard',
+    component: () => import('@/views/Admin/AdminDashboard.vue'),
+    meta: { title: 'Dashboard - Warung SE', requiresAuth: true },
+  },
+  {
+    path: '/',
+    redirect: '/login',
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes,
+  scrollBehavior: () => ({ top: 0 }),
 })
 
-// NAVIGASI
+// Guard
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore()
+  document.title = to.meta.title || 'Warung SE'
 
-  if (to.meta.role && auth.user.role !== to.meta.role) {
-    next({ name: 'Home' })
+  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    next('/login')
   } else {
     next()
   }

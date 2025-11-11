@@ -1,3 +1,41 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "./theme.css";
+@import "tailwindcss";
+
+@layer base {
+  html {
+    font-family: var(--font-main);
+    color: var(--color-gray-900);
+  }
+
+  h1, .heading-1 {
+    @apply text-4xl font-bold leading-tight text-[--color-gray-900];
+  }
+
+  h2, .heading-2 {
+    @apply text-2xl font-semibold text-[--color-gray-900];
+  }
+
+  h3, .heading-3 {
+    @apply text-xl font-semibold text-[--color-gray-900];
+  }
+
+  p, .body-text {
+    @apply text-base font-normal leading-relaxed text-[--color-gray-600];
+  }
+
+  small, .caption {
+    @apply text-sm text-[--color-gray-600];
+  }
+
+  .price-text {
+    @apply text-lg font-semibold text-[--color-primary];
+  }
+
+  .button-text {
+    @apply text-base font-medium text-white;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-[--color-primary];
+  }
+}

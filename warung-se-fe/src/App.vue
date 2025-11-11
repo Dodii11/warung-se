@@ -4,7 +4,8 @@ import Navbar from './components/Navbar.vue';
 </script>
 
 <template>
-    <Navbar /> <main style="padding: 1rem;">
+    <Navbar />
+  <main>
     <RouterView />
   </main>
 </template>
