@@ -45,6 +45,30 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Cek apakah user adalah Super Admin.
+     */
+    public function isSuperAdmin()
+    {
+        return $this->role === 'super_admin';
+    }
+
+    /**
+     * Cek apakah user adalah Admin (termasuk Super Admin).
+     */
+    public function isAdmin()
+    {
+        return $this->role === 'admin' || $this->role === 'super_admin';
+    }
+    
+    /**
+     * Cek apakah user adalah User biasa.
+     */
+    public function isUser()
+    {
+        return $this->role === 'user';
+    }
 }
 
 /* nganggo kode iki nek meh nggawe model user dewe

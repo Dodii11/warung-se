@@ -13,3 +13,21 @@ Route::get('user/pesanan', [PesananController::class, 'user'])->name('pesanan.us
 Route::post('admin/pesanan', [PesananController::class, 'store'])->name('pesanan.store');
 Route::post('/pesanan/update-status/{id}', [PesananController::class, 'updateStatus'])->name('pesanan.updateStatus');
 Route::get('admin/pesanan/{id}', [PesananController::class, 'show'])->name('pesanan.show');
+
+// 1. Akses untuk SEMUA User (termasuk tamu)
+Route::get('/', function () { return view('welcome'); });
+
+// 2. Akses Hanya untuk User Biasa (Role: user)
+Route::middleware(['auth', 'role:user'])->group(function () {
+    Route::get('/profile', function () { return view('user.profile'); })->name('user.profile');
+});
+
+// 3. Akses Hanya untuk Admin & Super Admin (Role: admin)
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboard', function () { return view('admin.dashboard'); })->name('admin.dashboard');
+});
+
+// 4. Akses Hanya untuk Super Admin (Role: super_admin)
+Route::middleware(['auth', 'role:super_admin'])->group(function () {
+    Route::get('/superadmin/settings', function () { return view('superadmin.settings'); })->name('superadmin.settings');
+});
