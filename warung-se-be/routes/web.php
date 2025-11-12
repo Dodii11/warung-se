@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PesananController;
+use App\Http\Controllers\AuthController;
 
 // MENU
 Route::resource('admin/menu', MenuController::class);
@@ -13,6 +14,15 @@ Route::get('user/pesanan', [PesananController::class, 'user'])->name('pesanan.us
 Route::post('admin/pesanan', [PesananController::class, 'store'])->name('pesanan.store');
 Route::post('/pesanan/update-status/{id}', [PesananController::class, 'updateStatus'])->name('pesanan.updateStatus');
 Route::get('admin/pesanan/{id}', [PesananController::class, 'show'])->name('pesanan.show');
+
+// Menampilkan form login
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+
+// Proses login (POST)
+Route::post('/login', [AuthController::class, 'login']);
+
+// Proses logout (bisa GET atau POST, POST lebih disarankan)
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // 1. Akses untuk SEMUA User (termasuk tamu)
 Route::get('/', function () { return view('welcome'); });
