@@ -19,19 +19,8 @@
         fill="none"
         viewBox="0 0 24 24"
       >
-        <circle
-          class="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          stroke-width="4"
-        />
-        <path
-          class="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8v8z"
-        />
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
       </svg>
       Loading...
     </span>
@@ -43,8 +32,7 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  variant: { type: String, default: 'primary' }, // primary | secondary | outline-gray | google
-  size: { type: String, default: 'md' },
+  variant: { type: String, default: 'primary' }, 
   disabled: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
 })
@@ -63,14 +51,13 @@ const sizeClasses = computed(() => {
 const variantClasses = computed(() => {
   switch (props.variant) {
     case 'secondary':
-      return 'bg-white border border-[#E53935] text-[#E53935] hover:bg-[#E53935]/10'
+      return 'bg-white border border-[var(--color-primary)] text-[var(--color-primary)] hover:bg-[color:var(--color-primary)/0.08]'
     case 'outline-gray':
-      return 'bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-100'
+      return 'bg-transparent border border-[var(--color-gray-300)] text-[var(--color-gray-600)] hover:bg-[var(--color-gray-100)]'
     case 'google':
       return 'bg-[#4285F4] text-white hover:bg-[#3367D6] shadow-md hover:shadow-lg'
     default:
-      // primary (merah)
-      return 'bg-[#E53935] text-white hover:bg-[#D32F2F] shadow-md hover:shadow-lg'
+      return 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)] shadow-md hover:shadow-lg'
   }
 })
 </script>

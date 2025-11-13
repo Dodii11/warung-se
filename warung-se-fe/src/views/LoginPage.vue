@@ -1,35 +1,29 @@
 <!--  eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="min-h-screen bg-[#F7F7F7] flex items-center justify-center p-4 font-['Poppins']">
-    <div
-      class="bg-white rounded-3xl shadow-xl overflow-hidden max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2"
-    >
+  <div class="min-h-screen bg-[--color-bg] flex items-center justify-center p-4 font-[--font-main]">
+    <div class="bg-white rounded-3xl shadow-xl overflow-hidden max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2">
       <!-- Form Section -->
       <div class="p-8 md:p-12 flex flex-col justify-center">
         <div class="mb-8">
-          <h1 class="text-3xl md:text-4xl font-bold text-[#222222] mb-2">Login</h1>
-          <p class="text-gray-500 text-sm">Selamat datang, silakan masukkan detail Anda.</p>
+          <h1 class="heading-1 mb-2">Login</h1>
+          <p class="text-[--color-gray-600] text-sm">Selamat datang, silakan masukkan detail Anda.</p>
         </div>
 
         <form @submit.prevent="handleLogin" class="space-y-5">
           <!-- Email/Username Input -->
-          <div>
-            <BaseInput
-              v-model="formData.username"
-              label="Nama Pengguna atau Email"
-              placeholder="Masukkan nama pengguna atau email"
-            />
-          </div>
+          <BaseInput
+            v-model="formData.username"
+            label="Nama Pengguna atau Email"
+            placeholder="Masukkan nama pengguna atau email"
+          />
 
           <!-- Password Input -->
-          <div>
-            <BaseInput
-              v-model="formData.password"
-              label="Kata Sandi"
-              type="password"
-              placeholder="Masukkan kata sandi"
-            />
-          </div>
+          <BaseInput
+            v-model="formData.password"
+            label="Kata Sandi"
+            type="password"
+            placeholder="Masukkan kata sandi"
+          />
 
           <!-- Remember & Forgot Password -->
           <div class="flex items-center justify-between text-sm">
@@ -37,11 +31,11 @@
               <input
                 v-model="formData.remember"
                 type="checkbox"
-                class="w-4 h-4 text-[#E53935] border-gray-300 rounded focus:ring-[#E53935] cursor-pointer"
+                class="w-4 h-4 text-[--color-primary] border-gray-300 rounded focus:ring-[--color-primary] cursor-pointer"
               />
-              <span class="ml-2 text-[#222222]">Ingat saya</span>
+              <span class="ml-2 text-[--color-gray-900]">Ingat saya</span>
             </label>
-            <a href="#" class="text-[#E53935] hover:underline">Lupa kata sandi Anda?</a>
+            <a href="#" class="text-[--color-primary] hover:underline">Lupa kata sandi Anda?</a>
           </div>
 
           <!-- Login Button -->
@@ -80,9 +74,9 @@
         </form>
 
         <!-- Register Link -->
-        <p class="text-center text-sm text-gray-600 mt-6">
+        <p class="text-center text-sm text-[--color-gray-600] mt-6">
           Belum punya akun?
-          <RouterLink to="/register" class="text-[#E53935] font-medium hover:underline">
+          <RouterLink to="/register" class="text-[--color-primary] font-medium hover:underline">
             Daftar
           </RouterLink>
         </p>
@@ -123,19 +117,16 @@ const formData = reactive({
   remember: false,
 });
 
-// pisahkan loading state
 const isLoginLoading = ref(false);
 const isGoogleLoading = ref(false);
 
 const handleLogin = async () => {
   try {
     isLoginLoading.value = true;
-
     const res = await authStore.login({
       email: formData.username,
       password: formData.password,
     });
-
     if (res.success) {
       router.push("/admin/dashboard");
     } else {
@@ -149,18 +140,10 @@ const handleLogin = async () => {
 const handleGoogleLogin = async () => {
   try {
     isGoogleLoading.value = true;
-    console.log("Login dengan Google diklik");
-
-    // simulasi proses async login google (nanti ganti ke real API)
     await new Promise((resolve) => setTimeout(resolve, 1500));
-
     router.push("/admin/dashboard");
   } finally {
     isGoogleLoading.value = false;
   }
 };
 </script>
-
-<style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
-</style>

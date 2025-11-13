@@ -1,17 +1,27 @@
 <!-- src/components/base/BaseInput.vue -->
 <template>
-  <div class="w-full">
-    <label v-if="label" class="block text-sm font-medium mb-1 text-gray-700">
+  <div class="w-full flex flex-col gap-1.5">
+    <label
+      v-if="label"
+      class="text-sm font-medium text-gray-700 tracking-wide"
+    >
       {{ label }}
     </label>
+
     <input
       :type="type"
       :placeholder="placeholder"
       v-model="model"
-      class="w-full px-4 py-3 border rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#E53935] focus:border-transparent"
-      :class="error ? 'border-red-500' : 'border-gray-300'"
+      :class="[
+        'w-full px-4 py-2.5 rounded-lg text-sm transition-all border outline-none',
+        'focus:ring-2 focus:ring-offset-1 focus:ring-[#E53935]',
+        error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-transparent',
+      ]"
     />
-    <p v-if="error" class="text-red-500 text-xs mt-1">{{ error }}</p>
+
+    <p v-if="error" class="text-xs text-red-500 mt-0.5 font-medium">
+      {{ error }}
+    </p>
   </div>
 </template>
 
@@ -27,6 +37,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
+
 const model = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val),

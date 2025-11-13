@@ -2,8 +2,9 @@
 <template>
   <div
     :class="[
-      'bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300',
-      paddingClasses
+      'bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 ease-out',
+      paddingClasses,
+      'text-gray-800'
     ]"
   >
     <slot />
