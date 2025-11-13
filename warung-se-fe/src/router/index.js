@@ -1,7 +1,7 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
-import Login from '@/views/Login.vue'
+import Login from '@/views/LoginPage.vue'
 
 const routes = [
   {
@@ -13,13 +13,13 @@ const routes = [
   {
     path: '/register',
     name: 'Register',
-    component: () => import('@/views/Register.vue'),
+    component: () => import('@/views/RegisterPage.vue'),
     meta: { title: 'Register - Warung SE', requiresAuth: false },
   },
   {
     path: '/admin/dashboard',
     name: 'AdminDashboard',
-    component: () => import('@/views/Admin/AdminDashboard.vue'),
+    component: () => import('@/views/admin/AdminDashboard.vue'),
     meta: { title: 'Dashboard - Warung SE', requiresAuth: true },
   },
   {
