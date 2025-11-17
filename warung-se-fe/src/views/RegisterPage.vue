@@ -1,11 +1,11 @@
 <!--  eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="bg-[--color-bg] min-h-screen flex justify-center items-center py-12 px-4 font-[--font-main]">
+  <div class="bg-bg min-h-screen flex justify-center items-center py-12 px-4">
     <div class="bg-white w-full max-w-5xl rounded-2xl shadow-lg grid md:grid-cols-2 overflow-hidden">
       <!-- Left Form Section -->
       <div class="p-8 md:p-12 flex flex-col justify-center">
         <h2 class="heading-1 mb-2">Buat Akun</h2>
-        <p class="text-sm text-[--color-gray-600] mb-8">
+        <p class="text-sm text-gray-600 mb-8">
           Bergabunglah dengan kami dan mulai nikmati kemudahan memesan makanan favorit Anda.
         </p>
 
@@ -61,9 +61,9 @@
           </BaseButton>
         </form>
 
-        <p class="text-center text-sm text-[--color-gray-600] mt-6">
+        <p class="text-center text-sm text-gray-600 mt-6">
           Sudah punya akun?
-          <RouterLink to="/login" class="text-[--color-primary] font-medium hover:underline">
+          <RouterLink to="/login" class="text-primary font-medium hover:underline">
             Login
           </RouterLink>
         </p>

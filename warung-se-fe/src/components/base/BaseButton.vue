@@ -32,7 +32,8 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  variant: { type: String, default: 'primary' }, 
+  variant: { type: String, default: 'primary' },
+  size: { type: String, default: 'md' },
   disabled: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
 })

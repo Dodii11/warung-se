@@ -1,12 +1,12 @@
 <!--  eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="min-h-screen bg-[--color-bg] flex items-center justify-center p-4 font-[--font-main]">
+  <div class="min-h-screen bg-bg flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl shadow-xl overflow-hidden max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2">
       <!-- Form Section -->
       <div class="p-8 md:p-12 flex flex-col justify-center">
         <div class="mb-8">
           <h1 class="heading-1 mb-2">Login</h1>
-          <p class="text-[--color-gray-600] text-sm">Selamat datang, silakan masukkan detail Anda.</p>
+          <p class="text-gray-600 text-sm">Selamat datang, silakan masukkan detail Anda.</p>
         </div>
 
         <form @submit.prevent="handleLogin" class="space-y-5">
@@ -31,11 +31,11 @@
               <input
                 v-model="formData.remember"
                 type="checkbox"
-                class="w-4 h-4 text-[--color-primary] border-gray-300 rounded focus:ring-[--color-primary] cursor-pointer"
+                class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary cursor-pointer"
               />
-              <span class="ml-2 text-[--color-gray-900]">Ingat saya</span>
+              <span class="ml-2 text-gray-900">Ingat saya</span>
             </label>
-            <a href="#" class="text-[--color-primary] hover:underline">Lupa kata sandi Anda?</a>
+            <a href="#" class="text-primary hover:underline">Lupa kata sandi Anda?</a>
           </div>
 
           <!-- Login Button -->
@@ -74,9 +74,9 @@
         </form>
 
         <!-- Register Link -->
-        <p class="text-center text-sm text-[--color-gray-600] mt-6">
+        <p class="text-center text-sm text-gray-600 mt-6">
           Belum punya akun?
-          <RouterLink to="/register" class="text-[--color-primary] font-medium hover:underline">
+          <RouterLink to="/register" class="text-primary font-medium hover:underline">
             Daftar
           </RouterLink>
         </p>

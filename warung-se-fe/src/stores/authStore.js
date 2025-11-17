@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(null)
-  const isAuthenticated = ref(false)
+  const user = ref(JSON.parse(localStorage.getItem('user')) || null)
+  const isAuthenticated = ref(!!user.value)
   const isLoading = ref(false)
   const error = ref(null)
 
@@ -25,14 +25,13 @@ export const useAuthStore = defineStore('auth', () => {
       ) {
         user.value = DUMMY_ADMIN
         isAuthenticated.value = true
-        console.log('✅ Login sukses:', user.value)
+        localStorage.setItem('user', JSON.stringify(user.value))
         return { success: true, user: user.value }
       } else {
         throw new Error('Email atau kata sandi salah.')
       }
     } catch (err) {
       error.value = err.message
-      console.error('Login gagal:', err)
       return { success: false, error: err.message }
     } finally {
       isLoading.value = false
@@ -44,36 +43,29 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000))
-      // Simulasi register berhasil
       user.value = {
         name: data.name,
         email: data.email,
         phone: data.phone,
         role: 'user',
       }
-      console.log('✅ Register sukses:', user.value)
+      localStorage.setItem('user', JSON.stringify(user.value))
+      isAuthenticated.value = true
       return { success: true }
     } catch (err) {
       error.value = err.message
-      console.error('Register gagal:', err)
       return { success: false, error: err.message }
     } finally {
       isLoading.value = false
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
     user.value = null
     isAuthenticated.value = false
+    localStorage.removeItem('user')
+    await nextTick()
   }
 
-  return {
-    user,
-    isAuthenticated,
-    isLoading,
-    error,
-    login,
-    register,
-    logout,
-  }
+  return { user, isAuthenticated, isLoading, error, login, register, logout }
 })
