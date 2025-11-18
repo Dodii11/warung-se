@@ -56,6 +56,11 @@ const router = createRouter({
       path: "/:pathMatch(.*)*",
       redirect: "/login",
     },
+    {
+  path: '/auth/google/success',
+  name: 'GoogleSuccess',
+  component: () => import('@/views/GoogleSuccess.vue')
+}
   ],
   // --- AKHIR PENGGANTIAN 'routes' ---
   scrollBehavior: () => ({ top: 0 }),

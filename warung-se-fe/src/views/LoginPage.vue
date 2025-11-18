@@ -2,14 +2,17 @@
 <template>
   <div class="min-h-screen bg-bg flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl shadow-xl overflow-hidden max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2">
+
       <!-- Form Section -->
       <div class="p-8 md:p-12 flex flex-col justify-center">
+
         <div class="mb-8">
           <h1 class="heading-1 mb-2">Login</h1>
           <p class="text-gray-600 text-sm">Selamat datang, silakan masukkan detail Anda.</p>
         </div>
 
         <form @submit.prevent="handleLogin" class="space-y-5">
+
           <!-- Email/Username Input -->
           <BaseInput
             v-model="formData.username"
@@ -17,7 +20,7 @@
             placeholder="Masukkan nama pengguna atau email"
           />
 
-          <!-- Password Input -->
+          <!-- Password -->
           <BaseInput
             v-model="formData.password"
             label="Kata Sandi"
@@ -25,7 +28,7 @@
             placeholder="Masukkan kata sandi"
           />
 
-          <!-- Remember & Forgot Password -->
+          <!-- Remember -->
           <div class="flex items-center justify-between text-sm">
             <label class="flex items-center cursor-pointer">
               <input
@@ -35,7 +38,7 @@
               />
               <span class="ml-2 text-gray-900">Ingat saya</span>
             </label>
-            <a href="#" class="text-primary hover:underline">Lupa kata sandi Anda?</a>
+            <a href="#" class="text-primary hover:underline">Lupa kata sandi?</a>
           </div>
 
           <!-- Login Button -->
@@ -48,19 +51,20 @@
             Login
           </BaseButton>
 
+          <!-- Divider -->
           <div class="flex items-center gap-2 my-4">
             <div class="flex-1 h-px bg-gray-300"></div>
             <span class="text-gray-400 text-sm">atau</span>
             <div class="flex-1 h-px bg-gray-300"></div>
           </div>
 
-          <!-- Google Login Button -->
+          <!-- Google Button -->
           <BaseButton
             class="w-full"
             variant="google"
             :loading="isGoogleLoading"
             :disabled="isLoginLoading"
-            @click="handleGoogleLogin"
+            @click="redirectToGoogle"
           >
             <template #icon-left>
               <img
@@ -71,6 +75,7 @@
             </template>
             Login dengan Google
           </BaseButton>
+
         </form>
 
         <!-- Register Link -->
@@ -80,6 +85,7 @@
             Daftar
           </RouterLink>
         </p>
+
       </div>
 
       <!-- Image Section -->
@@ -97,18 +103,21 @@
           </p>
         </div>
       </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
-import { useRouter } from "vue-router";
+import { ref, reactive, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
+
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 const formData = reactive({
@@ -120,13 +129,18 @@ const formData = reactive({
 const isLoginLoading = ref(false);
 const isGoogleLoading = ref(false);
 
+// ------------------------------
+// Normal Login
+// ------------------------------
 const handleLogin = async () => {
   try {
     isLoginLoading.value = true;
+
     const res = await authStore.login({
-      email: formData.username,
-      password: formData.password,
-    });
+  no_telp: formData.username,
+  password: formData.password,
+});
+
     if (res.success) {
       router.push("/admin/dashboard");
     } else {
@@ -137,13 +151,23 @@ const handleLogin = async () => {
   }
 };
 
-const handleGoogleLogin = async () => {
-  try {
-    isGoogleLoading.value = true;
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    router.push("/admin/dashboard");
-  } finally {
-    isGoogleLoading.value = false;
-  }
+// ------------------------------
+// Google Login Redirect
+// ------------------------------
+const redirectToGoogle = () => {
+  isGoogleLoading.value = true;
+  window.location.href = "http://127.0.0.1:8000/auth/google/redirect";
 };
+
+// ------------------------------
+// Auto Login Setelah Google Redirect
+// ------------------------------
+onMounted(() => {
+  const token = route.query.token;
+
+  if (token) {
+    authStore.setToken(token);
+    router.push("/admin/dashboard");
+  }
+});
 </script>
