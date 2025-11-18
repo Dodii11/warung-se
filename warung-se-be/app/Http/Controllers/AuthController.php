@@ -7,60 +7,32 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    /**
-     * Menampilkan halaman Login
-     */
-    public function showLoginForm()
-    {
-        return view('auth.login'); 
-    }
-
-    /**
-     * Menangani proses Login (verifikasi kredensial)
-     */
+    //FUNGSI LOGIN
     public function login(Request $request)
     {
-        // 1. Validasi Input
-        $credentials = $request->validate([
-            // Sesuaikan dengan kolom login Anda (misalnya 'no_telp', atau 'nama_user')
-            'no_telp' => 'required|numeric', 
-            'password' => 'required',
+        $request->validate([
+            'email' => 'required|email|max:50',
+            'password' => 'required|max:50',
         ]);
-
-        // 2. Coba Lakukan Otentikasi
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-
-            // 3. Arahkan User berdasarkan Peran (Role)
-            $user = Auth::user();
-            
-            if ($user->isSuperAdmin()) {
-                return redirect()->intended('/superadmin/settings');
-            } elseif ($user->isAdmin()) {
-                // is_admin() mencakup admin dan super admin
-                return redirect()->intended('/admin/dashboard');
-            } else {
-                // User biasa
-                return redirect()->intended('/profile');
-            }
+        if(Auth::attempt($request->only('email', 'password'), $request->remember)) {
+            return redirect('/dashboard');
         }
-
-        // 4. Gagal Login
-        return back()->withErrors([
-            'no_telp' => 'Nomor telepon atau password salah.',
-        ])->onlyInput('no_telp');
+        return back() -> with('failed', 'Email atau Password salah');
     }
 
-    /**
-     * Menangani proses Logout
-     */
-    public function logout(Request $request)
+    //FUNGSI REGISTER
+    function register(Request $request)
     {
-        Auth::logout();
+        $request->validate([
+            'name' => 'required|max:50',
+            'email' => 'required|email|max:50',
+            'password' => 'required|max:50',
+            'confirm_password' => 'required|max:50|same:password',
+        ]);
+        return redirect('/login');
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/');
+        /* $user=User::create($request->all());
+        Auth::login($user);
+        return redirect('/user/pesanan'); */
     }
 }
