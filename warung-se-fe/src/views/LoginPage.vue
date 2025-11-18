@@ -109,65 +109,49 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { reactive, ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
-
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 
 const router = useRouter();
-const route = useRoute();
-const authStore = useAuthStore();
+const auth = useAuthStore();
 
 const formData = reactive({
   username: "",
   password: "",
-  remember: false,
 });
 
 const isLoginLoading = ref(false);
 const isGoogleLoading = ref(false);
 
-// ------------------------------
-// Normal Login
-// ------------------------------
+// Normal login
 const handleLogin = async () => {
+  isLoginLoading.value = true;
   try {
-    isLoginLoading.value = true;
-
-    const res = await authStore.login({
-  no_telp: formData.username,
-  password: formData.password,
-});
+    const res = await auth.login({
+      email: formData.username,
+      password: formData.password,
+    });
 
     if (res.success) {
-      router.push("/admin/dashboard");
+      router.replace("/admin/dashboard");
     } else {
-      alert(res.error || "Login gagal, coba lagi!");
+      alert(res.error || "Login gagal");
     }
   } finally {
     isLoginLoading.value = false;
   }
 };
 
-// ------------------------------
-// Google Login Redirect
-// ------------------------------
+// Google login redirect
 const redirectToGoogle = () => {
   isGoogleLoading.value = true;
   window.location.href = "http://127.0.0.1:8000/auth/google/redirect";
 };
 
-// ------------------------------
-// Auto Login Setelah Google Redirect
-// ------------------------------
-onMounted(() => {
-  const token = route.query.token;
+// Auto redirect kalau sudah login
 
-  if (token) {
-    authStore.setToken(token);
-    router.push("/admin/dashboard");
-  }
-});
 </script>
+

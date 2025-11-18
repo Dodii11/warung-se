@@ -1,23 +1,29 @@
 <template>
-  <div class="p-10">
-    <h1>Login Berhasil!</h1>
-    <p>Token: {{ token }}</p>
+  <div class="min-h-screen flex items-center justify-center text-lg">
+    Sedang memproses login...
   </div>
 </template>
 
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/authStore";
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
+const auth = useAuthStore();
 
-const token = route.query.token
+onMounted(async () => {
+  const token = route.query.token;
+  if (!token) return router.replace("/login");
 
-// Simpan token ke localStorage
-localStorage.setItem("token", token)
-
-// Redirect ke dashboard setelah 1 detik
-setTimeout(() => {
-  router.push('/admin/dashboard')
-}, 1000)
+  try {
+    auth.setToken(token);
+    await auth.fetchUser(); // optional
+  } catch (_) {
+    auth.logout();
+  } finally {
+    router.replace("/admin/dashboard");
+  }
+});
 </script>
