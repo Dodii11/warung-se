@@ -2,79 +2,31 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Model;
 
-class User extends Authenticatable
+class User extends Model
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
-}
-
-/* nganggo kode iki nek meh nggawe model user dewe
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-
-class User extends Authenticatable
-{
-    use HasFactory;
-
+    protected $table = 'user';
     protected $primaryKey = 'id_user';
-    protected $table = 'users';
-    
+    public $incrementing = false;
+    protected $keyType = 'string';
     protected $fillable = [
-        'nama_user',
-        'no_telp',
-        'password',
+        'id_user', 'email_user', 'nama_user', 'no_telp', 'password'
     ];
 
-    protected $hidden = [
-        'password',
-    ];
-
-    public function pesanans()
+    protected static function boot()
     {
-        // Parameter ke-2: FK di tabel 'pesanans', Parameter ke-3: PK di tabel 'users'
+        parent::boot();
+
+        static::creating(function ($user) {
+            if (empty($user->id_user)) {
+                $user->id_user = 'US' . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            }
+        });
+    }
+
+    public function pesanan()
+    {
         return $this->hasMany(Pesanan::class, 'id_user', 'id_user');
     }
-} */
+}
