@@ -15,6 +15,9 @@ class AuthController extends Controller
             'password' => 'required|max:50',
         ]);
         if(Auth::attempt($request->only('email', 'password'), $request->remember)) {
+            
+            //Kode ini buat ngalihin user (pelanggan) ke dashboard user (redirect /user/pesanan dan /dashboard disesuaikan)
+            if(Auth::user()->role == 'user') return redirect('/user/pesanan');
             return redirect('/dashboard');
         }
         return back() -> with('failed', 'Email atau Password salah');

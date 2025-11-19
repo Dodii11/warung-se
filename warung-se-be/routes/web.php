@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PesananController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController; // Nama Controller disesuaikan
 
 // MENU
 Route::resource('admin/menu', MenuController::class);
@@ -15,9 +16,21 @@ Route::post('admin/pesanan', [PesananController::class, 'store'])->name('pesanan
 Route::post('/pesanan/update-status/{id}', [PesananController::class, 'updateStatus'])->name('pesanan.updateStatus');
 Route::get('admin/pesanan/{id}', [PesananController::class, 'show'])->name('pesanan.show');
 
-// AUTHENTICATION
+// AUTHENTICATION LOGIN
 Route::get('/login', fn() => view('auth.login'))->name('login');
 Route::post('/login', [AuthController::class, 'login']);
+
+// MIDDLEWARE SUPER_ADMIN & ADMIN (Direktori file dan Controller disesuaikan)
+Route::group(['middleware' => ['auth', 'check_role: super_admin, admin']], function () {
+    Route::get('/dashboard', [DashboardController::class, 'index']); // Yang bagian Super Admin sama Admin belum bisa ke redirect ke halamannya
+});
+
+// MIDDLEWARE USER (PELANGGAN) (Direktori file dan Controller disesuaikan)
+Route::group(['middleware' => ['auth', 'check_role: user']], function () {
+    Route::get('/user', fn() => 'user.dashboard'); //Disesuaikan
+});
+
+// AUTHENTICATION REGISTER
 Route::get('/register', fn() => view('auth.register'))->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 

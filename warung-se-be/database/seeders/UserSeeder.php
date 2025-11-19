@@ -13,6 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        //Data Dummy untuk User, Admin, Dan Super Admin
         User::create([
             'id_user' => 3,
             'nama_user' => 'User',
@@ -40,7 +41,7 @@ class UserSeeder extends Seeder
             'email' => 'superadmin@gmail.com',
             'role' => 'super_admin',
             'status' => 'active',
-            'password' => 'super_admin' 
+            'password' => 'superadmin' 
         ]);
     }
 }
