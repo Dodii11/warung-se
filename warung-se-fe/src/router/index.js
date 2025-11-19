@@ -5,8 +5,10 @@ import AdminDashboard from "@/views/admin/AdminDashboard.vue";
 import AdminOrders from "@/views/admin/AdminOrders.vue";
 import LoginPage from "@/views/LoginPage.vue";
 import RegisterPage from "@/views/RegisterPage.vue";
+import CustomerLayout from "@/views/layouts/UserLayout.vue";
+import LandingPage from "@/views/user/LandingPage.vue";
 
-const router = createRouter({
+const router = createRouter({ 
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
@@ -32,6 +34,21 @@ const router = createRouter({
         },
       ],
     },
+
+    // --- HALAMAN CUSTOMER ---
+{
+    path: "/",
+    component: CustomerLayout,
+    meta: { requiresAuth: true, role: "user" }, 
+    children: [
+    {
+      path: "",
+      name: "LandingPage",
+      component: LandingPage,
+      meta: { title: "Selamat Datang - Warung SE" },
+    },
+  ],
+},
 
     // --- GRUP HALAMAN PUBLIK/AUTH ---
     {
