@@ -54,7 +54,9 @@ class PesananController extends Controller
 
     public function update(Request $request, $id)
     {
-        $pesanan = Pesanan::findOrFail($id);
+        $pesanan = Pesanan::with('detailPesanan.menu.stok')->findOrFail($id);
+
+        $oldStatus = $pesanan->status; // status sebelum update
 
         if ($request->hasFile('foto_pembayaran')) {
             if ($pesanan->foto_pembayaran) {
@@ -65,9 +67,39 @@ class PesananController extends Controller
             $pesanan->foto_pembayaran = $fileName;
         }
 
+        // Update data pesanan
         $pesanan->update($request->except('foto_pembayaran'));
+
+        /**
+         * ============================================================
+         *      LOGIKA PENGURANGAN STOK KETIKA STATUS = SELESAI
+         * ============================================================
+         */
+        if (
+            $pesanan->status === "selesai" &&
+            $oldStatus !== "selesai" &&
+            !$pesanan->stok_dikurangi
+        ) {
+
+            foreach ($pesanan->detailPesanan as $detail) {
+
+                $stok = $detail->menu->stok; // akses stok_menu
+
+                if ($stok) {
+                    $stok->jumlah_stok -= $detail->jumlah;
+                    if ($stok->jumlah_stok < 0) $stok->jumlah_stok = 0;
+                    $stok->save();
+                }
+            }
+
+            // Tandai bahwa stok untuk pesanan ini sudah dipotong
+            $pesanan->stok_dikurangi = true;
+            $pesanan->save();
+        }
+
         return response()->json($pesanan);
     }
+
 
     public function destroy($id)
     {

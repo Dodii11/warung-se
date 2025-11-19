@@ -11,10 +11,19 @@ class Pesanan extends Model
     public $incrementing = false;
     protected $keyType = 'string';
     protected $fillable = [
-        'id_pesanan', 'id_user', 'id_driver', 'tanggal_pesanan',
-        'total_harga', 'status', 'foto_pembayaran', 'metode_bayar',
-        'alamat', 'catatan'
+        'id_pesanan',
+        'id_user',
+        'id_driver',
+        'tanggal_pesanan',
+        'total_harga',
+        'status',
+        'foto_pembayaran',
+        'metode_bayar',
+        'alamat',
+        'catatan',
+        'stok_dikurangi'
     ];
+
 
     protected static function boot()
     {

@@ -1,17 +1,10 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MenuController;
 
-// Rute ini otomatis akan memiliki prefix /api
-Route::get('/test', function () {
-    return response()->json([
-        'message' => 'API Warung Ayam Berhasil Terhubung!'
-    ]);
-});
+Route::get('admin/menu', [MenuController::class, 'index']);
+Route::post('admin/menu', [MenuController::class, 'store']);
+Route::put('admin/menu/{id}', [MenuController::class, 'update']);
+Route::delete('admin/menu/{id}', [MenuController::class, 'destroy']);
 
-// Rute ini akan mengambil data user yang sedang login
-// (Otomatis dibuat jika Anda juga menjalankan breeze:install api)
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
