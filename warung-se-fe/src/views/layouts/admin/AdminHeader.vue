@@ -7,25 +7,21 @@
       <Menu class="w-6 h-6 text-gray-700" />
     </button>
 
-    <!-- Collapse button (desktop)
-    <button class="hidden md:block" @click="$emit('toggleCollapse')">
-      <ChevronLeft
-        class="w-6 h-6 text-gray-700 transition-transform duration-300"
-        :class="collapsed ? 'rotate-180' : ''"
-      />
-    </button> -->
-
     <div class="flex-1"></div>
 
     <!-- User Area -->
     <div class="flex items-center gap-3">
       <div class="text-right">
-        <p class="text-sm font-medium text-gray-900">Admin</p>
-        <p class="text-xs text-gray-500">Administrator</p>
+        <p class="text-sm font-medium text-gray-900">
+          {{ user.nama_user || 'Guest' }}
+        </p>
+        <p class="text-xs text-gray-500">
+          {{ user.email || '' }}
+        </p>
       </div>
 
       <img
-        src="https://ui-avatars.com/api/?name=Admin&background=E53935&color=fff"
+        :src="userAvatar"
         alt="User Avatar"
         class="w-10 h-10 rounded-full border border-gray-200"
       />
@@ -34,10 +30,28 @@
 </template>
 
 <script setup>
+import { computed, onMounted } from "vue";
 import { Menu } from "lucide-vue-next";
-// import { ChevronLeft } from "lucide-vue-next";
+import { useAuthStore } from "@/stores/authStore"; // pastikan path ini sesuai
 
-// defineProps({
-//   collapsed: Boolean
-// });
+// Ambil store auth
+const auth = useAuthStore();
+
+// Fetch user saat komponen mount
+onMounted(async () => {
+  await auth.fetchUser(); // ambil user dari API
+});
+
+// Ambil user dari store
+const user = computed(() => auth.user || {});
+
+// Avatar dinamis
+const userAvatar = computed(() => {
+  if (user.value.nama_user) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user.value.nama_user
+    )}&background=E53935&color=fff`;
+  }
+  return "https://ui-avatars.com/api/?name=Guest&background=E53935&color=fff";
+});
 </script>

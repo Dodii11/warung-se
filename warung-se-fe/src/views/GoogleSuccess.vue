@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center text-lg">
-    Sedang memproses login...
+  <div >
+    <img src="./warung-se-fe/src/assets/LogoDashboardAdmin.png" alt="">
   </div>
 </template>
 
