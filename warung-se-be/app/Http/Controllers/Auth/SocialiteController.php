@@ -25,10 +25,10 @@ public function callback()
         ->user();
 
     $user = User::firstOrCreate(
-        ['nama_user' => $googleUser->getEmail()],
+        ['email' => $googleUser->getEmail()],
         [
-            'name' => $googleUser->getName(),
-            'no_telp' => '08123456789', // atau NULL jika nullable
+            'nama_user' => $googleUser->getName(),
+            'no_telp' => $phone ?? '-', // default aman
             'password' => bcrypt(Str::random(16)),
         ]
     );

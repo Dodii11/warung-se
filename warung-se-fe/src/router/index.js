@@ -71,10 +71,14 @@ router.beforeEach((to, from, next) => {
   const auth = useAuthStore();
   document.title = to.meta.title || "Warung SE";
 
-  // Hanya redirect kalau isAuthenticated sudah benar-benar ada
-  if (to.meta.requiresAuth && !auth.isAuthenticated) return next("/login");
-  if (auth.isAuthenticated && (to.path === "/login" || to.path === "/register"))
+  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    return next("/login");
+  }
+
+  // Jangan otomatis redirect ke dashboard kalau baru buka /
+  if ((to.path === "/login" || to.path === "/register") && auth.isAuthenticated) {
     return next("/admin/dashboard");
+  }
 
   next();
 });
