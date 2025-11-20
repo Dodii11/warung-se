@@ -59,7 +59,7 @@ import BaseButton from "@/components/base/BaseButton.vue";
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
 import BaseStatusBadge from "@/components/base/BaseStatusBadge.vue";
-import RowActions  from "@/components/RowActions.vue";
+import RowActions  from "@/components/admin/dashboard/RowActions.vue";
 
 import { stats, tableColumns, tableRows } from "@/data/dashboardData";
 import { ArrowRight } from "lucide-vue-next";
