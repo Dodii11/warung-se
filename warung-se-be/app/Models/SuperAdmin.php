@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class SuperAdmin extends Model
+class SuperAdmin extends Authenticatable
 {
     protected $table = 'super_admin';
     protected $primaryKey = 'id_super';
