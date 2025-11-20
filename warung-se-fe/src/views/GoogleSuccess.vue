@@ -1,6 +1,6 @@
 <template>
-  <div >
-    <img src="./warung-se-fe/src/assets/LogoDashboardAdmin.png" alt="">
+  <div  class="flex justify-center items-center h-screen w-full " >
+    <img src="@/assets/LogoDashboardAdmin.png" alt="">
   </div>
 </template>
 
