@@ -3,7 +3,7 @@
     <!-- HEADER -->
     <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
       <div>
-        <h1 class="heading-1">Pengguna</h1>
+        <h1 class="heading-1">Manajemen Pengguna</h1>
         <p class="text-gray-600 text-sm">Lihat dan kelola akun Pengguna disini.</p>
       </div>
     </header>

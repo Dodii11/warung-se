@@ -3,7 +3,7 @@
     <!-- HEADER -->
     <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
-        <h1 class="heading-1">Pengantaran Driver</h1>
+        <h1 class="heading-1">Manajemen Driver</h1>
         <p class="text-gray-600 text-sm">Kelola driver pada halaman ini.</p>
       </div>
     </header>
