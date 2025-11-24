@@ -1,8 +1,7 @@
-<!-- src/components/admin/user/UserSearch.vue -->
 <template>
     <BaseSearch
       v-model="keyword"
-      placeholder="Cari id/nama..."
+      placeholder="Cari ID atau nama..."
       @update:modelValue="emitSearch"
     />
 </template>

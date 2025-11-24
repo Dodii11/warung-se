@@ -1,4 +1,3 @@
-<!-- src/views/admin/AdminDriver.vue -->
 <template>
   <section class="p-6 space-y-8">
     <!-- HEADER -->
@@ -7,25 +6,27 @@
         <h1 class="heading-1">Pengantaran Driver</h1>
         <p class="text-gray-600 text-sm">Kelola driver pada halaman ini.</p>
       </div>
-
-      <DriverAddButton />
     </header>
 
     <!-- FILTER BAR -->
-    <BaseCard padding="p-4">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div class="flex items-center gap-3 flex-wrap">
-          <DriverFilter v-model="filterStatus" />
-        </div>
+    <BaseCard class="flex flex-wrap items-center gap-4 justify-between">
+      <div class="flex items-center">
+        <DriverFilter v-model="filterStatus" />
+      </div>
 
-        <div class="flex justify-end w-full md:w-auto">
-          <DriverSearch @update:search="onSearch" class="w-full md:w-64" />
-        </div>
+      <div class="flex items-center">
+        <DriverSearch v-model="search" />
       </div>
     </BaseCard>
 
     <!-- TABLE -->
     <BaseCard>
+      <div class="flex justify-between items-center mb-5">
+        <h2 class="heading-2">Daftar Driver</h2>
+        <div class="flex items-center">
+          <DriverAddButton />
+        </div>
+      </div>
       <BaseTable :columns="driverColumns" :rows="filteredRows">
         <!-- STATUS -->
         <template #status="{ row }">
@@ -60,23 +61,18 @@ const filterStatus = ref("Status");
 // FILTER + SEARCH
 const filteredRows = computed(() => {
   return driverRows
-    .filter(d => {
+    .filter((d) => {
+      // Filter Status
       if (filterStatus.value !== "Status") {
         return d.status === filterStatus.value;
       }
       return true;
     })
-    .filter(d => {
+    .filter((d) => {
+      // Filter Search
       const key = search.value.toLowerCase();
-      return (
-        d.id.toLowerCase().includes(key) ||
-        d.name.toLowerCase().includes(key)
-      );
+      // Melakukan pencarian berdasarkan ID atau Nama driver
+      return d.id.toLowerCase().includes(key) || d.name.toLowerCase().includes(key);
     });
 });
-
-const onSearch = (v) => {
-  search.value = v;
-};
-
 </script>

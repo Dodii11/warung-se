@@ -7,7 +7,7 @@
     @click="create"
   >
     <Plus class="w-4 h-4" />
-    Tambahkan Driver
+    Tambahkan Menu
   </BaseButton>
 </template>
 
@@ -16,6 +16,6 @@ import BaseButton from "@/components/base/BaseButton.vue";
 import { Plus } from "lucide-vue-next";
 
 const create = () => {
-  console.log("Tambah driver");
+  console.log("Tambah Menu");
 };
 </script>
