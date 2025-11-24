@@ -24,17 +24,13 @@
         <p class="text-xs text-gray-500">Administrator</p>
       </div>
 
-      <img
-        src="https://ui-avatars.com/api/?name=Admin&background=E53935&color=fff"
-        alt="User Avatar"
-        class="w-10 h-10 rounded-full border border-gray-200"
-      />
+      <UserRound alt="User Avatar" class="w-10 h-10" />
     </div>
   </header>
 </template>
 
 <script setup>
-import { Menu } from "lucide-vue-next";
+import { Menu, UserRound } from "lucide-vue-next";
 // import { ChevronLeft } from "lucide-vue-next";
 
 // defineProps({

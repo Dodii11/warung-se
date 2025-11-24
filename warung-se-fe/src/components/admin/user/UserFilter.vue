@@ -17,6 +17,7 @@ const emit = defineEmits(["update:modelValue"]);
 
 // Label dropdown
 const options = [
+  "Urutkan ID",
   "ID Terkecil",   // asc
   "ID Terbesar"    // desc
 ];
@@ -27,7 +28,8 @@ const model = computed({
   set: (value) => {
     const mapped =
       value === options[0] ? "asc" :
-      value === options[1] ? "desc" :
+      value === options[1] ? "asc" :
+      value === options[2] ? "desc" :
       "asc";
 
     emit("update:modelValue", mapped);

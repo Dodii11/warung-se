@@ -14,6 +14,6 @@ const emit = defineEmits(["update:search"]);
 const keyword = ref("");
 
 const emitSearch = (val) => {
-  emit("update:se arch", val);
+  emit("update:search", val);
 };
 </script>

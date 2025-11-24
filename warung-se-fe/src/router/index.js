@@ -7,6 +7,7 @@ import AdminOrders from "@/views/admin/AdminOrders.vue";
 import AdminMenu from "@/views/admin/AdminMenu.vue";
 import AdminUser from "@/views/admin/AdminUser.vue";
 import AdminDriver from "@/views/admin/AdminDriver.vue";
+import AdminAdmin from "@/views/admin/AdminAdmin.vue";
 
 import LoginPage from "@/views/LoginPage.vue";
 import RegisterPage from "@/views/RegisterPage.vue";
@@ -52,6 +53,12 @@ const router = createRouter({
           name: "AdminDriver",
           component: AdminDriver,
           meta: {title: "Driver - Warung SE"}
+        },
+        {
+          path: "managementAdmin",
+          name: "AdminAdmin",
+          component: AdminAdmin,
+          meta: {title: "ManagementAdmin - Warung SE"}
         },
       ],
     },
