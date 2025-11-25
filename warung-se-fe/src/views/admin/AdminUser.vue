@@ -3,8 +3,8 @@
     <!-- HEADER -->
     <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
       <div>
-        <h1 class="heading-1">Pelanggan</h1>
-        <p class="text-gray-600 text-sm">Lihat dan kelola akun pelanggan disini.</p>
+        <h1 class="heading-1">Manajemen Pengguna</h1>
+        <p class="text-gray-600 text-sm">Lihat dan kelola akun Pengguna disini.</p>
       </div>
     </header>
 
@@ -25,6 +25,9 @@
 
     <!-- TABLE -->
     <BaseCard>
+      <div class="flex justify-between items-center mb-5">
+        <h2 class="heading-2">Daftar Pengguna</h2>
+      </div>
       <BaseTable :columns="userColumns" :rows="sortedAndFilteredRows">
         <!-- ACTION -->
         <template #action="{ row }">

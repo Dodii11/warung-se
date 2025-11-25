@@ -1,20 +1,19 @@
 <template>
-  <BaseInput
-    v-model="local"
-    placeholder="Cari id/nama..."
-    class="w-full"
-    @input="emitSearch"
+  <BaseSearch
+    v-model="keyword"
+    placeholder="Cari ID atau nama..."
+    @update:modelValue="emitSearch"
   />
 </template>
 
 <script setup>
-import { ref } from "vue";
-import BaseInput from "@/components/base/BaseInput.vue";
+import { ref } from "vue"
+import BaseSearch from "@/components/base/BaseSearch.vue"
 
-const emit = defineEmits(["update:search"]);
-const local = ref("");
+const keyword = ref("")
+const emit = defineEmits(["update:modelValue"])
 
-const emitSearch = () => {
-  emit("update:search", local.value);
-};
+const emitSearch = (val) => {
+  emit("update:modelValue", val)
+}
 </script>

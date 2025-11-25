@@ -6,13 +6,11 @@
         <h1 class="heading-1">Manajemen Menu</h1>
         <p class="text-gray-600 text-sm">Kelola menu yang tersedia dalam sistem</p>
       </div>
-
-      <BaseButton size="sm"> Tambah Menu </BaseButton>
     </header>
 
     <!-- FILTERS -->
     <BaseCard class="flex flex-wrap items-center gap-4 justify-between">
-      <div class="flex items-center gap-4">
+      <div class="flex items-center">
         <MenuFilter v-model="selectedCategory" :options="categoryOptions" />
       </div>
 
@@ -23,6 +21,12 @@
 
     <!-- TABLE -->
     <BaseCard>
+      <div class="flex justify-between items-center mb-5">
+        <h2 class="heading-2">Daftar Menu</h2>
+        <div class="flex items-center">
+          <MenuAddButton />
+        </div>
+      </div>
       <BaseTable :columns="columns" :rows="filtered">
         <!-- GAMBAR -->
         <template #image="{ row }">
@@ -31,12 +35,16 @@
 
         <!-- NAMA -->
         <template #name="{ row }">
-          <p class="font-semibold">{{ row.name }}</p>
+          <div class="max-w-xs">
+            <p class="font-semibold">{{ row.name }}</p>
+          </div>
         </template>
 
         <!-- DESKRIPSI -->
         <template #description="{ row }">
-          <p class="text-gray-500 text-sm">{{ row.description }}</p>
+          <div class="max-w-xs">
+            <p class="text-gray-500 text-sm">{{ row.description }}</p>
+          </div>
         </template>
 
         <!-- HARGA -->
@@ -44,12 +52,7 @@
 
         <!-- ACTIONS -->
         <template #action="{ row }">
-          <MenuRowActions
-            :item="row"
-            @edit="editItem"
-            @delete="deleteItem"
-            @toggle-status="toggleStatus"
-          />
+          <MenuRowActions :row="row" />
         </template>
       </BaseTable>
     </BaseCard>
@@ -61,11 +64,11 @@ import { ref, computed } from "vue";
 
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
 
 import MenuFilter from "@/components/admin/menu/MenuFilter.vue";
 import MenuSearch from "@/components/admin/menu/MenuSearch.vue";
 import MenuRowActions from "@/components/admin/menu/MenuRowActions.vue";
+import MenuAddButton from "@/components/admin/menu/MenuAddButton.vue";
 
 import { categoryOptions, menuItems } from "@/data/menuData";
 
@@ -93,12 +96,4 @@ const filtered = computed(() => {
     return matchCategory && matchSearch;
   });
 });
-
-// ACTIONS
-const editItem = (item) => console.log("EDIT", item);
-
-const deleteItem = (item) => {
-  items.value = items.value.filter((i) => i.id !== item.id);
-};
-
 </script>

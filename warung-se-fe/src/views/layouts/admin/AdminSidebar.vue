@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { LayoutDashboard, Receipt, Users, LogOut, Motorbike, UtensilsCrossed } from "lucide-vue-next";
+import { LayoutDashboard, Receipt, Users, LogOut, Motorbike, UtensilsCrossed, UserRoundCog } from "lucide-vue-next";
 import AdminSidebarItem from "./AdminSidebarItem.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 
@@ -85,6 +85,7 @@ const navItems = [
   { label: "Menu", path: "/admin/menu", icon: UtensilsCrossed },
   { label: "Pengguna", path: "/admin/user", icon: Users },
   { label: "Driver", path: "/admin/driver", icon: Motorbike },
+  { label: "Admin", path: "/admin/managementAdmin", icon: UserRoundCog },
 ];
 
 const authStore = useAuthStore();

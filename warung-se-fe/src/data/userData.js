@@ -1,5 +1,5 @@
 export const userColumns = [
-  { label: "ID Pelanggan", key: "id" },
+  { label: "ID Pengguna", key: "id" },
   { label: "Nama", key: "name" },
   { label: "Email", key: "email" },
   { label: "Nomor Telepon", key: "phone" },

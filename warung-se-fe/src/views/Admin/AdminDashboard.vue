@@ -31,11 +31,11 @@
           <h2 class="heading-2">Pesanan Terbaru</h2>
 
           <BaseButton
-            variant="outline-gray"
+            variant="primary"
             size="sm"
             class=""
           >
-            Lihat Semua
+            Semua Pesanan
             <ArrowRight class="w-4 h-4" />
           </BaseButton>
         </div>
