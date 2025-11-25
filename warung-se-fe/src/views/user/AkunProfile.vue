@@ -10,12 +10,12 @@
       </div>
 
       <div class="flex items-center space-x-6">
-        <button class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-red-200 transition-colors">
+        <button 
+          @click="logout"
+          class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-red-200 transition-colors">
           Logout
         </button>
-        <div class="flex items-center space-x-2">
-          
-        </div>
+        <div class="flex items-center space-x-2"></div>
       </div>
     </header>
 
@@ -201,21 +201,18 @@
         </div>
       </div>
 
-      <!-- Messages Tab Content (PESANAN) -->
+      <!-- Messages Tab -->
       <div v-if="activeTab === 'messages'" class="py-8">
-        <!-- Status Pesanan Saat Ini -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-bold text-gray-800">Status Pesanan Saat Ini</h2>
             <span class="text-gray-600 font-medium">Pesanan #12346</span>
           </div>
 
-          <!-- Progress Bar -->
           <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
             <div class="bg-red-600 h-2 rounded-full" style="width: 50%"></div>
           </div>
 
-          <!-- Status Steps -->
           <div class="flex justify-between text-xs font-medium">
             <div class="text-red-600">Pesanan Dikonfirmasi</div>
             <div class="text-red-600">Preparing Food</div>
@@ -224,55 +221,30 @@
           </div>
         </div>
 
-        <!-- Daftar Riwayat Pesanan -->
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    PESANAN #
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    TANGGAL
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    BARANG
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    TOTAL
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    STATUS
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    AKSI
-                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PESANAN #</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TANGGAL</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">BARANG</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TOTAL</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">STATUS</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">AKSI</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="order in orders" :key="order.id" class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {{ order.orderNumber }}
+                  <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ order.orderNumber }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-500">{{ order.date }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-500">{{ order.items }} Barang</td>
+                  <td class="px-6 py-4 text-sm text-gray-500">{{ order.total }}</td>
+                  <td class="px-6 py-4">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">{{ order.status }}</span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ order.date }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ order.items }} Barang
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ order.total }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                      {{ order.status }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button @click="printReceipt(order.id)" class="text-red-600 hover:text-red-900">
-                      Cetak Resi
-                    </button>
+                  <td class="px-6 py-4 text-sm font-medium">
+                    <button @click="printReceipt(order.id)" class="text-red-600 hover:text-red-900">Cetak Resi</button>
                   </td>
                 </tr>
               </tbody>
@@ -280,12 +252,24 @@
           </div>
         </div>
       </div>
+
     </main>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+// 🟩 LOGOUT FIX
+const logout = async () => {
+  await auth.logout()
+  router.push({ name: 'Login' })
+}
 
 // State for tabs
 const activeTab = ref('profile')
@@ -313,49 +297,17 @@ const password = ref({
   confirm: ''
 })
 
-// Data pesanan
+// Orders data
 const orders = ref([
-  {
-    id: 1,
-    orderNumber: '#12345',
-    date: 'July 15, 2024',
-    items: 2,
-    total: 'Rp 25.000',
-    status: 'Terkirim'
-  },
-  {
-    id: 2,
-    orderNumber: '#12344',
-    date: 'July 10, 2024',
-    items: 3,
-    total: 'Rp 50.000',
-    status: 'Terkirim'
-  },
-  {
-    id: 3,
-    orderNumber: '#12343',
-    date: 'July 5, 2024',
-    items: 1,
-    total: '15.000',
-    status: 'Terkirim'
-  }
+  { id: 1, orderNumber: '#12345', date: 'July 15, 2024', items: 2, total: 'Rp 25.000', status: 'Terkirim' },
+  { id: 2, orderNumber: '#12344', date: 'July 10, 2024', items: 3, total: 'Rp 50.000', status: 'Terkirim' },
+  { id: 3, orderNumber: '#12343', date: 'July 5, 2024', items: 1, total: '15.000', status: 'Terkirim' }
 ])
 
-// Save functions
-const saveProfileChanges = () => {
-  console.log('Saving profile changes:', profile.value)
-  // Add your API call here
-}
-
-const saveAddressChanges = () => {
-  console.log('Saving address changes:', address.value)
-  // Add your API call here
-}
-
-const savePasswordChanges = () => {
-  console.log('Saving password changes:', password.value)
-  // Add your API call here
-}
+// Save functions (tetap original)
+const saveProfileChanges = () => console.log('Saving profile changes:', profile.value)
+const saveAddressChanges = () => console.log('Saving address changes:', address.value)
+const savePasswordChanges = () => console.log('Saving password changes:', password.value)
 
 const saveAllChanges = () => {
   saveProfileChanges()
@@ -364,14 +316,11 @@ const saveAllChanges = () => {
   alert('Semua perubahan telah disimpan!')
 }
 
-// Fungsi untuk cetak resi
 const printReceipt = (orderId) => {
-  console.log('Mencetak resi untuk pesanan:', orderId)
-  // Di sini bisa ditambahkan logika untuk mencetak resi atau membuka halaman struk
   alert(`Resi untuk pesanan ${orderId} akan dicetak!`)
 }
 </script>
 
+
 <style scoped>
-/* Additional styling if needed */
 </style>
