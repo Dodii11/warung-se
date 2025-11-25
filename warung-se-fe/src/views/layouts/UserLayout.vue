@@ -1,20 +1,13 @@
 <template>
-  <div class="min-h-screen bg-bg-base"> <!-- (atau bg-white) -->
-    
-    <!-- 1. PASANG NAVBAR DI SINI -->
+  <div class="min-h-screen flex flex-col bg-bg-base">
     <Navbar />
 
-    <!-- 2. BUAT "LUBANG" UNTUK KONTEN CUSTOMER -->
-    <main class="max-w-7xl mx-auto p-6">
-      <RouterView />
+    <main class="flex-1 max-w-7xl mx-auto p-6 pt-[72px]">
     </main>
-    
-    <!-- (Nanti Anda bisa tambahkan <Footer /> di sini) -->
+
   </div>
 </template>
 
 <script setup>
-import { RouterView } from 'vue-router'
-// Ganti path ini jika Navbar Anda ada di tempat lain
-import Navbar from '@/components/Navbar.vue' 
+import Navbar from '@/components/Navbar.vue'
 </script>
