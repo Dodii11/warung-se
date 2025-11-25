@@ -31,11 +31,11 @@
           <h2 class="heading-2">Pesanan Terbaru</h2>
 
           <BaseButton
-            variant="outline-gray"
+            variant="primary"
             size="sm"
             class=""
           >
-            Lihat Semua
+            Semua Pesanan
             <ArrowRight class="w-4 h-4" />
           </BaseButton>
         </div>
@@ -59,7 +59,7 @@ import BaseButton from "@/components/base/BaseButton.vue";
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
 import BaseStatusBadge from "@/components/base/BaseStatusBadge.vue";
-import RowActions  from "@/components/RowActions.vue";
+import RowActions  from "@/components/admin/dashboard/RowActions.vue";
 
 import { stats, tableColumns, tableRows } from "@/data/dashboardData";
 import { ArrowRight } from "lucide-vue-next";

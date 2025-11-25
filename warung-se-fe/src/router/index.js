@@ -1,12 +1,15 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
-// ADMIN PAGES
+// AUTH PAGES
 import AdminLayout from "@/views/layouts/AdminLayout.vue";
 import AdminDashboard from "@/views/admin/AdminDashboard.vue";
 import AdminOrders from "@/views/admin/AdminOrders.vue";
+import AdminMenu from "@/views/admin/AdminMenu.vue";
+import AdminUser from "@/views/admin/AdminUser.vue";
+import AdminDriver from "@/views/admin/AdminDriver.vue";
+import AdminAdmin from "@/views/admin/AdminAdmin.vue";
 
-// AUTH PAGES
 import LoginPage from "@/views/LoginPage.vue";
 import RegisterPage from "@/views/RegisterPage.vue";
 
@@ -39,6 +42,30 @@ const router = createRouter({
           path: "orders",
           name: "AdminOrders",
           component: AdminOrders,
+        },
+        {
+          path: "menu",
+          name: "AdminMenu",
+          component: AdminMenu,
+          meta: {title: "Menu - Warung SE"}
+        },
+        {
+          path: "user",
+          name: "AdminUser",
+          component: AdminUser,
+          meta: {title: "User - Warung SE"}
+        },
+        {
+          path: "driver",
+          name: "AdminDriver",
+          component: AdminDriver,
+          meta: {title: "Driver - Warung SE"}
+        },
+        {
+          path: "managementAdmin",
+          name: "AdminAdmin",
+          component: AdminAdmin,
+          meta: {title: "ManagementAdmin - Warung SE"}
         },
       ],
     },
@@ -76,7 +103,7 @@ const router = createRouter({
       path: "checkout",
       name: "FormDetailPesanan",
       component: FormDetailPesanan, // pastikan sudah import DetailPesanan
-      meta: { title: "Detail Pesanan - Warung SE" },  
+      meta: { title: "Detail Pesanan - Warung SE" },
     },
     {
       path: "detail-pesanan",

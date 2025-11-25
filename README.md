@@ -18,7 +18,7 @@ Tujuannya adalah untuk menyediakan sistem manajemen warung / toko sederhana — 
 
 | Nama | Role |
 |------|------|
-| **Dodii** | Front-End Developer |
+| **Dodii** | Fullstack Developer |
 | **Laepher** | Back-End Developer  |
 
 ---

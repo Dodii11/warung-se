@@ -9,20 +9,20 @@ class Menu extends Model
 {
     use HasFactory;
 
+    protected $table = 'menu';
     protected $primaryKey = 'id_menu';
-    protected $table = 'menus';
+    public $timestamps = true;
 
     protected $fillable = [
         'menu',
         'harga',
         'kategori',
+        'gambar_menu'
     ];
 
-    /**
-     * Relasi: Menu memiliki banyak DetailPesanan
-     */
-    public function detailPesanans()
+    // 🔥 Relasi ke tabel stok_menu
+    public function stok()
     {
-        return $this->hasMany(DetailPesanan::class, 'id_menu', 'id_menu');
+        return $this->hasOne(StokMenu::class, 'id_menu', 'id_menu');
     }
 }
