@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { LayoutDashboard, Receipt, Utensils, Users, Truck, LogOut } from "lucide-vue-next";
+import { LayoutDashboard, Receipt, Users, LogOut, Motorbike, UtensilsCrossed, UserRoundCog } from "lucide-vue-next";
 import AdminSidebarItem from "./AdminSidebarItem.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 
@@ -82,9 +82,10 @@ defineProps({
 const navItems = [
   { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Pesanan", path: "/admin/orders", icon: Receipt },
-  { label: "Menu", path: "/admin/menu", icon: Utensils },
-  { label: "Pelanggan", path: "/admin/customers", icon: Users },
-  { label: "Driver", path: "/admin/drivers", icon: Truck },
+  { label: "Menu", path: "/admin/menu", icon: UtensilsCrossed },
+  { label: "Pengguna", path: "/admin/user", icon: Users },
+  { label: "Driver", path: "/admin/driver", icon: Motorbike },
+  { label: "Admin", path: "/admin/managementAdmin", icon: UserRoundCog },
 ];
 
 const authStore = useAuthStore();

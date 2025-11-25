@@ -2,26 +2,26 @@
 
 namespace App\Models;
 
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable; // Menggunakan ini jika admin juga login
+// use Illuminate\Database\Eloquent\Model;
 
-class Admin extends Authenticatable
-{
+class Admin extends Authenticatable {
     use HasFactory;
 
+    protected $table = 'admin';
     protected $primaryKey = 'id_admin';
-    protected $table = 'admins'; // Opsional, tapi disarankan
-    public $incrementing = true;
-    protected $keyType = 'int';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
-    protected $fillable = [
-        'nama_admin',
-        'no_telp',
-        'password',
-    ];
+    protected $fillable = ['id_admin', 'email_admin', 'nama_admin', 'no_telp', 'password'];
 
-    // Kolom yang disembunyikan saat dikonversi ke array/JSON
-    protected $hidden = [
-        'password',
-    ];
+    public static function boot() {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $count = self::count() + 1;
+            $model->id_admin = 'AD' . str_pad($count, 3, '0', STR_PAD_LEFT);
+        });
+    }
 }

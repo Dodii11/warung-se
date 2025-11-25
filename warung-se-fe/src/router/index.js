@@ -2,12 +2,15 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
-// ADMIN PAGES
+// AUTH PAGES
 import AdminLayout from "@/views/layouts/AdminLayout.vue";
 import AdminDashboard from "@/views/admin/AdminDashboard.vue";
 import AdminOrders from "@/views/admin/AdminOrders.vue";
+import AdminMenu from "@/views/admin/AdminMenu.vue";
+import AdminUser from "@/views/admin/AdminUser.vue";
+import AdminDriver from "@/views/admin/AdminDriver.vue";
+import AdminAdmin from "@/views/admin/AdminAdmin.vue";
 
-// AUTH PAGES
 import LoginPage from "@/views/LoginPage.vue";
 import RegisterPage from "@/views/RegisterPage.vue";
 
@@ -43,68 +46,86 @@ const router = createRouter({
           name: "AdminOrders",
           component: AdminOrders,
         },
+        {
+          path: "menu",
+          name: "AdminMenu",
+          component: AdminMenu,
+          meta: {title: "Menu - Warung SE"}
+        },
+        {
+          path: "user",
+          name: "AdminUser",
+          component: AdminUser,
+          meta: {title: "User - Warung SE"}
+        },
+        {
+          path: "driver",
+          name: "AdminDriver",
+          component: AdminDriver,
+          meta: {title: "Driver - Warung SE"}
+        },
+        {
+          path: "managementAdmin",
+          name: "AdminAdmin",
+          component: AdminAdmin,
+          meta: {title: "ManagementAdmin - Warung SE"}
+        },
       ],
     },
 
-    // ---- CUSTOMER AREA ----
+// ---- CUSTOMER AREA ----
+{
+  path: "/",
+  component: CustomerLayout,
+  children: [
     {
-      path: "/",
-      component: CustomerLayout,
-      children: [
-        {
-          path: "",
-          name: "LandingPage",
-          component: LandingPage,
-          meta: { title: "Selamat Datang - Warung SE" },
-        },
-        {
-          path: "menu",
-          name: "MenuPage",
-          component: MenuPage,
-          meta: { title: "Menu - Warung SE" },
-        },
-        {
-          path: "menu/:name",
-          name: "DetailMenu",
-          component: DetailMenu,
-          props: true,
-        },
-        {
-          path: "cart",
-          name: "CartPage",
-          component: CartPage,
-          meta: { title: "Keranjang Belanja - Warung SE" },
-        },
-        {
-          path: "checkout",
-          name: "FormDetailPesanan",
-          component: FormDetailPesanan,
-          meta: { title: "Detail Pesanan - Warung SE" },
-        },
-        {
-          path: "detail-pesanan",
-          name: "DetailPesanan",
-          component: DetailPesanan,
-          meta: { title: "Detail Pesanan - Warung SE" },
-        },
-        {
-          path: "struk",
-          name: "StrukPage",
-          component: ReceiptPage,
-          meta: { title: "Struk Pesanan - Warung SE" },
-        },
-        // Tambahkan rute untuk AkunProfile di sini
-        {
-          path: "akun-saya",
-          name: "AkunProfile",
-          component: AkunProfile,
-          meta: { 
-            title: "Akun Saya - Warung SE",
-            requiresAuth: true // Tambahkan jika hanya untuk user yang login
-          }
-        }
-      ],
+      path: "",
+      name: "LandingPage",
+      component: LandingPage,
+      meta: { title: "Selamat Datang - Warung SE" },
     },
+    {
+      path: "menu",
+      name: "MenuPage",
+      component: MenuPage, // ✅ gunakan import statis
+      meta: { title: "Menu - Warung SE" },
+    },
+    {
+      path: "menu/:name",
+      name: "DetailMenu",
+      component: DetailMenu,
+      props: true, // biar param route diteruskan ke props
+    },
+    {
+      path: "cart",
+      name: "CartPage",
+      component: CartPage, // pastikan sudah import CartPage
+      meta: { title: "Keranjang Belanja - Warung SE" },
+    },
+    {
+      path: "checkout",
+      name: "FormDetailPesanan",
+      component: FormDetailPesanan, // pastikan sudah import DetailPesanan
+      meta: { title: "Detail Pesanan - Warung SE" },  
+    },
+    {
+      path: "detail-pesanan",
+      name: "DetailPesanan",
+      component: DetailPesanan,
+      meta: { title: "Detail Pesanan - Warung SE" },
+    },
+    {
+      path: "struk",
+      name: "StrukPage",
+      component: ReceiptPage,
+      meta: { title: "Struk Pesanan - Warung SE" },
+    }
+
+
+  ],
+},
+
+
 
     // ---- AUTH PAGES ----
     {

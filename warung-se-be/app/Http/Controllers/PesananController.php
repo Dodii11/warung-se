@@ -3,74 +3,111 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pesanan;
-use App\Models\Menu;
-use App\Models\DetailPesanan;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class PesananController extends Controller
 {
-    // 📌 Admin view semua pesanan
     public function index()
     {
-        $pesanan = Pesanan::with('detail.menu')->get();
-        return view('pesanan.index', compact('pesanan'));
+        $pesanans = Pesanan::with(['user', 'driver', 'detailPesanan'])->get()->map(function ($p) {
+            if ($p->foto_pembayaran) {
+                $p->foto_pembayaran_url = asset('storage/pembayaran/' . $p->foto_pembayaran);
+            }
+            return $p;
+        });
+        return response()->json($pesanans);
     }
 
-    // 📌 User form pemesanan
-    public function user()
-    {
-        $menu = Menu::all();
-        return view('pesanan.user', compact('menu'));
-    }
-
-    // 📌 Simpan pesanan
     public function store(Request $request)
     {
-        $total = 0;
-
-        foreach ($request->id_menu as $i => $id_menu) {
-            $harga = Menu::find($id_menu)->harga;
-            $total += $harga * $request->jumlah[$i];
-        }
-
-        $pesanan = Pesanan::create([
-            'id_user' => '001',
-            'tanggal_pesanan' => Carbon::now(),
-            'total_harga' => $total,
-            'status' => 'proses',
-            'metode_bayar' => $request->metode_bayar,
-            'alamat' => $request->alamat,
-            'catatan' => $request->catatan,
+        $request->validate([
+            'id_user' => 'required|exists:user,id_user',
+            'tanggal_pesanan' => 'required|date',
+            'total_harga' => 'required|numeric',
+            'status' => 'required|in:proses,diantar,selesai,batal',
+            'metode_bayar' => 'required|string',
+            'alamat' => 'required|string',
+            'foto_pembayaran' => 'nullable|image|max:2048',
         ]);
 
-        foreach ($request->id_menu as $i => $id_menu) {
-            $harga = Menu::find($id_menu)->harga;
-            DetailPesanan::create([
-                'id_pesanan' => $pesanan->id_pesanan,
-                'id_menu' => $id_menu,
-                'jumlah' => $request->jumlah[$i],
-                'subtotal' => $harga * $request->jumlah[$i],
-            ]);
+        $data = $request->all();
+
+        if ($request->hasFile('foto_pembayaran')) {
+            $fileName = time() . '_' . $request->file('foto_pembayaran')->getClientOriginalName();
+            $request->file('foto_pembayaran')->storeAs('public/pembayaran', $fileName);
+            $data['foto_pembayaran'] = $fileName;
         }
 
-        return redirect()->back()->with('success', 'Pesanan berhasil dibuat!');
+        $pesanan = Pesanan::create($data);
+        return response()->json($pesanan, 201);
     }
 
-    // 📌 Detail pop-up (AJAX)
     public function show($id)
     {
-        $pesanan = Pesanan::with('detail.menu')->findOrFail($id);
-        return view('pesanan.show', compact('pesanan'));
+        $p = Pesanan::with(['user', 'driver', 'detailPesanan'])->findOrFail($id);
+        if ($p->foto_pembayaran) {
+            $p->foto_pembayaran_url = asset('storage/pembayaran/' . $p->foto_pembayaran);
+        }
+        return response()->json($p);
     }
 
-    // 📌 Update status oleh admin
-    public function updateStatus(Request $request, $id)
+    public function update(Request $request, $id)
+    {
+        $pesanan = Pesanan::with('detailPesanan.menu.stok')->findOrFail($id);
+
+        $oldStatus = $pesanan->status; // status sebelum update
+
+        if ($request->hasFile('foto_pembayaran')) {
+            if ($pesanan->foto_pembayaran) {
+                Storage::delete('public/pembayaran/' . $pesanan->foto_pembayaran);
+            }
+            $fileName = time() . '_' . $request->file('foto_pembayaran')->getClientOriginalName();
+            $request->file('foto_pembayaran')->storeAs('public/pembayaran', $fileName);
+            $pesanan->foto_pembayaran = $fileName;
+        }
+
+        // Update data pesanan
+        $pesanan->update($request->except('foto_pembayaran'));
+
+        /**
+         * ============================================================
+         *      LOGIKA PENGURANGAN STOK KETIKA STATUS = SELESAI
+         * ============================================================
+         */
+        if (
+            $pesanan->status === "selesai" &&
+            $oldStatus !== "selesai" &&
+            !$pesanan->stok_dikurangi
+        ) {
+
+            foreach ($pesanan->detailPesanan as $detail) {
+
+                $stok = $detail->menu->stok; // akses stok_menu
+
+                if ($stok) {
+                    $stok->jumlah_stok -= $detail->jumlah;
+                    if ($stok->jumlah_stok < 0) $stok->jumlah_stok = 0;
+                    $stok->save();
+                }
+            }
+
+            // Tandai bahwa stok untuk pesanan ini sudah dipotong
+            $pesanan->stok_dikurangi = true;
+            $pesanan->save();
+        }
+
+        return response()->json($pesanan);
+    }
+
+
+    public function destroy($id)
     {
         $pesanan = Pesanan::findOrFail($id);
-        $pesanan->status = $request->status;
-        $pesanan->save();
-
-        return redirect()->route('pesanan.index')->with('success', 'Status pesanan berhasil diperbarui!');
+        if ($pesanan->foto_pembayaran) {
+            Storage::delete('public/pembayaran/' . $pesanan->foto_pembayaran);
+        }
+        $pesanan->delete();
+        return response()->json(null, 204);
     }
 }
