@@ -1,3 +1,4 @@
+// router/index.js
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -22,6 +23,8 @@ import CartPage from "@/views/user/CartPage.vue";
 import FormDetailPesanan from "@/views/user/FormDetailPesanan.vue";
 import DetailPesanan from "@/views/user/DetailPesanan.vue";
 import ReceiptPage from "@/views/user/ReceiptPage.vue";
+// Tambahkan import untuk AkunProfile
+import AkunProfile from "@/views/user/AkunProfile.vue"; // Sesuaikan path jika berbeda
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -103,7 +106,7 @@ const router = createRouter({
       path: "checkout",
       name: "FormDetailPesanan",
       component: FormDetailPesanan, // pastikan sudah import DetailPesanan
-      meta: { title: "Detail Pesanan - Warung SE" },
+      meta: { title: "Detail Pesanan - Warung SE" },  
     },
     {
       path: "detail-pesanan",
@@ -168,7 +171,12 @@ router.beforeEach((to, from, next) => {
   document.title = to.meta.title || "Warung SE";
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return next("/login");
+    // Jika rute membutuhkan autentikasi dan user tidak login
+    return next({
+      name: "Login",
+      // Bisa tambahkan query untuk redirect kembali setelah login
+      // query: { redirect: to.fullPath }
+    });
   }
 
   if (auth.isAuthenticated && (to.path === "/login" || to.path === "/register")) {

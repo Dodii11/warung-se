@@ -56,7 +56,7 @@
             <h3 class="font-medium text-gray-900 text-sm sm:text-base">{{ item.name }}</h3>
             <p class="text-xs sm:text-sm text-gray-600">Jumlah: {{ item.qty }}</p>
           </div>
-          <p class="font-bold text-red-600 text-sm sm:text-base">Rp {{ formatCurrency(item.total) }}</p>
+          <p class="font-bold text-red-600 text-sm sm:text-base"> {{ formatCurrency(item.total) }}</p>
         </div>
       </div>
     </div>
@@ -67,16 +67,16 @@
     <div class="mb-4 text-sm sm:text-base">
       <div class="flex justify-between mb-1">
         <span>Subtotal</span>
-        <span>Rp {{ formatCurrency(order?.subtotal || 37000) }}</span>
+        <span> {{ formatCurrency(order?.subtotal || 37000) }}</span>
       </div>
       <div class="flex justify-between mb-1">
         <span class="text-gray-600">Biaya Pengiriman</span>
-        <span>Rp {{ formatCurrency(order?.shippingFee || 5000) }}</span>
+        <span> {{ formatCurrency(order?.shippingFee || 5000) }}</span>
       </div>
       <hr class="my-2 border-gray-300" />
       <div class="flex justify-between font-bold text-base sm:text-lg">
         <span>Total</span>
-        <span class="text-red-600">Rp {{ formatCurrency(order?.total || 42000) }}</span>
+        <span class="text-red-600"> {{ formatCurrency(order?.total || 42000) }}</span>
       </div>
     </div>
 

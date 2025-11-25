@@ -61,11 +61,13 @@
 
           <div class="flex items-center gap-2">
             <span class="text-white text-sm">Halo, User</span>
+            <router-link to="/akun-saya">  
             <img
               :src="profile"
               class="h-8 w-8 rounded-full border-2 border-white object-cover"
               alt="User"
             />
+            </router-link>
           </div>
         </div>
 
