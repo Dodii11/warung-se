@@ -1,5 +1,5 @@
 <template>
-  <footer class="w-full bg-red-600 text-white py-6">
+  <footer class="w-full bg-red-600 text-white py-6 relative top-24">
     <div class="max-w-md mx-auto px-4 flex flex-col items-center gap-4">
 
       <!-- Ikon Media Sosial -->

@@ -1,3 +1,4 @@
+// router/index.js
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -19,6 +20,8 @@ import CartPage from "@/views/user/CartPage.vue";
 import FormDetailPesanan from "@/views/user/FormDetailPesanan.vue";
 import DetailPesanan from "@/views/user/DetailPesanan.vue";
 import ReceiptPage from "@/views/user/ReceiptPage.vue";
+// Tambahkan import untuk AkunProfile
+import AkunProfile from "@/views/user/AkunProfile.vue"; // Sesuaikan path jika berbeda
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -43,59 +46,65 @@ const router = createRouter({
       ],
     },
 
-// ---- CUSTOMER AREA ----
-{
-  path: "/",
-  component: CustomerLayout,
-  children: [
+    // ---- CUSTOMER AREA ----
     {
-      path: "",
-      name: "LandingPage",
-      component: LandingPage,
-      meta: { title: "Selamat Datang - Warung SE" },
+      path: "/",
+      component: CustomerLayout,
+      children: [
+        {
+          path: "",
+          name: "LandingPage",
+          component: LandingPage,
+          meta: { title: "Selamat Datang - Warung SE" },
+        },
+        {
+          path: "menu",
+          name: "MenuPage",
+          component: MenuPage,
+          meta: { title: "Menu - Warung SE" },
+        },
+        {
+          path: "menu/:name",
+          name: "DetailMenu",
+          component: DetailMenu,
+          props: true,
+        },
+        {
+          path: "cart",
+          name: "CartPage",
+          component: CartPage,
+          meta: { title: "Keranjang Belanja - Warung SE" },
+        },
+        {
+          path: "checkout",
+          name: "FormDetailPesanan",
+          component: FormDetailPesanan,
+          meta: { title: "Detail Pesanan - Warung SE" },
+        },
+        {
+          path: "detail-pesanan",
+          name: "DetailPesanan",
+          component: DetailPesanan,
+          meta: { title: "Detail Pesanan - Warung SE" },
+        },
+        {
+          path: "struk",
+          name: "StrukPage",
+          component: ReceiptPage,
+          meta: { title: "Struk Pesanan - Warung SE" },
+        },
+        // Tambahkan rute untuk AkunProfile di sini
+        {
+          path: "akun-saya",
+          name: "AkunProfile",
+          component: AkunProfile,
+          meta: { 
+            title: "Akun Saya - Warung SE",
+            requiresAuth: true // Tambahkan jika hanya untuk user yang login
+          }
+        }
+      ],
     },
-    {
-      path: "menu",
-      name: "MenuPage",
-      component: MenuPage, // ✅ gunakan import statis
-      meta: { title: "Menu - Warung SE" },
-    },
-    {
-      path: "menu/:name",
-      name: "DetailMenu",
-      component: DetailMenu,
-      props: true, // biar param route diteruskan ke props
-    },
-    {
-      path: "cart",
-      name: "CartPage",
-      component: CartPage, // pastikan sudah import CartPage
-      meta: { title: "Keranjang Belanja - Warung SE" },
-    },
-    {
-      path: "checkout",
-      name: "FormDetailPesanan",
-      component: FormDetailPesanan, // pastikan sudah import DetailPesanan
-      meta: { title: "Detail Pesanan - Warung SE" },  
-    },
-    {
-      path: "detail-pesanan",
-      name: "DetailPesanan",
-      component: DetailPesanan,
-      meta: { title: "Detail Pesanan - Warung SE" },
-    },
-    {
-      path: "struk",
-      name: "StrukPage",
-      component: ReceiptPage,
-      meta: { title: "Struk Pesanan - Warung SE" },
-    }
-
-
-  ],
-},
-
-
 
     // ---- AUTH PAGES ----
     {
@@ -141,7 +150,12 @@ router.beforeEach((to, from, next) => {
   document.title = to.meta.title || "Warung SE";
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return next("/login");
+    // Jika rute membutuhkan autentikasi dan user tidak login
+    return next({
+      name: "Login",
+      // Bisa tambahkan query untuk redirect kembali setelah login
+      // query: { redirect: to.fullPath }
+    });
   }
 
   if (auth.isAuthenticated && (to.path === "/login" || to.path === "/register")) {
