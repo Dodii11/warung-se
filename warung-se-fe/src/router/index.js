@@ -176,15 +176,12 @@ router.beforeEach((to, from, next) => {
 
   document.title = to.meta.title || "Warung SE";
 
+  // 🟩 1. Rute butuh login
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    // Jika rute membutuhkan autentikasi dan user tidak login
-    return next({
-      name: "Login",
-      // Bisa tambahkan query untuk redirect kembali setelah login
-      // query: { redirect: to.fullPath }
-    });
+    return next({ name: "Login" });
   }
 
+  // 🟩 2. Jika sudah login, cegah buka login/register
   if (auth.isAuthenticated && (to.path === "/login" || to.path === "/register")) {
     if (auth.user?.role === "admin") {
       return next("/admin/dashboard");
@@ -193,6 +190,7 @@ router.beforeEach((to, from, next) => {
     }
   }
 
+  // 🟩 3. Cek role (admin/user)
   if (to.meta.role && auth.user?.role !== to.meta.role) {
     return next("/");
   }
