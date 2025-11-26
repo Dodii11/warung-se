@@ -2,11 +2,16 @@ import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
 import AdminLayout from "@/views/layouts/AdminLayout.vue";
-import AdminDashboard from "@/views/admin/AdminDashboard.vue";
-import AdminOrders from "@/views/admin/AdminOrders.vue";
-import AdminMenu from "@/views/admin/AdminMenu.vue";
-import AdminUser from "@/views/admin/AdminUser.vue";
-import AdminDriver from "@/views/admin/AdminDriver.vue";
+import AdminDashboard from "@/views/Admin/AdminDashboard.vue";
+import AdminOrders from "@/views/Admin/AdminOrders.vue";
+import AdminMenu from "@/views/Admin/AdminMenu.vue";
+import AdminUser from "@/views/Admin/AdminUser.vue";
+import AdminDriver from "@/views/Admin/AdminDriver.vue";
+
+import ProfileLayout from "@/views/layouts/user/ProfileLayout.vue";
+import UserPesanan from "@/views/User/UserPesanan.vue";
+import UserProfile from "@/views/User/UserProfile.vue";
+import UserResi from "@/views/User/UserResi.vue";
 
 import LoginPage from "@/views/LoginPage.vue";
 import RegisterPage from "@/views/RegisterPage.vue";
@@ -56,6 +61,33 @@ const router = createRouter({
       ],
     },
 
+    {
+      path: "/user",
+      component: ProfileLayout,
+      // meta: { requiresAuth: true, role: "user" },
+      children: [
+        { path: "", 
+          redirect: "/user/profile" 
+        },
+        { path: "profile", 
+          name: "UserProfile", 
+          component: UserProfile, 
+          meta: { title: "Profil - Warung SE" } 
+        },
+        { path: "pesanan", 
+          name: "UserPesanan", 
+          component: UserPesanan, 
+          meta: { title: "Pesanan - Warung SE" } 
+        },
+        { 
+          path: "pesanan/:pesananId/resi",
+          name: "UserResi",
+          component: UserResi,
+          meta: { title: "Resi Pesanan - Warung SE" }
+      },
+      ]
+    },
+    
     // --- GRUP HALAMAN PUBLIK/AUTH ---
     {
       path: "/login",
@@ -89,19 +121,23 @@ router.beforeEach((to, from, next) => {
   const auth = useAuthStore();
   document.title = to.meta.title || "Warung SE";
 
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return next("/login");
-  }
+  // if (to.meta.requiresAuth && !auth.isAuthenticated) {
+  //  return next("/login");
+  //} 
 
-  if (auth.isAuthenticated && (to.path === "/login" || to.path === "/register")) {
-    // biar user login gak bisa balik ke login/register
-    return next("/admin/dashboard");
-  }
+  //if (auth.isAuthenticated && (to.path === "/login" || to.path === "/register")) {
+  //  if (auth.user?.role === "admin") {
+  //    return next("/admin/dashboard");
+  //  } else if (auth.user?.role === "user") {
+  //    return next("/user/profile"); 
+  // }
+  //  return next("/login");
+  //}
 
   // jika route butuh role tertentu
-  if (to.meta.role && auth.user?.role !== to.meta.role) {
-    return next("/login");
-  }
+  //if (to.meta.role && auth.user?.role !== to.meta.role) {
+  //  return next("/login");
+  //}
 
   next();
 });
