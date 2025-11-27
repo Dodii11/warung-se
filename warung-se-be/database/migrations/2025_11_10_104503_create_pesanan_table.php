@@ -9,7 +9,7 @@ return new class extends Migration {
         Schema::create('pesanan', function (Blueprint $table) {
             $table->string('id_pesanan', 20)->primary();
 
-            $table->string('id_user', 20);
+            $table->integer('id_user');
             $table->foreign('id_user')->references('id_user')->on('user')->onDelete('cascade');
 
             $table->string('id_driver', 20)->nullable();

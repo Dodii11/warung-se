@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         Schema::create('super_admin', function (Blueprint $table) {
-            $table->string('id_super', 20)->primary();
+            $table->integer('id_super', 11)->primary();
             $table->string('email_super', 255)->unique();
             $table->string('nama_super', 255);
             $table->bigInteger('no_telp');

@@ -4,12 +4,13 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Auth;
+use App\Responses\ApiResponse;
 
 class RoleMiddleware
 {
     public function handle($request, Closure $next, $role)
     {
-        switch($role){
+        switch($role) {
             case 'user':
                 if(Auth::guard('user')->check()) return $next($request);
                 break;
@@ -21,6 +22,11 @@ class RoleMiddleware
                 break;
         }
 
-        return redirect('/login'); // atau bisa json jika API
+        // Return JSON error untuk API requests
+        if ($request->expectsJson()) {
+            return ApiResponse::forbidden("Akses sebagai $role diperlukan");
+        }
+
+        return redirect('/login');
     }
 }

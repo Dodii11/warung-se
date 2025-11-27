@@ -7,107 +7,146 @@ use App\Models\Admin;
 use App\Models\SuperAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
+use App\Responses\ApiResponse;
 
 class AuthController extends Controller
 {
-    // =====================================
+    // ===============================
     // REGISTER USER
-    // =====================================
+    // ===============================
     public function registerUser(Request $request)
     {
-        $request->validate([
-            'email_user' => 'required|email|unique:user',
+        $validated = $request->validate([
+            'email_user' => 'required|email|unique:users,email_user',
             'nama_user' => 'required|string|max:255',
-            'no_telp' => 'required|numeric',
+            'no_telp' => 'required|string|max:20',
             'password' => 'required|string|min:6',
         ]);
 
-        $data = $request->all();
-        $data['password'] = Hash::make($data['password']);
-        $user = User::create($data);
+        $user = User::create([
+            'email_user' => $validated['email_user'],
+            'nama_user' => $validated['nama_user'],
+            'no_telp' => $validated['no_telp'],
+            'password' => Hash::make($validated['password']),
+        ]);
 
-        return response()->json(['message' => 'User registered', 'user' => $user], 201);
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return ApiResponse::created([
+            'user' => $user,
+            'token' => $token,
+            'token_type' => 'Bearer',
+        ], 'User berhasil terdaftar');
     }
 
-    // =====================================
+    // ===============================
     // LOGIN USER
-    // =====================================
+    // ===============================
     public function loginUser(Request $request)
     {
-        $credentials = $request->only('email_user', 'password');
+        $validated = $request->validate([
+            'email_user' => 'required|email',
+            'password' => 'required|string',
+        ]);
 
-        if (Auth::guard('user')->attempt($credentials)) {
-            return response()->json(['message' => 'User login success']);
+        $user = User::where('email_user', $validated['email_user'])->first();
+        if (!$user || !Hash::check($validated['password'], $user->password)) {
+            return ApiResponse::unauthorized('Kredensial tidak valid');
         }
 
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return ApiResponse::success([
+            'user' => $user,
+            'token' => $token,
+            'token_type' => 'Bearer',
+        ], 'Login user berhasil');
     }
 
-    // =====================================
+    // ===============================
     // LOGIN ADMIN
-    // =====================================
+    // ===============================
     public function loginAdmin(Request $request)
     {
-        $credentials = $request->only('email_admin', 'password');
+        $validated = $request->validate([
+            'email_admin' => 'required|email',
+            'password' => 'required|string',
+        ]);
 
-        if (Auth::guard('admin')->attempt($credentials)) {
-            return response()->json(['message' => 'Admin login success']);
+        $admin = Admin::where('email_admin', $validated['email_admin'])->first();
+        if (!$admin || !Hash::check($validated['password'], $admin->password)) {
+            return ApiResponse::unauthorized('Kredensial admin tidak valid');
         }
 
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        $token = $admin->createToken('auth_token')->plainTextToken;
+
+        return ApiResponse::success([
+            'admin' => $admin,
+            'token' => $token,
+            'token_type' => 'Bearer',
+        ], 'Login admin berhasil');
     }
 
-    // =====================================
+    // ===============================
     // LOGIN SUPERADMIN
-    // =====================================
+    // ===============================
     public function loginSuperAdmin(Request $request)
     {
-        $credentials = $request->only('email_super', 'password');
+        $validated = $request->validate([
+            'email_super' => 'required|email',
+            'password' => 'required|string',
+        ]);
 
-        if (Auth::guard('superadmin')->attempt($credentials)) {
-            return response()->json(['message' => 'Super Admin login success']);
+        $superAdmin = SuperAdmin::where('email_super', $validated['email_super'])->first();
+        if (!$superAdmin || !Hash::check($validated['password'], $superAdmin->password)) {
+            return ApiResponse::unauthorized('Kredensial super admin tidak valid');
         }
 
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        $token = $superAdmin->createToken('auth_token')->plainTextToken;
+
+        return ApiResponse::success([
+            'super_admin' => $superAdmin,
+            'token' => $token,
+            'token_type' => 'Bearer',
+        ], 'Login super admin berhasil');
     }
 
-    // =====================================
-    // LOGOUT
-    // =====================================
-    public function logout(Request $request, $role)
-    {
-        switch ($role) {
-            case 'user':
-                Auth::guard('user')->logout();
-                break;
-            case 'admin':
-                Auth::guard('admin')->logout();
-                break;
-            case 'superadmin':
-                Auth::guard('superadmin')->logout();
-                break;
-        }
-
-        return response()->json(['message' => 'Logged out']);
-    }
-
-    // =====================================
+    // ===============================
     // ADD ADMIN (oleh SuperAdmin)
-    // =====================================
+    // ===============================
     public function addAdmin(Request $request)
     {
-        $request->validate([
-            'email_admin' => 'required|email|unique:admin',
+        $validated = $request->validate([
+            'email_admin' => 'required|email|unique:admins,email_admin',
             'nama_admin' => 'required|string|max:255',
-            'no_telp' => 'required|numeric',
+            'no_telp' => 'required|string|max:20',
             'password' => 'required|string|min:6',
         ]);
 
-        $data = $request->all();
-        $data['password'] = Hash::make($data['password']);
-        $admin = Admin::create($data);
+        $admin = Admin::create([
+            'email_admin' => $validated['email_admin'],
+            'nama_admin' => $validated['nama_admin'],
+            'no_telp' => $validated['no_telp'],
+            'password' => Hash::make($validated['password']),
+        ]);
 
-        return response()->json(['message' => 'Admin added by SuperAdmin', 'admin' => $admin], 201);
+        return ApiResponse::created([
+            'admin' => $admin
+        ], 'Admin berhasil ditambahkan');
+    }
+
+    // ===============================
+    // LOGOUT (user/admin/superadmin)
+    // ===============================
+    public function logout(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return ApiResponse::unauthorized('User tidak ditemukan');
+        }
+
+        $user->tokens()->delete();
+
+        return ApiResponse::success(null, 'Logout berhasil');
     }
 }
