@@ -21,10 +21,10 @@
     <div class="flex items-center gap-3">
       <div class="text-right">
         <p class="text-sm font-medium text-gray-900">Admin</p>
-        <p class="text-xs text-gray-500">Administrator</p>
+        <p class="text-xs text-gray-500">SuperAdmin</p>
       </div>
 
-      <UserRound alt="User Avatar" class="w-10 h-10" />
+      <UserRound alt="User Avatar" class="w-10 h-10 text-red-600" />
     </div>
   </header>
 </template>

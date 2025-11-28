@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-2 w-28">
-    <DetailButton class="w-28" :row="item" />
+    <DetailButton :row="item" @click="emit('detail', item)"/>
   </div>
 </template>
 
@@ -10,4 +10,6 @@ import DetailButton from "../RowButton/DetailButton.vue";
 defineProps({
   item: Object,
 });
+
+const emit = defineEmits(["detail"]);
 </script>

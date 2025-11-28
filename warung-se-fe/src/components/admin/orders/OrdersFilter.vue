@@ -1,13 +1,13 @@
 <template>
   <div class="flex flex-wrap items-center gap-3">
-
-    <BaseDropdown
-      v-model="localStatus"
-      :options="statusOptions"
-    />
+    <div class="relative">
+      <BaseDropdown
+        v-model="localStatus"
+        :options="statusOptions"
+      />
+    </div>
 
     <div class="relative">
-      <!-- BaseInput -->
     <BaseInput
       v-model="localDate"
       type="date"
