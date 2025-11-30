@@ -5,8 +5,8 @@
     :title="modalTitle"
   >
     <!-- =========================
-         MODE DETAIL (READ ONLY)
-         ========================= -->
+    //  MODE DETAIL (READ ONLY)
+    //  ========================= -->
     <div v-if="mode === 'detail'" class="space-y-6">
       <!-- Header Status -->
       <div
@@ -19,38 +19,6 @@
         <BaseStatusBadge :status="form.status" />
       </div>
 
-      <!-- Info Pelanggan -->
-      <div class="grid grid-cols-2 gap-4">
-        <div class="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-          <div class="flex items-center gap-2 mb-1">
-            <UserIcon class="w-3 h-3 text-gray-400" />
-            <label class="text-xs font-medium text-gray-500 uppercase tracking-wide"
-              >Pelanggan</label
-            >
-          </div>
-          <p class="font-semibold text-gray-900 pl-5">{{ form.customer }}</p>
-        </div>
-
-        <div class="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-          <div class="flex items-center gap-2 mb-1">
-            <TruckIcon class="w-3 h-3 text-gray-400" />
-            <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Driver</label>
-          </div>
-          <p
-            class="font-medium pl-5"
-            :class="
-              form.driver && form.driver !== 'Belum ditetapkan'
-                ? 'text-gray-900'
-                : 'text-red-500 italic'
-            "
-          >
-            {{
-              form.driver && form.driver !== "Belum ditetapkan" ? form.driver : "Belum Ditetapkan"
-            }}
-          </p>
-        </div>
-      </div>
-
       <!-- Detail Tanggal -->
       <div class="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
         <CalendarIcon class="w-4 h-4" />
@@ -58,6 +26,76 @@
           >Dipesan pada: <span class="font-medium text-gray-700">{{ form.date }}</span></span
         >
       </div>
+
+      <!-- Rincian Pelanggan dan Driver (Menggunakan Card) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rincian Pelanggan -->
+        <BaseCard class="p-5 space-y-4 shadow-sm border border-gray-100">
+          <div class="flex items-center gap-2 pb-2 border-b border-gray-100">
+            <UserIcon class="w-5 h-5 text-indigo-500" />
+            <h3 class="text-base font-semibold text-gray-900">Pelanggan</h3>
+          </div>
+
+          <dl class="text-sm space-y-3">
+            <!-- Nama Pelanggan (Heading Utama) -->
+            <div class="flex items-start justify-between">
+                <dt class="font-medium text-gray-900">{{ form.customer }}</dt>
+            </div>
+
+            <!-- Nomor Telepon Pelanggan -->
+            <div class="flex flex-col pt-2 border-t border-gray-50">
+              <dt class="text-xs font-medium text-gray-500">Nomor Telepon:</dt>
+              <dd class="text-gray-700 font-medium break-all">{{ form.customerPhone || 'N/A' }}</dd>
+            </div>
+
+            <!-- Alamat Pelanggan -->
+            <div class="flex flex-col">
+              <dt class="text-xs font-medium text-gray-500">Alamat Pengiriman:</dt>
+              <dd class="text-gray-700 line-clamp-2">
+                {{ form.customerAddress || 'N/A' }}
+              </dd>
+            </div>
+          </dl>
+        </BaseCard>
+
+        <!-- Rincian Driver -->
+        <BaseCard class="p-5 space-y-4 shadow-sm border border-gray-100">
+          <div class="flex items-center gap-2 pb-2 border-b border-gray-100">
+            <TruckIcon class="w-5 h-5 text-teal-500" />
+            <h3 class="text-base font-semibold text-gray-900">Driver</h3>
+          </div>
+
+          <dl class="text-sm space-y-3">
+            <!-- Nama Driver (Heading Utama) -->
+            <div class="flex items-start justify-between">
+                <dt
+                    class="font-medium"
+                    :class="
+                        form.driver && form.driver !== 'Belum ditetapkan'
+                            ? 'text-gray-900'
+                            : 'text-red-500 italic'
+                    "
+                >
+                    {{ form.driver || 'Belum Ditetapkan' }}
+                </dt>
+            </div>
+
+
+            <!-- Nomor Telepon Driver -->
+            <div class="flex flex-col pt-2 border-t border-gray-50">
+              <dt class="text-xs font-medium text-gray-500">Nomor Telepon:</dt>
+              <dd class="text-gray-700 font-medium break-all">{{ form.driverPhone || 'N/A' }}</dd>
+            </div>
+
+            <!-- Plat/Tipe Kendaraan Driver -->
+            <div class="flex flex-col">
+              <dt class="text-xs font-medium text-gray-500">Nama Kendaraan/Plat:</dt>
+              <dd class="text-gray-700 font-medium">{{ form.driverVehicle || 'N/A' }}</dd>
+            </div>
+          </dl>
+        </BaseCard>
+      </div>
+
 
       <!-- Rincian Item -->
       <div>
@@ -115,8 +153,8 @@
     </div>
 
     <!-- =========================
-         MODE FORM (EDIT)
-         ========================= -->
+    //  MODE FORM (EDIT)
+    //  ========================= -->
     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
       <!-- Info Ringkas -->
       <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-4">
@@ -180,6 +218,8 @@ import BaseModal from "@/components/base/BaseModal.vue";
 import BaseDropdown from "@/components/base/BaseDropdown.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 import BaseStatusBadge from "@/components/base/BaseStatusBadge.vue";
+import BaseCard from "@/components/base/BaseCard.vue"; // Diperlukan untuk mode detail
+
 
 import {
   UserIcon,
@@ -206,14 +246,14 @@ const isSaving = ref(false);
 const shippingCost = 10000; // Tetap sama seperti versi lama
 
 // ===============================
-//   Title (dipertahankan)
+//  Title (dipertahankan)
 // ===============================
 const modalTitle = computed(() =>
-  props.mode === "detail" ? "Rincian Pesanan" : "Update Status Pesanan"
+  props.mode === "detail" ? "Detail Pesanan" : "Update Pesanan"
 );
 
 // ===============================
-//   Default Form (dipertahankan)
+//  Default Form (dipertahankan)
 // ===============================
 const defaultForm = {
   id: "",
@@ -221,13 +261,17 @@ const defaultForm = {
   date: "",
   status: "",
   driver: "",
+  customerPhone: "",
+  customerAddress: "",
+  driverPhone: "",
+  driverVehicle: "",
   items: [],
 };
 
 const form = reactive({ ...defaultForm });
 
 // ===============================
-//   Dummy Items (dipertahankan)
+//  Dummy Items (dipertahankan)
 // ===============================
 const dummyItems = [
   {
@@ -245,14 +289,14 @@ const dummyItems = [
 ];
 
 // ===============================
-//   Data final: itemData > order
+//  Data final: itemData > order
 // ===============================
 const sourceData = computed(() => {
   return props.itemData || props.order || {};
 });
 
 // ===============================
-//   Init form setiap buka modal
+//  Init form setiap buka modal
 // ===============================
 const initForm = () => {
   const d = sourceData.value;
@@ -274,9 +318,10 @@ watch(
 );
 
 // ===============================
-//   Perhitungan (dipertahankan)
+//  Perhitungan (dipertahankan)
 // ===============================
 const currentItems = computed(() => {
+  // Hanya menggunakan items dari data pesanan jika ada, jika tidak, pakai dummyItems
   return form.items && form.items.length > 0 ? form.items : dummyItems;
 });
 
@@ -289,7 +334,7 @@ const grandTotal = computed(() => subtotal.value + shippingCost);
 const formatCurrency = (value) => Number(value).toLocaleString("id-ID");
 
 // ===============================
-//  Submit (dipertahankan)
+// Submit (dipertahankan)
 // ===============================
 const handleSubmit = async () => {
   isSaving.value = true;
@@ -305,12 +350,14 @@ const handleSubmit = async () => {
   emit("update:modelValue", false);
 };
 
+// Penggantian alert() dengan console log
 const handlePrint = () => {
-  alert(`Printing ${form.id}...`);
+  console.log(`Printing order ID: ${form.id}...`);
 };
 </script>
 
 <style scoped>
+/* Style dipertahankan */
 .max-h-48::-webkit-scrollbar {
   width: 4px;
 }

@@ -60,7 +60,7 @@
         <!-- Jenis Kendaraan -->
         <div class="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
           <div class="flex items-center gap-2 mb-1">
-            <BikeIcon v-if="form.vehicleType === 'Sepeda Motor'" class="w-4 h-4 text-blue-500" />
+            <Motorbike v-if="form.vehicleType === 'Sepeda Motor'" class="w-4 h-4 text-blue-500" />
             <CarIcon v-else-if="form.vehicleType === 'Mobil'" class="w-4 h-4 text-blue-500" />
             <TruckIcon v-else class="w-4 h-4 text-blue-500" />
             <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">
@@ -75,7 +75,7 @@
           <div class="flex items-center gap-2 mb-1">
             <TagIcon class="w-4 h-4 text-blue-500" />
             <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Plat/Nama Kendaraan
+              Nama Kendaraan/Plat
             </label>
           </div>
           <p class="font-semibold text-gray-900 pl-6">{{ form.vehicleName }}</p>
@@ -84,7 +84,7 @@
 
       <!-- Foto Profil (Area Khusus) -->
       <div class="space-y-3 pt-2">
-        <label class="text-sm font-medium text-gray-700 block flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-700 flex items-center gap-2">
             <CameraIcon class="w-4 h-4 text-gray-500" /> Foto Profil
         </label>
         <div
@@ -125,14 +125,16 @@
       <!-- Input Kendaraan -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Nama Kendaraan -->
-        <BaseInput label="Plat/Nama Kendaraan" v-model="form.vehicleName" placeholder="Contoh: B 1234 ABC">
-          <template #icon><TagIcon class="w-4 h-4 text-gray-400" /></template>
+        <BaseInput label="Nama Kendaraan/Plat" v-model="form.vehicleName" placeholder="Contoh: B 1234 ABC">
+          <template #icon><TagIcon class="w-4 h-4 text-gray-400" />
+            <TagIcon class="w-4 h-4 text-gray-400" />
+          </template>
         </BaseInput>
 
         <!-- Tipe Kendaraan Dropdown -->
         <div class="flex flex-col gap-1.5">
           <label class="text-sm font-medium text-gray-700 flex items-center gap-1 mb-1">
-            <BikeIcon class="w-4 h-4 text-gray-400" /> Tipe Kendaraan
+            <Motorbike class="w-4 h-4 text-gray-400" /> Tipe Kendaraan
           </label>
           <BaseDropdown v-model="form.vehicleType" :options="vehicleOptions" class="w-full" />
         </div>
@@ -192,7 +194,7 @@
           <ImagePlus />
         </div>
         <div class="flex-1 space-y-2">
-          <label class="text-sm font-medium text-gray-700 block flex items-center gap-1">
+          <label class="text-sm font-medium text-gray-700 flex items-center gap-1">
             <CameraIcon class="w-4 h-4 text-gray-400" /> Foto Profil Driver
           </label>
           <input
@@ -239,9 +241,10 @@ import BaseButton from "@/components/base/BaseButton.vue";
 import DriverStatusBadge from "@/components/admin/driver/DriverStatusBadge.vue";
 
 import {
-    UserIcon, PhoneIcon, TagIcon, BikeIcon, CarIcon, TruckIcon,
+    UserIcon, PhoneIcon, TagIcon, CarIcon, TruckIcon,
     ImagePlus, SaveIcon, UserCheckIcon, ActivityIcon, HashIcon, CameraIcon,
-    AlertTriangleIcon
+    AlertTriangleIcon,
+    Motorbike
 } from "lucide-vue-next";
 
 const props = defineProps({
@@ -258,7 +261,7 @@ const vehicleOptions = ["Sepeda Motor", "Mobil", "Truk Pick Up"]; // Opsi tipe k
 
 const modalTitle = computed(() => {
   if (props.mode === "detail") return "Detail Profil Driver";
-  if (props.mode === "edit") return `Edit Driver: ${props.itemData?.name || ''}`;
+  if (props.mode === "edit") return `Update Driver: ${props.itemData?.name || ''}`;
   return "Tambahkan Driver Baru";
 });
 
@@ -282,7 +285,7 @@ watch(
   ([newItem, newMode]) => {
     // Reset form saat modal ditutup atau mode "add"
     if (!newItem || newMode === 'add') {
-      Object.assign(form, { ...defaultForm, imagePreview: "https://placehold.co/600x400/D1D5DB/4B5563?text=Foto+Profil" });
+      Object.assign(form, { ...defaultForm, imagePreview: "" });
       form.vehicleType = vehicleOptions[0];
       return;
     }

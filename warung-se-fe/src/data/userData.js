@@ -3,7 +3,7 @@ export const userColumns = [
   { label: "Nama", key: "name" },
   { label: "Email", key: "email" },
   { label: "Nomor Telepon", key: "phone" },
-  { label: "Alamat", key: "address" },  
+  { label: "Alamat", key: "address" },
 ];
 
 export const userRows = [

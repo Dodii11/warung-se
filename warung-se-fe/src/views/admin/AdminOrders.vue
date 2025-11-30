@@ -4,7 +4,7 @@
     <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
         <h1 class="heading-1">Manajemen Pesanan</h1>
-        <p class="text-gray-600 text-sm">Kelola pesanan terbaru, status, dan detail pelanggan</p>
+        <p class="text-gray-600 text-sm">Kelola pesanan terbaru, status, dan detail pelanggan.</p>
       </div>
     </header>
 
@@ -21,12 +21,12 @@
     </BaseCard>
 
     <!-- TABLE -->
-    <BaseCard class="p-0 overflow-hidden">
-      <div class="flex justify-between items-center p-5 border-b border-gray-100">
+    <BaseCard>
+      <div class="flex justify-between items-center mb-5">
         <h2 class="heading-2">Daftar Pesanan</h2>
       </div>
 
-      <BaseTable :columns="columns" :rows="filteredRows">
+      <BaseTable v-if="filteredRows.length > 0" :columns="columns" :rows="filteredRows">
         <!-- Status Badge -->
         <template #status="{ row }">
           <BaseStatusBadge :status="row.status" />
@@ -43,9 +43,12 @@
       </BaseTable>
 
       <!-- Empty State -->
-      <div v-if="filteredRows.length === 0" class="text-center py-10 text-gray-500">
-        Tidak ada pesanan ditemukan.
-      </div>
+      <BaseEmptyState
+      v-else
+      title="Tidak ada Pesanan Ditemukan"
+      description="Silahkan ubah filter pencarian Anda."
+      :icon="Receipt"
+      />
     </BaseCard>
 
     <!-- MODAL ORDERS -->
@@ -73,6 +76,8 @@ import OrdersModal from "@/components/admin/orders/OrdersModal.vue"; // Modal Ba
 
 // Import Data
 import { columns, rows, statusOptions } from "@/data/ordersData";
+import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
+import { Receipt } from "lucide-vue-next";
 
 // Dummy Driver Options (Nanti bisa diambil dari data driver)
 const driverOptions = ["Belum ditetapkan", "Dodii", "Bagas", "Nopal", "Udin", "Supri"];

@@ -13,6 +13,5 @@
 <script setup>
 import { Trash } from "lucide-vue-next";
 
-const emit = defineEmits(["delete"]);
-const handleDelete = () => emit("delete");
+defineEmits(["delete"]);
 </script>

@@ -22,18 +22,12 @@
     <!-- TABLE -->
     <BaseCard>
       <div class="flex justify-between items-center mb-5">
-        <h2 class="heading-2">Daftar Driver (Total: {{ driverList.length }})</h2>
+        <h2 class="heading-2">Daftar Driver</h2>
         <div class="flex items-center">
-          <BaseButton
-            variant="primary"
-            @click="openModal('add')"
-            class="flex items-center gap-2"
-          >
-            <PlusIcon class="w-4 h-4" /> Tambah Driver
-          </BaseButton>
+          <DriverAddButton @click="openModal('add')" />
         </div>
       </div>
-      <BaseTable :columns="driverColumns" :rows="filteredRows">
+      <BaseTable v-if="filteredRows.length > 0" :columns="driverColumns" :rows="filteredRows">
         <!-- STATUS -->
         <template #status="{ row }">
           <DriverStatusBadge :status="row.status" />
@@ -41,10 +35,27 @@
 
         <!-- ACTION -->
         <template #action="{ row }">
-          <!-- Menggunakan DriverRowActions yang telah diupdate untuk handle modal -->
-          <DriverRowActions :item="row" />
+          <DriverRowActions
+            :item="row"
+            @edit="openModal('edit', row)"
+            @detail="openModal('detail', row)"
+            @delete="handleDelete(row)"
+          />
         </template>
       </BaseTable>
+
+      <!-- Empty State ketika filteredRows.length === 0 -->
+      <BaseEmptyState
+        v-else
+        title="Tidak ada Driver Ditemukan"
+        description="Silahkan ubah filter pencarian Anda atau tambahkan driver baru untuk memulai."
+        :icon="Motorbike"
+      >
+        <!-- Tombol Tambah Driver di dalam slot -->
+        <div class="flex items-center justify-center">
+          <DriverAddButton @click="openModal('add')" />
+        </div>
+      </BaseEmptyState>
     </BaseCard>
 
     <!-- Modal Tambah Driver (Terpisah dari Row Actions) -->
@@ -62,17 +73,17 @@
 <script setup>
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
+import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 import DriverStatusBadge from "@/components/admin/driver/DriverStatusBadge.vue";
 import DriverRowActions from "@/components/admin/driver/DriverRowActions.vue";
 
-// Asumsi komponen filter/search ini ada, meskipun kode tidak disertakan
 import DriverFilter from "@/components/admin/driver/DriverFilter.vue";
 import DriverSearch from "@/components/admin/driver/DriverSearch.vue";
 import DriverModal from "@/components/admin/driver/DriverModal.vue";
+import DriverAddButton from "@/components/admin/driver/DriverAddButton.vue";
 
 import { ref, computed } from "vue";
-import { PlusIcon } from "lucide-vue-next";
+import { Motorbike } from "lucide-vue-next";
 import { driverColumns, driverRows } from "@/data/driverData";
 
 // --- STATE MANAGEMENT ---
@@ -83,41 +94,58 @@ const filterStatus = ref("Status");
 const driverList = ref(driverRows);
 
 const isModalOpen = ref(false);
-const modalMode = ref('add');
+const modalMode = ref("add");
 const selectedDriver = ref(null); // Driver yang dipilih untuk edit/detail
 
 // --- MODAL HANDLERS ---
 const openModal = (mode, item = null) => {
-    modalMode.value = mode;
-    selectedDriver.value = item;
-    isModalOpen.value = true;
+  modalMode.value = mode;
+  selectedDriver.value = item;
+  isModalOpen.value = true;
 };
 
 // --- CRUD DUMMY LOGIC ---
 const handleSave = (formData) => {
-    const { id, name, phone, vehicleName, vehicleType, status, image } = formData;
+  const { id, name, phone, vehicleName, vehicleType, status, image } = formData;
 
-    // Temukan Index
-    const index = driverList.value.findIndex(d => d.id === id);
+  // Temukan Index
+  const index = driverList.value.findIndex((d) => d.id === id);
 
-    if (index !== -1) {
-        // Logika EDIT
-        Object.assign(driverList.value[index], {
-            name, phone, vehicleName, vehicleType, status, image,
-            lastUpdate: new Date().toLocaleDateString('id-ID')
-        });
-        console.log(`[CRUD DUMMY] Driver ${id} diperbarui.`);
-    } else {
-        // Logika ADD (asumsi ID sudah digenerate di DriverModal jika mode add)
-        driverList.value.push({
-            id, name, phone, vehicleName, vehicleType, status, image,
-            lastUpdate: new Date().toLocaleDateString('id-ID')
-        });
-        console.log(`[CRUD DUMMY] Driver ${id} ditambahkan.`);
-    }
+  if (index !== -1) {
+    // Logika EDIT
+    Object.assign(driverList.value[index], {
+      name,
+      phone,
+      vehicleName,
+      vehicleType,
+      status,
+      image,
+      lastUpdate: new Date().toLocaleDateString("id-ID"),
+    });
+    console.log(`[CRUD DUMMY] Driver ${id} diperbarui.`);
+  } else {
+    // Logika ADD (asumsi ID sudah digenerate di DriverModal jika mode add)
+    driverList.value.push({
+      id,
+      name,
+      phone,
+      vehicleName,
+      vehicleType,
+      status,
+      image,
+      lastUpdate: new Date().toLocaleDateString("id-ID"),
+    });
+    console.log(`[CRUD DUMMY] Driver ${id} ditambahkan.`);
+  }
 };
 
-// NOTE: Logika delete ada di DriverRowActions, yang akan memicu penghapusan pada driverList.
+// --- DELETE LOGIC (Menggunakan window.confirm) ---
+const handleDelete = (item) => {
+  if (confirm(`Hapus driver ${item.name} (${item.id})?`)) {
+    driverList.value = driverList.value.filter((d) => d.id !== item.id);
+    console.log(`[CRUD DUMMY] Driver ID: ${item.id} berhasil dihapus.`);
+  }
+};
 
 // --- FILTER + SEARCH LOGIC ---
 const filteredRows = computed(() => {
@@ -133,9 +161,11 @@ const filteredRows = computed(() => {
       // Filter Search
       const key = search.value.toLowerCase();
       // Melakukan pencarian berdasarkan ID, Nama driver, atau Kendaraan
-      return d.id.toLowerCase().includes(key) ||
-             d.name.toLowerCase().includes(key) ||
-             d.vehicleName.toLowerCase().includes(key);
+      return (
+        d.id.toLowerCase().includes(key) ||
+        d.name.toLowerCase().includes(key) ||
+        d.vehicleName.toLowerCase().includes(key)
+      );
     });
 });
 </script>

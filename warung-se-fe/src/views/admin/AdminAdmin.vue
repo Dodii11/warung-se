@@ -4,7 +4,7 @@
     <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
         <h1 class="heading-1">Manajemen Admin</h1>
-        <p class="text-gray-600 text-sm">Kelola akun Admin pada halaman ini (SuperAdmin Only).</p>
+        <p class="text-gray-600 text-sm">Kelola akun Admin pada halaman ini.</p>
       </div>
     </header>
 
@@ -28,21 +28,14 @@
     <!-- TABLE -->
     <BaseCard class="p-4 overflow-hidden">
       <div class="flex justify-between items-center mb-5">
-        <h2 class="text-xl font-semibold text-gray-700">Daftar Admin (Total: {{ users.length }})</h2>
+        <h2 class="heading-2">Daftar Admin</h2>
         <div class="flex items-center">
-          <!-- Mengganti AdminAddButton dengan BaseButton dan memanggil openModal -->
-          <BaseButton
-            variant="primary"
-            @click="openModal('add')"
-            class="flex items-center gap-2"
-          >
-             <PlusIcon class="w-4 h-4" /> Tambah Admin
-          </BaseButton>
+          <AdminAddButton @click="openModal('add')"/>
         </div>
       </div>
 
       <!-- Tabel Admin -->
-      <BaseTable :columns="adminColumns" :rows="filteredUsers">
+      <BaseTable v-if="filteredUsers.length > 0" :columns="adminColumns" :rows="filteredUsers">
         <!-- SLOT: Peran (Role) -->
         <template #role="{ row }">
           <AdminStatusBadge :status="row.role" />
@@ -55,20 +48,35 @@
 
         <!-- SLOT: Aksi -->
         <template #action="{ row }">
-          <!-- Melewatkan item data ke row actions -->
-          <AdminRowActions :item="row" @edit="openModal('edit', row)" @delete="handleDelete" />
+          <!-- MEMPERBAIKI: Menambahkan listener @detail yang hilang -->
+          <AdminRowActions
+            :item="row"
+            @detail="openModal('detail', row)"
+            @edit="openModal('edit', row)"
+            @delete="handleDelete(row)"
+          />
         </template>
       </BaseTable>
+      <BaseEmptyState
+        v-else
+        title="Tidak ada Admin Ditemukan"
+        description="Silahkan ubah filter pencarian Anda atau tambahkan Admin baru untuk memulai."
+        :icon="UserRoundCog"
+      >
+
+      <div class="flex items-center justify-center">
+        <AdminAddButton @click="openModal('add')" />
+      </div>
+      </BaseEmptyState>
     </BaseCard>
 
     <!-- Modal Admin (Untuk Add, Edit, Detail) -->
     <AdminModal
-        v-model="isModalOpen"
-        :mode="modalMode"
-        :item-data="selectedUser"
-        @save="handleSave"
+      v-model="isModalOpen"
+      :mode="modalMode"
+      :item-data="selectedUser"
+      @save="handleSave"
     />
-
   </section>
 </template>
 
@@ -76,13 +84,14 @@
 import { ref, computed } from "vue";
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
-import BaseButton from "@/components/base/BaseButton.vue";
-import { PlusIcon } from "lucide-vue-next";
+import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
+import { UserRoundCog } from "lucide-vue-next";
 
 // Komponen Manajemen Admin
 import AdminStatusBadge from "@/components/admin/adminn/AdminStatusBadge.vue";
 import AdminRowActions from "@/components/admin/adminn/AdminRowActions.vue";
 import AdminModal from "@/components/admin/adminn/AdminModal.vue";
+import AdminAddButton from "@/components/admin/adminn/AdminAddButton.vue";
 
 // Asumsi komponen ini ada (tidak perlu dibuat karena fokusnya di modal)
 import AdminSearch from "@/components/admin/adminn/AdminSearch.vue";
@@ -97,47 +106,58 @@ const search = ref("");
 const filterStatus = ref("Semua");
 
 const isModalOpen = ref(false);
-const modalMode = ref('add');
+const modalMode = ref("add");
 const selectedUser = ref(null);
 
 // --- MODAL HANDLERS ---
 const openModal = (mode, item = null) => {
-    modalMode.value = mode;
-    selectedUser.value = item;
-    isModalOpen.value = true;
+  modalMode.value = mode;
+  selectedUser.value = item;
+  isModalOpen.value = true;
 };
 
 // --- CRUD DUMMY LOGIC ---
 const handleSave = (formData) => {
-    const { id, name, email, role, status, profileImage } = formData;
+  const { id, name, email, role, status, profileImage } = formData;
 
-    // Cari Index
-    const index = users.value.findIndex(u => u.id === id);
+  // Cari Index
+  const index = users.value.findIndex((u) => u.id === id);
 
-    if (index !== -1) {
-        // Logika EDIT
-        Object.assign(users.value[index], {
-            name, email, role, status, profileImage
-        });
-        console.log(`[CRUD DUMMY] Admin ${id} diperbarui.`);
-    } else {
-        // Logika ADD
-        users.value.push({
-            id, name, email, role, status, profileImage
-        });
-        console.log(`[CRUD DUMMY] Admin ${id} ditambahkan.`);
-    }
+  if (index !== -1) {
+    // Logika EDIT
+    Object.assign(users.value[index], {
+      name,
+      email,
+      role,
+      status,
+      profileImage,
+    });
+    console.log(`[CRUD DUMMY] Admin ${id} diperbarui.`);
+  } else {
+    // Logika ADD
+    users.value.push({
+      id,
+      name,
+      email,
+      role,
+      status,
+      profileImage,
+    });
+    console.log(`[CRUD DUMMY] Admin ${id} ditambahkan.`);
+  }
 };
 
-const handleDelete = (adminId) => {
-    // Logika HAPUS
+const handleDelete = (item) => {
+  // Logika HAPUS (Menggunakan window.confirm)
+  if (confirm(`Hapus akun admin ${item.name} (${item.id})?`)) {
     const initialLength = users.value.length;
-    users.value = users.value.filter(u => u.id !== adminId);
+    users.value = users.value.filter((u) => u.id !== item.id);
     if (users.value.length < initialLength) {
-        console.log(`[CRUD DUMMY] Admin ID: ${adminId} berhasil dihapus.`);
+      console.log(`[CRUD DUMMY] Admin ID: ${item.id} berhasil dihapus.`);
     } else {
-         console.error(`[CRUD DUMMY] Admin ID: ${adminId} tidak ditemukan.`);
+      console.error(`[CRUD DUMMY] Admin ID: ${item.id} tidak ditemukan.`);
     }
+  }
 };
 
 // --- FILTER DAN PENCARIAN ---
@@ -149,7 +169,9 @@ const filteredUsers = computed(() => {
     // 2. Filter berdasarkan Pencarian (ID atau Nama)
     const key = search.value.toLowerCase();
     const matchSearch =
-      user.id.toLowerCase().includes(key) || user.name.toLowerCase().includes(key) || user.email.toLowerCase().includes(key);
+      user.id.toLowerCase().includes(key) ||
+      user.name.toLowerCase().includes(key) ||
+      user.email.toLowerCase().includes(key);
 
     return matchStatus && matchSearch;
   });

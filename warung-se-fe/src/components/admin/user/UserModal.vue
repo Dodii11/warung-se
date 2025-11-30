@@ -2,7 +2,7 @@
   <BaseModal
     :model-value="modelValue"
     @update:model-value="emit('update:model-value', $event)"
-    title="Rincian Pengguna"
+    title="Detail Pengguna"
   >
     <div class="space-y-6">
       <!-- Bagian 1: Header - ID dan Status (Estetik dengan Warna Biru) -->
