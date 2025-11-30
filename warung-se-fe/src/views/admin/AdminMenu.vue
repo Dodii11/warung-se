@@ -4,7 +4,7 @@
     <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
         <h1 class="heading-1">Manajemen Menu</h1>
-        <p class="text-gray-600 text-sm">Kelola menu yang tersedia dalam sistem</p>
+        <p class="text-gray-600 text-sm">Kelola menu yang tersedia dalam sistem.</p>
       </div>
     </header>
 
@@ -23,34 +23,36 @@
       <div class="flex justify-between items-center mb-5">
         <h2 class="heading-2">Daftar Menu</h2>
         <div class="flex items-center">
-          <!-- Tombol Tambah Opsional -->
           <MenuAddButton @click="openModal('add')" />
         </div>
       </div>
 
       <!-- BaseTable -->
-      <BaseTable :columns="columns" :rows="filtered">
+      <BaseTable v-if="filtered.length > 0" :columns="columns" :rows="filtered">
         <!-- GAMBAR -->
         <template #image="{ row }">
           <img
             :src="row.image"
-            class="w-12 h-12 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity border border-gray-100"
+            class="w-16 h-16 rounded-lg object-cover transition-opacity border border-gray-100"
             alt="menu-img"
-            @click="openModal('detail', row)"
           />
         </template>
 
         <!-- NAMA -->
         <template #name="{ row }">
-          <div class="max-w-xs cursor-pointer group" @click="openModal('detail', row)">
-            <p class="font-semibold group-hover:text-primary transition-colors">{{ row.name }}</p>
+          <div class="w-full">
+            <p class="font-semibold transition-colors whitespace-normal max-w-40">
+              {{ row.name }}
+            </p>
           </div>
         </template>
 
         <!-- DESKRIPSI -->
         <template #description="{ row }">
-          <div class="max-w-xs">
-            <p class="text-gray-500 text-sm truncate">{{ row.description }}</p>
+          <div class="max-w-60">
+            <p class="text-gray-500 text-sm whitespace-normal">
+              {{ row.description }}
+            </p>
           </div>
         </template>
 
@@ -68,6 +70,16 @@
           />
         </template>
       </BaseTable>
+      <BaseEmptyState
+        v-else
+        title="Belum ada Menu"
+        description="Silahkan ubah filter pencarian Anda atau tambahkan Menu baru untuk memulai."
+        :icon="UtensilsCrossed"
+        >
+      <div class="flex items-center justify-center">
+        <MenuAddButton @click="openModal('add')" />
+      </div>
+      </BaseEmptyState>
     </BaseCard>
 
     <!-- MODAL MENU TUNGGAL -->
@@ -86,6 +98,7 @@ import { ref, computed } from "vue";
 
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
+import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 
 import MenuFilter from "@/components/admin/menu/MenuFilter.vue";
 import MenuSearch from "@/components/admin/menu/MenuSearch.vue";
@@ -94,6 +107,7 @@ import MenuAddButton from "@/components/admin/menu/MenuAddButton.vue";
 import MenuModal from "@/components/admin/menu/MenuModal.vue";
 
 import { categoryOptions, menuItems } from "@/data/menuData";
+import { UtensilsCrossed } from "lucide-vue-next";
 
 // State
 const search = ref("");
@@ -141,8 +155,6 @@ const handleDelete = (item) => {
 };
 
 // Table Config
-// PERBAIKAN: Hapus { label: "Aksi", key: "action" } dari sini
-// karena BaseTable sudah menanganinya via v-if="$slots.action"
 const columns = [
   { label: "Gambar", key: "image" },
   { label: "Nama", key: "name" },
@@ -150,7 +162,6 @@ const columns = [
   { label: "Harga", key: "price" },
   { label: "Kategori", key: "category" },
   { label: "Stok", key: "stock" },
-  // { label: "Aksi", key: "action" }, <--- HAPUS INI AGAR TIDAK DUPLIKAT
 ];
 
 const filtered = computed(() => {

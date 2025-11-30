@@ -1,50 +1,25 @@
 <template>
   <div class="flex flex-col gap-2 w-28">
-    <DetailButton @click="openModal('detail')" />
-    <EditButton @click="openModal('edit')" />
-    <DeleteButton @click="confirmDelete" />
+    <!-- DETAIL: Emit event 'detail' dengan data 'item' -->
+    <DetailButton @click="$emit('detail', item)" />
+
+    <!-- EDIT: Emit event 'edit' dengan data 'item' -->
+    <EditButton @click="$emit('edit', item)" />
+
+    <!-- DELETE: Emit event 'delete' dengan data 'item' -->
+    <DeleteButton @click="$emit('delete', item)" />
   </div>
-
-  <!-- Modal Admin -->
-  <AdminModal
-    v-model="isModalOpen"
-    :mode="modalMode"
-    :item-data="item"
-    @save="handleSave"
-  />
-
 </template>
 
 <script setup>
-import { ref } from "vue";
-// Catatan: Asumsi path ke RowButton sudah benar sekarang
 import DetailButton from "../RowButton/DetailButton.vue";
 import EditButton from "../RowButton/EditButton.vue";
 import DeleteButton from "../RowButton/DeleteButton.vue";
-import AdminModal from "../adminn/AdminModal.vue";
 
-const props = defineProps({
+defineProps({
   item: Object,
 });
 
-const isModalOpen = ref(false);
-const modalMode = ref('detail');
-const isConfirmDeleteOpen = ref(false);
-
-const openModal = (mode) => {
-  modalMode.value = mode;
-  isModalOpen.value = true;
-};
-
-const confirmDelete = () => {
-  isConfirmDeleteOpen.value = true;
-};
-
-// Logika Dummy untuk Aksi CRUD
-const handleSave = (formData) => {
-    console.log(`Menyimpan data admin ${props.item.id} dengan data baru:`, formData);
-    // Di sini akan ada emit ke AdminAdmin.vue untuk memperbarui daftar
-    isModalOpen.value = false;
-};
-
+// Definisikan semua event yang akan dipancarkan ke parent view
+defineEmits(["edit", "detail", "delete"]);
 </script>

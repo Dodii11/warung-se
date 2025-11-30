@@ -254,13 +254,13 @@ const isUnavailable = computed(() => {
 
 const modalTitle = computed(() => {
   if (props.mode === "detail") return "Detail Menu";
-  if (props.mode === "edit") return "Edit Menu";
+  if (props.mode === "edit") return "Update Menu";
   return "Tambah Menu Baru";
 });
 
 const defaultForm = {
   name: "",
-  category: "Ayam",
+  category: "",
   price: "",
   stock: "",
   description: "",
