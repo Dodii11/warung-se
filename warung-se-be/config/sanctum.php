@@ -5,7 +5,7 @@ use Laravel\Sanctum\Sanctum;
 return [
 
     // domain frontend / Postman / client yang stateful
-    'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', '127.0.0.1:8080,localhost:8080')),
+    'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', '127.0.0.1, localhost')),
 
     // guard default untuk token
     'guard' => ['api', 'user', 'admin', 'superadmin'],

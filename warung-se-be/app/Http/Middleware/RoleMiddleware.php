@@ -3,30 +3,30 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\Admin;
+use App\Models\SuperAdmin;
 use App\Responses\ApiResponse;
 
 class RoleMiddleware
 {
-    public function handle($request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, $role)
     {
-        switch($role) {
-            case 'user':
-                if(Auth::guard('user')->check()) return $next($request);
-                break;
-            case 'admin':
-                if(Auth::guard('admin')->check()) return $next($request);
-                break;
-            case 'superadmin':
-                if(Auth::guard('superadmin')->check()) return $next($request);
-                break;
+        $authUser = $request->user();
+
+        if (!$authUser) {
+            return ApiResponse::forbidden("Token tidak valid atau kamu belum login");
         }
 
-        // Return JSON error untuk API requests
-        if ($request->expectsJson()) {
+        if (
+            ($role === 'user' && !$authUser instanceof User) ||
+            ($role === 'admin' && !$authUser instanceof Admin) ||
+            ($role === 'superadmin' && !$authUser instanceof SuperAdmin)
+        ) {
             return ApiResponse::forbidden("Akses sebagai $role diperlukan");
         }
 
-        return redirect('/login');
+        return $next($request);
     }
 }

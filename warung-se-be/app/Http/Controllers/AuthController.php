@@ -8,6 +8,7 @@ use App\Models\SuperAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Responses\ApiResponse;
+use Illuminate\Container\Attributes\Auth;
 
 class AuthController extends Controller
 {
@@ -139,14 +140,16 @@ class AuthController extends Controller
     // LOGOUT (user/admin/superadmin)
     // ===============================
     public function logout(Request $request)
-    {
-        $user = $request->user();
-        if (!$user) {
-            return ApiResponse::unauthorized('User tidak ditemukan');
-        }
+{
+    $authUser = $request->user();
 
-        $user->tokens()->delete();
-
-        return ApiResponse::success(null, 'Logout berhasil');
+    if (!$authUser) {
+        return ApiResponse::unauthorized("Kamu belum login");
     }
+
+    // Hapus semua token dari akun yang sedang login (User/Admin/SuperAdmin)
+    $authUser->tokens()->delete();
+
+    return ApiResponse::success(null, "Logout berhasil");
+}
 }

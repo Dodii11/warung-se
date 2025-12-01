@@ -18,13 +18,16 @@ Route::post('/login/admin', [AuthController::class, 'loginAdmin']);
 // -------- SUPER ADMIN ROUTES --------
 Route::post('/login/superadmin', [AuthController::class, 'loginSuperAdmin']);
 
+// -------- LOGOUT ROUTES --------
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+
 // ========================
 // PROTECTED ROUTES (Membutuhkan Auth)
 // ========================
 
 // -------- USER ROUTES --------
 Route::middleware(['auth:sanctum', 'role:user'])->group(function() {
-    Route::post('/logout/user', [AuthController::class, 'logout'])->defaults('guard', 'user');
     Route::get('/dashboard/user', function() {
         return ApiResponse::success(
             ['user' => auth('user')->user()],
@@ -35,7 +38,6 @@ Route::middleware(['auth:sanctum', 'role:user'])->group(function() {
 
 // -------- ADMIN ROUTES --------
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function() {
-    Route::post('/logout/admin', [AuthController::class, 'logout'])->defaults('guard', 'admin');
     Route::get('/dashboard/admin', function() {
         return ApiResponse::success(
             ['admin' => auth('admin')->user()],
@@ -50,7 +52,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function() {
 
 // -------- SUPER ADMIN ROUTES --------
 Route::middleware(['auth:sanctum', 'role:superadmin'])->group(function() {
-    Route::post('/logout/superadmin', [AuthController::class, 'logout'])->defaults('guard', 'superadmin');
     Route::get('/dashboard/superadmin', function() {
         return ApiResponse::success(
             ['super_admin' => auth('superadmin')->user()],
