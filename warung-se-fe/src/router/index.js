@@ -2,7 +2,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 
-// AUTH PAGES
+// ADMIN PAGES
 import AdminLayout from "@/views/layouts/AdminLayout.vue";
 import AdminDashboard from "@/views/admin/AdminDashboard.vue";
 import AdminOrders from "@/views/admin/AdminOrders.vue";
@@ -11,11 +11,8 @@ import AdminUser from "@/views/admin/AdminUser.vue";
 import AdminDriver from "@/views/admin/AdminDriver.vue";
 import AdminAdmin from "@/views/admin/AdminAdmin.vue";
 
-import LoginPage from "@/views/LoginPage.vue";
-import RegisterPage from "@/views/RegisterPage.vue";
-
 // CUSTOMER PAGES
-import CustomerLayout from "@/views/layouts/UserLayout.vue";
+import UserLayout from "@/views/layouts/UserLayout.vue";
 import LandingPage from "@/views/user/LandingPage.vue";
 import MenuPage from "@/views/user/MenuPage.vue";
 import DetailMenu from "@/views/user/DetailMenu.vue";
@@ -23,12 +20,16 @@ import CartPage from "@/views/user/CartPage.vue";
 import FormDetailPesanan from "@/views/user/FormDetailPesanan.vue";
 import DetailPesanan from "@/views/user/DetailPesanan.vue";
 import ReceiptPage from "@/views/user/ReceiptPage.vue";
-// Tambahkan import untuk AkunProfile
-import AkunProfile from "@/views/user/AkunProfile.vue"; // Sesuaikan path jika berbeda
+import AkunProfile from "@/views/user/AkunProfile.vue";
+
+// PUBLIK PAGE
+import LoginPage from "@/views/LoginPage.vue";
+import RegisterPage from "@/views/RegisterPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+
     // ---- ADMIN AREA ----
     {
       path: "/admin",
@@ -76,7 +77,7 @@ const router = createRouter({
     // ---- CUSTOMER AREA ----
     {
       path: "/",
-      component: CustomerLayout,
+      component: UserLayout,
       children: [
         {
           path: "",
@@ -87,26 +88,26 @@ const router = createRouter({
         {
           path: "menu",
           name: "MenuPage",
-          component: MenuPage, // ✅ gunakan import statis
+          component: MenuPage,
           meta: { title: "Menu - Warung SE" },
         },
         {
           path: "menu/:name",
           name: "DetailMenu",
           component: DetailMenu,
-          props: true, // biar param route diteruskan ke props
+          props: true,
         },
         {
           path: "cart",
           name: "CartPage",
-          component: CartPage, // pastikan sudah import CartPage
+          component: CartPage,
           meta: { title: "Keranjang Belanja - Warung SE" },
         },
         {
           path: "checkout",
           name: "FormDetailPesanan",
-          component: FormDetailPesanan, // pastikan sudah import DetailPesanan
-          meta: { title: "Detail Pesanan - Warung SE" },  
+          component: FormDetailPesanan,
+          meta: { title: "Detail Pesanan - Warung SE" },
         },
         {
           path: "detail-pesanan",
@@ -120,12 +121,11 @@ const router = createRouter({
           component: ReceiptPage,
           meta: { title: "Struk Pesanan - Warung SE" },
         },
-        // Tambahkan rute untuk AkunProfile di sini
         {
           path: "akun-saya",
           name: "AkunProfile",
           component: AkunProfile,
-          meta: { 
+          meta: {
             title: "Akun Saya - Warung SE",
             requiresAuth: true // Tambahkan jika hanya untuk user yang login
           }
@@ -154,7 +154,6 @@ const router = createRouter({
     },
   ],
 
-  // ✅ Tambahkan scrollBehavior yang support hash & offset navbar
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition;
