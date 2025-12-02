@@ -4,27 +4,29 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Admin;
-use App\Models\SuperAdmin;
 use App\Responses\ApiResponse;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, $requiredRole)
     {
-        $authUser = $request->user();
+        $authUser = $request->user(); // user dari sanctum token
 
         if (!$authUser) {
-            return ApiResponse::forbidden("Token tidak valid atau kamu belum login");
+            return ApiResponse::forbidden("Token tidak valid atau belum login");
         }
 
-        if (
-            ($role === 'user' && !$authUser instanceof User) ||
-            ($role === 'admin' && !$authUser instanceof Admin) ||
-            ($role === 'superadmin' && !$authUser instanceof SuperAdmin)
-        ) {
-            return ApiResponse::forbidden("Akses sebagai $role diperlukan");
+        // Deteksi role dari nama model
+        $currentRole = strtolower(class_basename($authUser));
+
+        /*
+            Jika model = User        → role: user
+            Jika model = Admin       → role: admin
+            Jika model = SuperAdmin  → role: superadmin
+        */
+
+        if ($currentRole !== strtolower($requiredRole)) {
+            return ApiResponse::forbidden("Akses sebagai $requiredRole diperlukan");
         }
 
         return $next($request);

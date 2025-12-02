@@ -89,9 +89,11 @@
 
 <script setup>
 import { reactive, ref } from "vue";
+import axios from "axios";
 import { useRouter } from "vue-router";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
+
 
 const router = useRouter();
 
@@ -104,19 +106,32 @@ const formData = reactive({
 });
 
 const isLoading = ref(false);
-const isGoogleLoading = ref(false);
 
 const handleRegister = async () => {
-  isLoading.value = true;
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-  isLoading.value = false;
-  router.push("/login");
-};
+  if (formData.password !== formData.confirmPassword) {
+    alert("Kata sandi tidak sama!");
+    return;
+  }
 
-const handleGoogleRegister = async () => {
-  isGoogleLoading.value = true;
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-  isGoogleLoading.value = false;
-  router.push("/login");
+  isLoading.value = true;
+
+  try {
+    await axios.post("http://127.0.0.1:8000/api/register/user", {
+      email_user: formData.email,
+      nama_user: formData.name,
+      no_telp: formData.phone,
+      password: formData.password,
+    });
+
+    alert("Register berhasil!");
+    router.push("/login");
+
+  } catch (error) {
+    console.log(error);
+    alert(error.response?.data?.message || "Terjadi kesalahan");
+  }
+
+  isLoading.value = false;
 };
 </script>
+

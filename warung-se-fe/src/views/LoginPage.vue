@@ -114,6 +114,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
+import axios from "axios";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -130,20 +131,30 @@ const isGoogleLoading = ref(false);
 const handleLogin = async () => {
   isLoginLoading.value = true;
   try {
-    const res = await auth.login({
+    const { data } = await axios.post("http://127.0.0.1:8000/api/login", {
       email: formData.username,
-      password: formData.password,
+      password: formData.password
     });
 
-    if (res.success) {
-      router.replace("/admin/dashboard");
-    } else {
-      alert(res.error || "Login gagal");
+    // simpan token dan role
+    localStorage.setItem("token", data.data.token);
+    localStorage.setItem("role", data.data.role);
+
+    // redirect sesuai role
+    if (data.data.role === "user") {
+      router.push("/");
+    } else if (data.data.role === "admin") {
+      router.push("/admin/dashboard");
+    } else if (data.data.role === "superadmin") {
+      router.push("/admin/dashboard");
     }
+  } catch (err) {
+    alert(err.response?.data?.message || "Login gagal");
   } finally {
     isLoginLoading.value = false;
   }
 };
+
 
 // Google login redirect
 const redirectToGoogle = () => {

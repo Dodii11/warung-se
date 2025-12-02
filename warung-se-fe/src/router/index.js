@@ -4,12 +4,12 @@ import { useAuthStore } from "@/stores/authStore";
 
 // AUTH PAGES
 import AdminLayout from "@/views/layouts/AdminLayout.vue";
-import AdminDashboard from "@/views/admin/AdminDashboard.vue";
-import AdminOrders from "@/views/admin/AdminOrders.vue";
-import AdminMenu from "@/views/admin/AdminMenu.vue";
-import AdminUser from "@/views/admin/AdminUser.vue";
-import AdminDriver from "@/views/admin/AdminDriver.vue";
-import AdminAdmin from "@/views/admin/AdminAdmin.vue";
+import AdminDashboard from "@/views/Admin/AdminDashboard.vue";
+import AdminOrders from "@/views/Admin/AdminOrders.vue";
+import AdminMenu from "@/views/Admin/AdminMenu.vue";
+import AdminUser from "@/views/Admin/AdminUser.vue";
+import AdminDriver from "@/views/Admin/AdminDriver.vue";
+import AdminAdmin from "@/views/Admin/AdminAdmin.vue";
 
 import LoginPage from "@/views/LoginPage.vue";
 import RegisterPage from "@/views/RegisterPage.vue";

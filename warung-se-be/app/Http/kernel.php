@@ -3,3 +3,6 @@
     'throttle:api',
     \Illuminate\Routing\Middleware\SubstituteBindings::class,
 ],
+protected $routeMiddleware = [
+    'role' => \App\Http\Middleware\RoleMiddleware::class,
+];
