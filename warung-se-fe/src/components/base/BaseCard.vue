@@ -1,4 +1,3 @@
-<!-- src/components/base/BaseCard.vue -->
 <template>
   <div
     :class="[

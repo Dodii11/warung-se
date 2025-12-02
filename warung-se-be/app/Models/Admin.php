@@ -2,25 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable; // Menggunakan ini jika admin juga login
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class Admin extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, Notifiable;
 
+    protected $table = 'admin';
     protected $primaryKey = 'id_admin';
-    protected $table = 'admins'; // Opsional, tapi disarankan
-    public $incrementing = true;
-    protected $keyType = 'int';
 
     protected $fillable = [
+        'email_admin',
         'nama_admin',
         'no_telp',
-        'password',
+        'password'
     ];
 
-    // Kolom yang disembunyikan saat dikonversi ke array/JSON
     protected $hidden = [
         'password',
     ];

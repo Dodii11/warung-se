@@ -21,7 +21,7 @@
       </div>
 
       <img
-        :src="userAvatar"
+        src="https://ui-avatars.com/api/?name=Admin&background=E53935&color=fff"
         alt="User Avatar"
         class="w-10 h-10 rounded-full border border-gray-200"
       />
@@ -30,12 +30,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
 import { Menu } from "lucide-vue-next";
-import { useAuthStore } from "@/stores/authStore"; // pastikan path ini sesuai
-
-// Ambil store auth
-const auth = useAuthStore();
+// import { ChevronLeft } from "lucide-vue-next";
 
 // Fetch user saat komponen mount
 onMounted(async () => {

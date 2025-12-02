@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\PesananController;
-use App\Http\Controllers\Auth\SocialiteController;
 
 // MENU
 Route::resource('admin/menu', MenuController::class);
@@ -14,8 +13,6 @@ Route::get('user/pesanan', [PesananController::class, 'user'])->name('pesanan.us
 Route::post('admin/pesanan', [PesananController::class, 'store'])->name('pesanan.store');
 Route::post('/pesanan/update-status/{id}', [PesananController::class, 'updateStatus'])->name('pesanan.updateStatus');
 Route::get('admin/pesanan/{id}', [PesananController::class, 'show'])->name('pesanan.show');
-Route::get('/auth/google/redirect', [SocialiteController::class, 'redirect'])
-    ->name('google.redirect');
 
 Route::get('/auth/google/callback', [SocialiteController::class, 'callback'])
     ->name('google.callback');

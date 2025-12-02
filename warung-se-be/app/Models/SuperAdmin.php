@@ -2,25 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable; // Menggunakan ini jika super admin juga login
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class SuperAdmin extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, Notifiable;
 
-    protected $primaryKey = 'id_super_admin';
-    protected $table = 'super_admins'; // Opsional, tapi disarankan
-    public $incrementing = true;
-    protected $keyType = 'int';
+    protected $table = 'super_admin';
+    protected $primaryKey = 'id_super';
 
     protected $fillable = [
-        'nama_super_admin',
+        'email_super',
+        'nama_super',
         'no_telp',
-        'password',
+        'password'
     ];
 
-    // Kolom yang disembunyikan saat dikonversi ke array/JSON
     protected $hidden = [
         'password',
     ];

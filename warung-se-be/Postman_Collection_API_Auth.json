@@ -1,0 +1,461 @@
+{
+  "info": {
+    "name": "User Authentication API - Laravel 12",
+    "description": "Complete API collection for testing User, Admin, and Super Admin authentication with Sanctum tokens",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 USER AUTHENTICATION",
+      "item": [
+        {
+          "name": "1. Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email_user\": \"user@example.com\",\n  \"nama_user\": \"John Doe\",\n  \"no_telp\": \"081234567890\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/register/user",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "register", "user"]
+            },
+            "description": "Register user baru dengan email, nama, nomor telepon, dan password"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email_user\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/login/user",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "login", "user"]
+            },
+            "description": "Login sebagai user dan dapatkan token Sanctum"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get User Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{USER_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/dashboard/user",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "dashboard", "user"]
+            },
+            "description": "Akses dashboard user (memerlukan valid token)"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Logout User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{USER_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/logout/user",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "logout", "user"]
+            },
+            "description": "Logout user dan hapus semua tokens"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👤 ADMIN AUTHENTICATION",
+      "item": [
+        {
+          "name": "1. Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email_admin\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/login/admin",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "login", "admin"]
+            },
+            "description": "Login sebagai admin dan dapatkan token Sanctum"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get Admin Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ADMIN_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/dashboard/admin",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "dashboard", "admin"]
+            },
+            "description": "Akses dashboard admin (memerlukan valid admin token)"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Kelola Pesanan (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ADMIN_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/kelola-pesanan",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "kelola-pesanan"]
+            },
+            "description": "Admin dapat mengelola pesanan"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Logout Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ADMIN_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/logout/admin",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "logout", "admin"]
+            },
+            "description": "Logout admin dan hapus semua tokens"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👑 SUPER ADMIN AUTHENTICATION",
+      "item": [
+        {
+          "name": "1. Login Super Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email_super\": \"superadmin@example.com\",\n  \"password\": \"superadmin123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/login/superadmin",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "login", "superadmin"]
+            },
+            "description": "Login sebagai super admin dan dapatkan token Sanctum"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get Super Admin Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{SUPERADMIN_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/dashboard/superadmin",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "dashboard", "superadmin"]
+            },
+            "description": "Akses dashboard super admin (memerlukan valid super admin token)"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Kelola Menu (Super Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{SUPERADMIN_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/kelola-menu",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "kelola-menu"]
+            },
+            "description": "Super Admin dapat mengelola menu"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Kelola Driver (Super Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{SUPERADMIN_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/kelola-driver",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "kelola-driver"]
+            },
+            "description": "Super Admin dapat mengelola driver"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Kelola Pelanggan (Super Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{SUPERADMIN_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/kelola-pelanggan",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "kelola-pelanggan"]
+            },
+            "description": "Super Admin dapat mengelola pelanggan"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Kelola Pesanan (Super Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{SUPERADMIN_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/kelola-pesanan",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "kelola-pesanan"]
+            },
+            "description": "Super Admin dapat mengelola pesanan"
+          },
+          "response": []
+        },
+        {
+          "name": "7. Kelola Admin (Super Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{SUPERADMIN_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/kelola-admin",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "kelola-admin"]
+            },
+            "description": "Super Admin dapat mengelola admin"
+          },
+          "response": []
+        },
+        {
+          "name": "8. Add Admin (Super Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{SUPERADMIN_TOKEN}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email_admin\": \"newadmin@example.com\",\n  \"nama_admin\": \"New Admin\",\n  \"no_telp\": \"081234567890\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/superadmin/add-admin",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "superadmin", "add-admin"]
+            },
+            "description": "Super Admin dapat menambahkan admin baru"
+          },
+          "response": []
+        },
+        {
+          "name": "9. Logout Super Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{SUPERADMIN_TOKEN}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/logout/superadmin",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "logout", "superadmin"]
+            },
+            "description": "Logout super admin dan hapus semua tokens"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "USER_TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ADMIN_TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "SUPERADMIN_TOKEN",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

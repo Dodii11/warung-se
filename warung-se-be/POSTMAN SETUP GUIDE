@@ -1,0 +1,79 @@
+# Postman Setup Guide - User Authentication API
+
+## Langkah-Langkah Setup Postman
+
+### 1. Import Collection
+- Buka Postman
+- Klik "Import" di atas sidebar kiri
+- Pilih file `Postman_Collection_API_Auth.json`
+- Collection akan otomatis ter-import
+
+### 2. Set Environment Variables
+Collection ini menggunakan 4 variables yang perlu dikonfigurasi:
+
+#### Variables:
+- `BASE_URL` = `http://localhost:8000` (URL server Laravel Anda)
+- `USER_TOKEN` = Akan diisi setelah login user
+- `ADMIN_TOKEN` = Akan diisi setelah login admin
+- `SUPERADMIN_TOKEN` = Akan diisi setelah login super admin
+
+### 3. Testing Flow
+
+#### A. Testing USER
+1. **Register User** → Buat user baru
+2. **Login User** → Dapatkan token, copy ke `USER_TOKEN` variable
+3. **Get User Dashboard** → Akses dashboard
+4. **Logout User** → Hapus token
+
+#### B. Testing ADMIN
+1. **Login Admin** → Dapatkan token, copy ke `ADMIN_TOKEN` variable
+2. **Get Admin Dashboard** → Akses dashboard
+3. **Kelola Pesanan** → Admin hanya bisa lihat pesanan
+4. **Logout Admin** → Hapus token
+
+#### C. Testing SUPER ADMIN
+1. **Login Super Admin** → Dapatkan token, copy ke `SUPERADMIN_TOKEN` variable
+2. **Get Super Admin Dashboard** → Akses dashboard
+3. **Add Admin** → Tambah admin baru (hanya super admin)
+4. **Kelola Menu/Driver/Pelanggan/Pesanan/Admin** → Semua fitur
+5. **Logout Super Admin** → Hapus token
+
+### 4. Cara Copy Token dari Response
+
+Setelah login, response akan seperti ini:
+\`\`\`json
+{
+  "status": true,
+  "message": "Login user berhasil",
+  "data": {
+    "user": { ... },
+    "token": "1|abc123...",
+    "token_type": "Bearer"
+  }
+}
+\`\`\`
+
+Copy nilai `token` dan paste ke variable `USER_TOKEN` / `ADMIN_TOKEN` / `SUPERADMIN_TOKEN`
+
+### 5. Testing Error Cases
+
+#### Unauthorized (Token Invalid)
+- Gunakan token yang sudah expired atau salah
+- Expected: 401 Unauthorized
+
+#### Forbidden (Role Tidak Sesuai)
+- Coba akses endpoint admin dengan user token
+- Expected: 403 Forbidden
+
+#### Validation Error
+- Submit form dengan data yang tidak valid
+- Expected: 422 Unprocessable Entity
+
+---
+
+## Catatan Penting
+
+- Pastikan database sudah terbuat dengan migration
+- Jalankan `php artisan migrate` sebelum testing
+- Super Admin harus sudah ada di database sebelum login
+- Token berlaku sampai Anda logout atau session habis
