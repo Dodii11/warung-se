@@ -1,54 +1,62 @@
 <template>
-  <!-- Wrapper utama dengan padding responsif dan margin vertikal -->
-  <div class="min-h-screen bg-gray-50 py-12 sm:py-16">
+  <div class="min-h-screen bg-gray-50 py-10 sm:py-16">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
       <!-- Breadcrumb -->
       <nav class="text-sm text-gray-600 mb-6">
         <router-link
           to="/menu"
-          class="text-red-600 hover:text-red-700 font-medium transition duration-150"
-          >Menu</router-link
+          class="text-red-600 hover:text-red-700 font-medium"
         >
+          Menu
+        </router-link>
         <span class="mx-2">/</span>
-        <span class="font-bold text-gray-800">{{ menu?.name || "Memuat..." }}</span>
+        <span class="font-bold text-gray-800">
+          {{ menu?.name || "Memuat..." }}
+        </span>
       </nav>
 
-      <!-- Kontainer Detail Menu menggunakan UserAppCard besar -->
+      <!-- Card Utama -->
       <UserAppCard padding="lg" v-if="menu" class="shadow-2xl shadow-red-100/50">
-        <div class="flex flex-col md:flex-row gap-8 lg:gap-12">
-          <!-- Kiri: Gambar dan Galeri Mini -->
+        <div class="flex flex-col md:flex-row gap-10">
+
+          <!-- Gambar -->
           <div class="w-full md:w-5/12 flex flex-col gap-4">
-            <!-- Gambar Utama (Aspect Ratio 4:3 lebih baik untuk food) -->
             <div
-              class="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border border-gray-100"
+              class="w-full aspect-[1/1] sm:aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border border-gray-100"
             >
               <img
                 :src="currentImage"
+                :alt="menu.name"
                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                :alt="'Gambar Utama ' + menu.name"
               />
             </div>
           </div>
 
-          <!-- Kanan: Info Produk dan Interaksi -->
+          <!-- Detail -->
           <div class="w-full md:w-7/12 flex flex-col">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">{{ menu.name }}</h1>
+
+            <!-- Nama -->
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-3">
+              {{ menu.name }}
+            </h1>
 
             <!-- Harga -->
-            <p class="text-red-600 font-bold text-3xl mb-4 border-b border-gray-100 pb-4">
+            <p class="text-red-600 font-bold text-2xl sm:text-3xl mb-4 border-b border-gray-100 pb-4">
               Rp {{ menu.price }}
             </p>
 
             <!-- Deskripsi -->
-            <h2 class="text-lg font-semibold text-gray-800 mb-2">Deskripsi Produk</h2>
-            <p class="text-gray-600 leading-relaxed mb-6">{{ menu.descDetail }}</p>
+            <h2 class="text-lg font-semibold text-gray-800 mb-1">Deskripsi Produk</h2>
+            <p class="text-gray-600 leading-relaxed mb-6">
+              {{ menu.descDetail }}
+            </p>
 
-            <!-- Kategori & Stok (Dalam grid kecil) -->
-            <div class="grid grid-cols-2 gap-4 mb-8">
+            <!-- Grid Kategori & Stok -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+
               <!-- Kategori -->
-              <div
-                class="flex items-center gap-3 bg-red-50/50 p-3 rounded-lg border border-red-100"
-              >
+              <div class="flex items-center gap-3 bg-red-50/50 p-3 rounded-lg border border-red-100">
                 <Tag class="w-5 h-5 text-red-600" />
                 <div>
                   <p class="text-xs font-medium text-gray-500">Kategori</p>
@@ -62,7 +70,7 @@
                   menu.stock > 0
                     ? 'bg-green-50/50 border-green-100'
                     : 'bg-red-50/50 border-red-100',
-                  'flex items-center gap-3 p-3 rounded-lg border',
+                  'flex items-center gap-3 p-3 rounded-lg border'
                 ]"
               >
                 <Box :class="[menu.stock > 0 ? 'text-green-600' : 'text-red-600', 'w-5 h-5']" />
@@ -70,46 +78,47 @@
                   <p class="text-xs font-medium text-gray-500">Ketersediaan</p>
                   <strong class="text-base text-gray-800">
                     {{ menu.stock > 0 ? "Tersedia" : "Habis" }}
-                    ({{ menu.stock }} item{{ menu.stock === 1 ? "" : menu.stock > 0 ? "" : "" }})
+                    ({{ menu.stock }} item)
                   </strong>
                 </div>
               </div>
             </div>
 
-            <!-- Qty Counter dan Button Utama -->
-            <div
-              class="flex flex-col sm:flex-row sm:items-center gap-4 mt-auto pt-4 border-t border-gray-100"
-            >
-              <!-- Qty Input -->
+            <!-- Qty & Button -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4 mt-auto pt-4 border-t border-gray-100">
+
+              <!-- Qty Counter -->
               <div
-                class="flex items-center border border-gray-300 rounded-lg overflow-hidden w-full sm:w-auto"
+                class="flex items-center border border-gray-300 rounded-lg overflow-hidden w-full sm:w-auto max-w-[180px]"
               >
                 <button
                   @click="decrementQty"
                   :disabled="qty <= 1 || menu.stock <= 0"
-                  class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
+                  class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Minus class="w-5 h-5" />
                 </button>
+
                 <input
                   v-model.number="qty"
                   type="number"
                   min="1"
                   :max="menu.stock"
                   :disabled="menu.stock <= 0"
-                  class="w-16 text-center text-lg font-medium outline-none border-none focus:ring-0"
                   @change="validateQty"
+                  class="w-full text-center text-lg font-medium border-none outline-none"
                 />
+
                 <button
                   @click="incrementQty"
                   :disabled="qty >= menu.stock || menu.stock <= 0"
-                  class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
+                  class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus class="w-5 h-5" />
                 </button>
               </div>
 
-              <!-- Button Tambah ke Keranjang -->
+              <!-- Add to cart -->
               <UserAppButton
                 size="lg"
                 class="shadow-red-300/50 w-full sm:w-auto flex-1"
@@ -121,12 +130,17 @@
                 </template>
                 Tambah ke Keranjang
               </UserAppButton>
+
             </div>
           </div>
         </div>
       </UserAppCard>
 
-      <div v-else class="text-center text-gray-500 mt-12 bg-white p-10 rounded-2xl shadow-xl">
+      <!-- Not Found -->
+      <div
+        v-else
+        class="text-center text-gray-500 mt-12 bg-white p-10 rounded-2xl shadow-xl"
+      >
         <AlertTriangle class="w-12 h-12 text-red-500 mx-auto mb-4" />
         <p class="text-xl font-semibold">Menu tidak ditemukan.</p>
         <router-link
@@ -137,19 +151,23 @@
         </router-link>
       </div>
     </div>
-  </div>
 
-  <!-- 🔥 Pop-up Notifikasi Floating Tengah -->
-  <transition name="popup">
-    <div
-      v-if="showNotif"
-      class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white shadow-2xl rounded-xl px-8 py-6 text-center z-50 border-4 border-red-600 ring-8 ring-red-50 w-[85%] max-w-sm"
-    >
-      <CheckCircle class="w-10 h-10 text-red-600 mx-auto mb-3" />
-      <p class="text-gray-800 font-semibold text-lg">{{ notifMessage }}</p>
-    </div>
-  </transition>
+    <!-- Popup Notif -->
+    <transition name="popup">
+      <div
+        v-if="showNotif"
+        class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+               bg-white shadow-2xl rounded-xl px-8 py-6 text-center z-50 
+               border-4 border-red-600 ring-8 ring-red-50 
+               w-[85%] max-w-xs sm:max-w-sm"
+      >
+        <CheckCircle class="w-10 h-10 text-red-600 mx-auto mb-3" />
+        <p class="text-gray-800 font-semibold text-lg">{{ notifMessage }}</p>
+      </div>
+    </transition>
+  </div>
 </template>
+
 
 <script setup>
 import { ref, watch } from "vue";

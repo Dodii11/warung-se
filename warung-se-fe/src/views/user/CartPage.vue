@@ -75,20 +75,20 @@
         <div class="space-y-3">
           <div class="flex justify-between">
             <span>Subtotal</span>
-            <span>Rp {{ formatCurrency(subtotal) }}</span>
+            <span> {{ formatCurrency(subtotal) }}</span>
           </div>
           <div class="flex justify-between">
             <span>Biaya Pengiriman</span>
-            <span>Rp {{ formatCurrency(shippingFee) }}</span>
+            <span> {{ formatCurrency(shippingFee) }}</span>
           </div>
           <div class="flex justify-between">
             <span>PPN</span>
-            <span>Rp {{ formatCurrency(ppn) }}</span>
+            <span> {{ formatCurrency(ppn) }}</span>
           </div>
           <hr class="my-3 border-gray-200" />
           <div class="flex justify-between font-bold text-xl">
             <span>Total</span>
-            <span>Rp {{ formatCurrency(total) }}</span>
+            <span> {{ formatCurrency(total) }}</span>
           </div>
         </div>
 
