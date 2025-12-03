@@ -115,12 +115,24 @@
 
           <!-- Total Akhir (Paling Kritis) - Dibuat terpisah dan menonjol -->
           <div class="mt-6 pt-4 border-t-2 border-red-500/20">
-            <div class="flex justify-between items-center p-4 rounded-xl bg-red-50 border border-red-200 shadow-lg">
-              <span class="text-xl font-extrabold text-red-800">TOTAL PEMBAYARAN</span>
-              <span class="text-3xl font-black text-red-700 flex-shrink-0 whitespace-nowrap">
-                {{ formatCurrency(total) }}
-              </span>
-            </div>
+<div
+  class="flex flex-wrap justify-between items-center gap-2 p-4 rounded-xl bg-red-50 border border-red-200 shadow-lg"
+>
+  <!-- Label Total -->
+  <span
+    class="text-xl font-extrabold text-red-800 flex-1 min-w-[160px] break-words leading-snug"
+  >
+    TOTAL PEMBAYARAN
+  </span>
+
+  <!-- Angka Total -->
+  <span
+    class="text-2xl sm:text-3xl font-black text-red-700 flex-shrink-0 whitespace-nowrap text-right"
+  >
+    {{ formatCurrency(total) }}
+  </span>
+</div>
+
           </div>
         </UserAppCard>
 
