@@ -1,12 +1,13 @@
 <template>
-  <!-- Wrapper utama dengan background abu-abu muda, Padding Vertikal Responsif -->
+  <!-- Wrapper utama -->
   <div class="min-h-screen bg-gray-50 py-12 sm:py-16">
-    <!-- Padding Horizontal Responsif (px-4/sm:px-6/lg:px-8) -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Kontainer Konten Utama (Floating Card) -->
+
+      <!-- Kontainer kartu utama -->
       <div class="bg-white rounded-3xl shadow-2xl shadow-gray-200/50 p-6 sm:p-10 lg:p-12 pb-16">
+
+        <!-- Header -->
         <header class="text-center mb-10">
-          <!-- Ukuran font header yang responsif -->
           <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3">
             Katalog <span class="text-red-600">Menu</span>
           </h1>
@@ -16,7 +17,7 @@
           </p>
         </header>
 
-        <!-- Filter Kategori: Menggunakan flex-wrap untuk tata letak rapi di mobile -->
+        <!-- Filter Kategori -->
         <div class="flex flex-wrap justify-center gap-x-4 sm:gap-x-6 gap-y-3 mb-12">
           <UserAppCategoryButton
             v-for="cat in categories"
@@ -28,47 +29,47 @@
           </UserAppCategoryButton>
         </div>
 
-        <!-- Menu Grid -->
-        <section>
-          <!-- Grid Responsif: Skala dari 2 kolom (mobile) hingga 4 kolom (desktop) dengan gap konsisten -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6 sm:gap-8">
-            <UserAppCard
-              v-for="(item, idx) in filteredMenus"
-              :key="idx"
-              padding="sm"
-              class="flex flex-col justify-between hover:shadow-red-200/50 transform hover:scale-[1.02] transition-all duration-300"
-            >
-              <!-- Konten Card (menggunakan grow untuk tinggi seragam dan konsisten) -->
-              <div class="grow">
-                <!-- Gambar: Tinggi tetap (h-36) dan lebar penuh (w-full) agar proporsi card terjaga -->
-                <img
-                  :src="item.img"
-                  class="rounded-xl w-full h-36 object-cover mb-4 shadow-sm border border-gray-100"
-                  :alt="'Gambar ' + item.name"
-                />
+<!-- GRID MENU -->
+<section>
+  <div
+    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-7 max-w-7xl mx-auto"
+  >
+    <UserAppCard
+      v-for="(item, idx) in filteredMenus"
+      :key="idx"
+      padding="sm"
+      class="flex flex-col justify-between hover:shadow-red-200/50 transform hover:scale-[1.02] transition-all duration-300"
+    >
+      <!-- Konten card -->
+      <div>
+        <img
+          :src="item.img"
+          class="rounded-xl w-full aspect-[4/3] object-cover mb-4 shadow-sm border border-gray-100"
+          :alt="'Gambar ' + item.name"
+        />
 
-                <!-- Detail -->
-                <div class="text-gray-900">
-                  <h3 class="font-bold text-lg mb-1 line-clamp-2">{{ item.name }}</h3>
-                  <!-- Harga Menonjol -->
-                  <p class="text-red-600 font-extrabold text-xl">Rp {{ item.price }}</p>
-                </div>
-              </div>
+        <div class="text-gray-900">
+          <h3 class="font-bold text-lg mb-1 line-clamp-2">{{ item.name }}</h3>
+          <p class="text-red-600 font-extrabold text-xl">Rp {{ item.price }}</p>
+        </div>
+      </div>
 
-              <!-- Button Pesan Sekarang: Selalu lebar penuh di dalam card -->
-              <UserAppButton
-                size="sm"
-                class="mt-3 w-full shadow-sm"
-                @click="goToDetail(item.name)"
-              >
-                <template #icon-left>
-                  <ChefHat class="w-4 h-4" />
-                </template>
-                Pesan Sekarang
-              </UserAppButton>
-            </UserAppCard>
-          </div>
-        </section>
+      <!-- Tombol pesanan -->
+      <UserAppButton
+        size="sm"
+        class="mt-4 w-full shadow-sm"
+        @click="goToDetail(item.name)"
+      >
+        <template #icon-left>
+          <ChefHat class="w-4 h-4" />
+        </template>
+        Pesan Sekarang
+      </UserAppButton>
+    </UserAppCard>
+  </div>
+</section>
+
+
       </div>
     </div>
   </div>
@@ -86,16 +87,15 @@ import { ChefHat } from "lucide-vue-next";
 
 const router = useRouter();
 
-// --- STATE & LOGIC ---
-// Kategori default diatur ke 'Ayam'
+// State
 const selectedCategory = ref("Ayam");
 
-// Filter menu berdasarkan kategori yang dipilih
+// Filter menu
 const filteredMenus = computed(() =>
   menus.filter((item) => item.category === selectedCategory.value)
 );
 
-// --- NAVIGATION ---
+// Navigation
 function goToDetail(name) {
   router.push({ name: "DetailMenu", params: { name: encodeURIComponent(name) } });
 }
