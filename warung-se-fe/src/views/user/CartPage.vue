@@ -1,133 +1,148 @@
 <template>
-  <div class="max-w-6xl mx-auto p-4 sm:p-6">
+  <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3">
+      <ShoppingCart class="w-7 h-7 text-red-600" />
+      Keranjang Anda
+    </h1>
 
-    <!-- Judul -->
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Keranjang Anda</h1>
+    <!-- Daftar Item -->
+    <div v-if="cartItems.length > 0" class="space-y-4">
+      <UserAppCard padding="sm" v-for="(item, index) in cartItems" :key="index">
+        <!-- Flex container utama, di desktop menjadi 3 kolom utama -->
+        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full">
 
-    <!-- Kontainer Utama -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Kolom 1: Gambar & Detail Produk (Lebar Penuh di mobile, 50% di desktop) -->
+          <div class="flex items-start gap-4 flex-1 min-w-0 sm:w-1/2">
+            <img
+              :src="item.image"
+              alt="Item Image"
+              class="w-20 h-20 object-cover rounded-xl border border-gray-100 shrink-0"
+            />
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-lg text-gray-900 truncate">{{ item.name }}</h3>
+              <p class="text-red-600 font-semibold mt-1 text-sm">
+                Harga Satuan: {{ formatCurrency(item.price) }}
+              </p>
+            </div>
+          </div>
 
-      <!-- Daftar Item -->
-      <div class="md:col-span-2 space-y-4">
-        <div
-          v-for="(item, index) in cartItems"
-          :key="index"
-          class="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-lg shadow-sm"
-        >
-          <!-- Gambar -->
-          <img
-            :src="item.image"
-            alt="Item Image"
-            class="w-full sm:w-16 h-16 object-cover rounded-md"
-          />
+          <!-- Kolom 2: Quantity Control (Di tengah di desktop) -->
+          <div class="flex items-center gap-2 shrink-0 mt-3 sm:mt-0 sm:justify-center sm:w-1/4">
+            <button
+              class="p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition disabled:opacity-50"
+              @click="decrementQty(index)"
+              :disabled="item.qty <= 1"
+              aria-label="Kurangi kuantitas"
+            >
+              <Minus class="w-4 h-4" />
+            </button>
+            <input
+              type="number"
+              v-model.number="item.qty"
+              min="1"
+              max="99"
+              class="w-12 text-center text-base font-semibold border-b border-gray-300 outline-none p-1 focus:border-red-600 transition bg-transparent"
+              @change="updateItemTotal(index)"
+            />
+            <button
+              class="p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition"
+              @click="incrementQty(index)"
+              aria-label="Tambah kuantitas"
+            >
+              <Plus class="w-4 h-4" />
+            </button>
+          </div>
 
-          <!-- Detail -->
-          <div class="flex-1 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 w-full">
-            <div>
-              <h3 class="font-semibold text-gray-900">{{ item.name }}</h3>
-              <p class="text-gray-600">Rp {{ item.price }}</p>
+          <!-- Kolom 3: Total Harga Item & Tombol Hapus (Di kanan di desktop) -->
+          <div class="w-full sm:w-1/4 flex justify-between items-center sm:justify-end mt-3 sm:mt-0">
+            <!-- Total Harga Item -->
+            <div class="text-left sm:text-right shrink-0">
+              <p class="text-sm text-gray-500 hidden sm:block">Total Item:</p>
+              <p class="font-extrabold text-xl text-red-700">{{ formatCurrency(item.total) }}</p>
             </div>
 
-            <!-- Quantity + Hapus -->
-            <div class="flex items-center gap-2 mt-2 sm:mt-0">
-              <div class="flex items-center border border-gray-300 rounded-md overflow-hidden">
-                <button
-                  class="px-2 py-1 text-gray-600 hover:bg-gray-200 transition"
-                  @click="decrementQty(index)"
-                  :disabled="item.qty <= 1"
-                >-</button>
-                <input
-                  type="number"
-                  v-model.number="item.qty"
-                  min="1"
-                  max="99"
-                  class="w-10 text-center outline-none"
-                />
-                <button
-                  class="px-2 py-1 text-gray-600 hover:bg-gray-200 transition"
-                  @click="incrementQty(index)"
-                >+</button>
-              </div>
-
-              <button
-                class="text-red-600 hover:text-red-800 text-sm font-medium"
-                @click="removeItem(index)"
-              >
-                del
-              </button>
-            </div>
-
-            <!-- Harga Total -->
-            <p class="font-bold text-gray-900 mt-2 sm:mt-0">Rp {{ item.total }}</p>
+            <!-- Tombol Hapus -->
+            <button
+              class="p-2 ml-4 text-gray-400 hover:text-red-600 rounded-full bg-white transition hover:bg-red-50 shadow-sm hover:shadow-md shrink-0"
+              @click="removeItem(index)"
+              aria-label="Hapus item"
+            >
+              <Trash2 class="w-5 h-5" />
+            </button>
           </div>
+
+          <!-- Total Harga Item di Mobile (di bawah Quantity Control) -->
+          <div class="block sm:hidden w-full text-right pt-2 border-t border-gray-100">
+             <p class="text-sm text-gray-500">Total Item:</p>
+            <p class="font-extrabold text-xl text-red-700">{{ formatCurrency(item.total) }}</p>
+          </div>
+
         </div>
 
-        <!-- Jika keranjang kosong -->
-        <div v-if="cartItems.length === 0" class="text-center py-10 text-gray-500">
-          Keranjang Anda masih kosong.
-        </div>
-      </div>
+      </UserAppCard>
 
-      <!-- Ringkasan Pesanan -->
-      <div class="bg-white rounded-lg shadow-sm p-6 w-full">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Ringkasan Pesanan</h2>
+      <!-- Subtotal dan Tombol Checkout (Responsive Layout sudah baik) -->
+      <div class="pt-6 mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:items-center gap-4 sm:gap-6 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
 
-        <div class="space-y-3">
-          <div class="flex justify-between">
-            <span>Subtotal</span>
-            <span> {{ formatCurrency(subtotal) }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>Biaya Pengiriman</span>
-            <span> {{ formatCurrency(shippingFee) }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>PPN</span>
-            <span> {{ formatCurrency(ppn) }}</span>
-          </div>
-          <hr class="my-3 border-gray-200" />
-          <div class="flex justify-between font-bold text-xl">
-            <span>Total</span>
-            <span> {{ formatCurrency(total) }}</span>
-          </div>
+        <!-- Subtotal -->
+        <div class="text-right w-full sm:w-auto">
+          <p class="text-xl font-semibold text-gray-700">Subtotal Belanja:</p>
+          <p class="font-extrabold text-3xl text-red-600">{{ formatCurrency(subtotal) }}</p>
         </div>
 
-        <!-- Tombol Checkout -->
-        <button
+        <!-- Button -->
+        <UserAppButton
           @click="proceedToCheckout"
-          class="w-full mt-6 bg-red-600 text-white py-3 rounded-full font-semibold hover:bg-red-700 transition"
+          size="lg"
+          :disabled="cartItems.length === 0"
+          class="w-full sm:w-auto"
         >
           Lanjutkan ke Pembayaran
-        </button>
+          <template #icon-right>
+            <ArrowRight class="w-5 h-5" />
+          </template>
+        </UserAppButton>
       </div>
+
+    </div>
+
+    <!-- Jika keranjang kosong -->
+    <div v-else class="text-center py-16 bg-white rounded-2xl shadow-lg border border-gray-100">
+      <ShoppingBag class="w-12 h-12 mx-auto text-red-400 mb-4" />
+      <p class="text-xl font-semibold text-gray-700 mb-2">Keranjang Anda masih kosong.</p>
+      <p class="text-gray-500">Ayo mulai belanja dan tambahkan produk favorit Anda!</p>
     </div>
   </div>
 </template>
 
-
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { Trash2, Minus, Plus, ShoppingCart, ArrowRight, ShoppingBag } from 'lucide-vue-next'
+// Menggunakan impor relatif agar komponen dapat berjalan di lingkungan ini.
+// Catatan: Karena saya tidak memiliki definisi UserAppCard dan UserAppButton, saya asumsikan ia ada di path ini.
+import UserAppCard from '@/components/baseUser/UserAppCard.vue'
+import UserAppButton from '@/components/baseUser/UserAppButton.vue'
 
 const router = useRouter()
 
-// Dummy data keranjang
+// --- Data & State ---
+// Dummy data keranjang. Gunakan ref() agar reaktif.
 const cartItems = ref([
-  { name: "Ayam Geprek Original", price: 15000, qty: 2, image: "https://placehold.co/100x100/png?text=/ayam" },
-  { name: "Es Teh", price: 3000, qty: 1, image: "https://placehold.co/100x100/png?text=es+teh" },
-  { name: "Es Jeruk", price: 4000, qty: 1, image: "https://placehold.co/100x100/png?text=es+jeruk" },
+  { id: 1, name: "Ayam Geprek Original Sambal Matah", price: 18000, qty: 2, image: "https://placehold.co/100x100/fecaca/991b1b?text=Ayam" },
+  { id: 2, name: "Es Teh Manis Jumbo", price: 3000, qty: 1, image: "https://placehold.co/100x100/fecaca/991b1b?text=Es+Teh" },
+  { id: 3, name: "Nasi Putih Extra", price: 5000, qty: 3, image: "https://placehold.co/100x100/fecaca/991b1b?text=Nasi" },
 ])
 
-// Hitung total per item
+// Hitung total awal per item
 cartItems.value.forEach(item => {
   item.total = item.price * item.qty
 })
 
-// Hitung subtotal, biaya pengiriman, ppn, total
-const subtotal = computed(() => cartItems.value.reduce((sum, item) => sum + item.price * item.qty, 0))
-const shippingFee = computed(() => 5000)
-const ppn = computed(() => 0)
-const total = computed(() => subtotal.value + shippingFee.value + ppn.value)
+// --- Computed Properties ---
+const subtotal = computed(() => {
+  return cartItems.value.reduce((sum, item) => sum + item.price * item.qty, 0)
+})
 
 // Format currency
 const formatCurrency = (value) => {
@@ -138,26 +153,68 @@ const formatCurrency = (value) => {
   }).format(value).replace('Rp', 'Rp ').replace(',00', '')
 }
 
-// Update quantity
-function incrementQty(index) {
-  cartItems.value[index].qty++
-  cartItems.value[index].total = cartItems.value[index].price * cartItems.value[index].qty
+// --- Methods ---
+
+function updateItemTotal(index) {
+  const item = cartItems.value[index]
+  // Pastikan kuantitas adalah angka positif
+  if (item.qty < 1 || isNaN(item.qty)) {
+    item.qty = 1
+  } else if (item.qty > 99) {
+    item.qty = 99
+  }
+  item.total = item.price * item.qty
 }
-function decrementQty(index) {
-  if (cartItems.value[index].qty > 1) {
-    cartItems.value[index].qty--
-    cartItems.value[index].total = cartItems.value[index].price * cartItems.value[index].qty
+
+function incrementQty(index) {
+  if (cartItems.value[index].qty < 99) {
+    cartItems.value[index].qty++
+    updateItemTotal(index)
   }
 }
 
-// Hapus item
+function decrementQty(index) {
+  if (cartItems.value[index].qty > 1) {
+    cartItems.value[index].qty--
+    updateItemTotal(index)
+  }
+}
+
 function removeItem(index) {
   cartItems.value.splice(index, 1)
 }
 
-// **Navigasi ke FormDetailPesanan terlebih dahulu**
+// Navigasi ke FormDetailPesanan dan Simpan Data Keranjang
 function proceedToCheckout() {
+  if (cartItems.value.length === 0) return
+
+  // Simpan data penting ke localStorage sebelum navigasi
+  const cartData = {
+    items: cartItems.value.map(item => ({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      qty: item.qty,
+      total: item.total
+    })),
+    subtotal: subtotal.value,
+  }
+
+  localStorage.setItem("checkoutCartData", JSON.stringify(cartData))
+
+  // Navigasi ke halaman detail pesanan
+  // Catatan: Asumsi rute 'FormDetailPesanan' sudah terdaftar di router Anda
   router.push({ name: 'FormDetailPesanan' })
 }
-
 </script>
+<style scoped>
+/* Menghilangkan panah spinner pada input number */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+</style>
