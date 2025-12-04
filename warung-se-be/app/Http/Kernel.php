@@ -8,9 +8,8 @@ use App\Http\Middleware\RoleMiddleware;
 
 class Kernel extends HttpKernel
 {
-    // Global middleware (dibiarkan kosong atau tambahkan yang kamu perlukan)
     protected $middleware = [
-        SubstituteBindings::class, // wajib agar route model binding tetap jalan
+        SubstituteBindings::class,
     ];
 
     protected $middlewareGroups = [
@@ -23,6 +22,12 @@ class Kernel extends HttpKernel
         ],
     ];
 
+    // <CHANGE> Tambahkan ke $middlewareAliases untuk compatibility dengan Laravel 11+
+    protected $middlewareAliases = [
+        'role' => RoleMiddleware::class,
+    ];
+
+    // Atau jika menggunakan Laravel 10 ke bawah, gunakan ini:
     protected $routeMiddleware = [
         'role' => RoleMiddleware::class,
     ];

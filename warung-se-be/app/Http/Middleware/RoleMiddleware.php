@@ -3,24 +3,33 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class RoleMiddleware
 {
-    public function handle($request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, ...$role)
     {
-        switch($role){
-            case 'user':
-                if(Auth::guard('user')->check()) return $next($request);
-                break;
-            case 'admin':
-                if(Auth::guard('admin')->check()) return $next($request);
-                break;
-            case 'superadmin':
-                if(Auth::guard('superadmin')->check()) return $next($request);
-                break;
+        $user = $request->user();
+
+        // Pastikan user login
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        return redirect('/login'); // atau bisa json jika API
+        // Pecah parameter yang mengandung koma
+        $allowedRoles = [];
+        foreach ($role as $r) {
+            $allowedRoles = array_merge($allowedRoles, explode(',', $r));
+        }
+
+        // Eager load relasi role untuk menghindari lazy loading issue
+        $user = $user->load('role');
+
+        // Pastikan relasi role ada dan role_name sesuai
+        if (!$user->role || !in_array($user->role->role_name, $allowedRoles)) {
+            return response()->json(['message' => 'Forbidden: Role not allowed'], 403);
+        }
+
+        return $next($request);
     }
 }
