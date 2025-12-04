@@ -67,7 +67,7 @@
               :disabled="!isFormValid || loading"
               :loading="loading"
             >
-              Kirim Pesanan & Bayar {{ formatCurrency(total) }}
+              Konfirmasi Pesanan 
               <template #icon-right>
                 <Send class="w-5 h-5" />
               </template>
