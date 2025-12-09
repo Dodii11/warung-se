@@ -27,7 +27,6 @@
               hangat.
             </p>
 
-            <!-- Menggunakan UserAppButton + Icon -->
             <div class="pt-2">
               <UserAppButton
                 size="lg"
@@ -53,37 +52,28 @@
         </div>
       </section>
 
-      <!-- MENU UNGGULAN SECTION - Latar Belakang Abu-abu (Memberi Kontras) -->
+      <!-- MENU TERBARU SECTION (REVISI: Menghilangkan Filter Kategori) -->
       <section id="menu" class="py-16 sm:py-24 bg-gray-50 w-full">
         <!-- Kontainer Putih Besar dengan Shadow untuk efek Floating Card -->
         <div
           class="max-w-7xl mx-auto px-6 py-12 bg-white rounded-3xl shadow-2xl shadow-gray-200/50"
         >
           <h2 class="text-center text-3xl sm:text-4xl font-extrabold mb-3 text-gray-900">
-            Menu Unggulan
+            Menu Terbaru
           </h2>
           <p class="text-center text-gray-600 text-lg mb-10 max-w-2xl mx-auto">
-            Pilih kategori favorit Anda dan rasakan sensasi pedas yang membangkitkan selera.
+            Temukan pilihan menu baru yang paling diminati oleh pelanggan kami!
           </p>
 
-          <!-- Filter Kategori (menggunakan data categories dari dataUser.js) -->
-          <div class="flex flex-wrap justify-center gap-x-4 sm:gap-x-6 gap-y-3 mb-10">
-            <UserAppCategoryButton
-              v-for="cat in categories"
-              :key="cat"
-              :is-active="selectedCategory === cat"
-              @click="selectedCategory = cat"
-            >
-              {{ cat }}
-            </UserAppCategoryButton>
-          </div>
+          <!-- HAPUS: Filter Kategori dihilangkan -->
 
-          <!-- Daftar Menu (menggunakan data filteredMenus dari dataUser.js) -->
+          <!-- Daftar Menu (menggunakan data 5 item terbaru/teratas dari 'menus') -->
           <div
             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8"
           >
+            <!-- Menggunakan 'latestMenus' (5 menu teratas) dari script setup -->
             <UserAppCard
-              v-for="(item, index) in filteredMenus"
+              v-for="(item, index) in latestMenus"
               :key="index"
               padding="sm"
               class="flex flex-col justify-between hover:shadow-red-200/50 transform hover:scale-[1.02] transition-all duration-300"
@@ -109,6 +99,18 @@
                 Pesan Sekarang
               </UserAppButton>
             </UserAppCard>
+          </div>
+
+          <!-- Tombol untuk melihat semua menu -->
+          <div class="text-center pt-10">
+              <UserAppButton
+                size="md"
+                variant="secondary"
+                @click="goToMenu"
+                class="shadow-md shadow-gray-200/50"
+              >
+                Lihat Semua Menu
+              </UserAppButton>
           </div>
         </div>
       </section>
@@ -191,31 +193,33 @@
 </template>
 
 <script setup>
-// MEMPERTAHANKAN ASSET LOKAL UNTUK HERO SECTION
 import heroImg from "@/assets/Ayam Geprek.png";
 import heroImg2 from "@/assets/Restaurant Interior.png";
 
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 import Navbar from "@/components/Navbar.vue";
 
-import { menus, categories, contactInfo } from "@/data/UserAppData";
+import { menus, contactInfo } from "@/data/UserAppData"; // categories tidak digunakan lagi
 import UserAppButton from "@/components/baseUser/UserAppButton.vue";
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
-import UserAppCategoryButton from "@/components/baseUser/UserAppCategoryButton.vue";
+// import UserAppCategoryButton dari sini karena tidak digunakan lagi
 import { ShoppingCart, ChefHat, PhoneCall, Mail, MessageSquare } from "lucide-vue-next";
 
 const router = useRouter();
 
 // --- STATE & LOGIC MENU ---
-const selectedCategory = ref("Ayam");
 
-const filteredMenus = computed(() => menus.filter((m) => m.category === selectedCategory.value));
+// REVISI: Mengambil 5 menu teratas (atau menu terbaru)
+// Saya menggunakan slice(0, 5) untuk mengambil 5 item pertama dari array 'menus'.
+const latestMenus = computed(() => menus.slice(0, 5));
+
 
 // --- NAVIGATION & SCROLL LOGIC ---
 
 function goToMenu() {
-  scrollToSection("menu");
+  // Mengarahkan ke halaman full menu
+  router.push({ path: "/menu" });
 }
 
 function goToDetail(name) {

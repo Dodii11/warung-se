@@ -24,7 +24,7 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   // -----------------------------------------
-  // 🟩 LOGIN FIX (dummy tetap, hanya diperbaiki)
+  // 🟩 LOGIN FIX
   // -----------------------------------------
   const login = async (credentials) => {
     isLoading.value = true;

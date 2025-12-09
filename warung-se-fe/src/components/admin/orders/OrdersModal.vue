@@ -5,8 +5,8 @@
     :title="modalTitle"
   >
     <!-- =========================
-    //  MODE DETAIL (READ ONLY)
-    //  ========================= -->
+    // 	MODE DETAIL (READ ONLY)
+    // 	========================= -->
     <div v-if="mode === 'detail'" class="space-y-6">
       <!-- Header Status -->
       <div
@@ -153,8 +153,8 @@
     </div>
 
     <!-- =========================
-    //  MODE FORM (EDIT)
-    //  ========================= -->
+    // 	MODE FORM (EDIT)
+    // 	========================= -->
     <form v-else @submit.prevent="handleSubmit" class="space-y-6">
       <!-- Info Ringkas -->
       <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-4">
@@ -171,6 +171,7 @@
       </div>
 
       <div class="grid grid-cols-1 gap-5">
+        <!-- Dropdown Status Pesanan (Selalu Tampil) -->
         <div class="flex flex-col gap-2">
           <label class="text-sm font-medium text-gray-700 flex items-center gap-1">
             <ActivityIcon class="w-4 h-4 text-gray-400" /> Status Pesanan
@@ -178,7 +179,8 @@
           <BaseDropdown v-model="form.status" :options="statusOptions" class="w-full" />
         </div>
 
-        <div class="flex flex-col gap-2">
+        <!-- Dropdown Tetapkan Driver (HANYA TAMPIL JIKA STATUS = 'Dikirim') -->
+        <div v-if="isShippingStatus" class="flex flex-col gap-2">
           <label class="text-sm font-medium text-gray-700 flex items-center gap-1">
             <TruckIcon class="w-4 h-4 text-gray-400" /> Tetapkan Driver
           </label>
@@ -246,14 +248,14 @@ const isSaving = ref(false);
 const shippingCost = 10000; // Tetap sama seperti versi lama
 
 // ===============================
-//  Title (dipertahankan)
+// 	Title (dipertahankan)
 // ===============================
 const modalTitle = computed(() =>
   props.mode === "detail" ? "Detail Pesanan" : "Update Pesanan"
 );
 
 // ===============================
-//  Default Form (dipertahankan)
+// 	Default Form (dipertahankan)
 // ===============================
 const defaultForm = {
   id: "",
@@ -271,7 +273,15 @@ const defaultForm = {
 const form = reactive({ ...defaultForm });
 
 // ===============================
-//  Dummy Items (dipertahankan)
+// 	Computed Property Baru: Status Pengiriman
+// ===============================
+const isShippingStatus = computed(() => {
+  // Hanya tampilkan jika statusnya 'Dikirim'
+  return form.status === 'Dikirim';
+});
+
+// ===============================
+// 	Dummy Items (dipertahankan)
 // ===============================
 const dummyItems = [
   {
@@ -289,14 +299,14 @@ const dummyItems = [
 ];
 
 // ===============================
-//  Data final: itemData > order
+// 	Data final: itemData > order
 // ===============================
 const sourceData = computed(() => {
   return props.itemData || props.order || {};
 });
 
 // ===============================
-//  Init form setiap buka modal
+// 	Init form setiap buka modal
 // ===============================
 const initForm = () => {
   const d = sourceData.value;
@@ -318,7 +328,7 @@ watch(
 );
 
 // ===============================
-//  Perhitungan (dipertahankan)
+// 	Perhitungan (dipertahankan)
 // ===============================
 const currentItems = computed(() => {
   // Hanya menggunakan items dari data pesanan jika ada, jika tidak, pakai dummyItems
@@ -343,7 +353,9 @@ const handleSubmit = async () => {
   emit("save", {
     id: form.id,
     status: form.status,
-    driver: form.driver,
+    // Jika status bukan 'Dikirim', kirim driver sebagai 'Belum ditetapkan'
+    // agar data bersih jika user kembali mengubah status
+    driver: isShippingStatus.value ? form.driver : 'Belum ditetapkan',
   });
 
   isSaving.value = false;

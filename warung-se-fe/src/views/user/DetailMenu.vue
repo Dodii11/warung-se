@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 py-10 sm:py-16">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      
+
       <!-- Breadcrumb -->
       <nav class="text-sm text-gray-600 mb-6">
         <router-link
@@ -23,7 +23,7 @@
           <!-- Gambar -->
           <div class="w-full md:w-5/12 flex flex-col gap-4">
             <div
-              class="w-full aspect-[1/1] sm:aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border border-gray-100"
+              class="w-full aspect-square sm:aspect-4/3 rounded-2xl overflow-hidden shadow-lg border border-gray-100"
             >
               <img
                 :src="currentImage"
@@ -156,9 +156,9 @@
     <transition name="popup">
       <div
         v-if="showNotif"
-        class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-               bg-white shadow-2xl rounded-xl px-8 py-6 text-center z-50 
-               border-4 border-red-600 ring-8 ring-red-50 
+        class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+               bg-white shadow-2xl rounded-xl px-8 py-6 text-center z-50
+               border-4 border-red-600 ring-8 ring-red-50
                w-[85%] max-w-xs sm:max-w-sm"
       >
         <CheckCircle class="w-10 h-10 text-red-600 mx-auto mb-3" />

@@ -44,7 +44,7 @@
       <div>
         <img
           :src="item.img"
-          class="rounded-xl w-full aspect-[4/3] object-cover mb-4 shadow-sm border border-gray-100"
+          class="rounded-xl w-full aspect-4/3 object-cover mb-4 shadow-sm border border-gray-100"
           :alt="'Gambar ' + item.name"
         />
 
