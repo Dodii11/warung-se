@@ -12,7 +12,8 @@ return new class extends Migration
             $table->id('id_menu');
             $table->string('menu');
             $table->integer('harga');
-            $table->enum('kategori', ['makanan','minum','paket']);
+            $table->enum('kategori', ['makanan','minuman','paket']);
+            $table->enum('status', ['tersedia', 'tidak tersedia'])->default('tersedia');
             $table->integer('stok')->default(0);
             $table->binary('gambar_menu')->nullable();
             $table->timestamps();

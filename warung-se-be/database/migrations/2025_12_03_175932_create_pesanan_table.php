@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('id_driver',20)->nullable();
             $table->dateTime('tanggal_pesanan');
             $table->decimal('total_harga',10,2);
-            $table->enum('status',['proses','diantar','selesai','batal'])->default('proses');
+            $table->enum('status',['Diproses','Dikirim','Tertunda','Gagal','Selesai'])->default('proses');
             $table->text('alamat');
             $table->text('catatan')->nullable();
             $table->timestamps();
