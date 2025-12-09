@@ -47,7 +47,7 @@
 
         <!-- User Profile CTA -->
         <router-link
-          to="/akun-saya"
+          to="/profile"
           class="flex items-center gap-2 group p-2 rounded-full transition duration-300 ease-in-out hover:bg-primary-dark/80 cursor-pointer border border-transparent hover:border-warning"
           aria-label="Akun Saya"
         >
@@ -95,7 +95,7 @@
         <!-- Profile Link Mobile -->
         <li class="pt-2 mt-2 border-t border-primary/50">
           <router-link
-            to="/akun-saya"
+            to="/profile"
             class="flex items-center gap-3 py-2 px-3 text-white text-base font-semibold hover:bg-primary/80 rounded-lg transition"
             @click="isOpen = false"
           >

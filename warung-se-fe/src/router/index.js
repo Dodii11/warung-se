@@ -20,7 +20,7 @@ import CartPage from "@/views/user/CartPage.vue";
 import FormDetailPesanan from "@/views/user/FormDetailPesanan.vue";
 import DetailPesanan from "@/views/user/DetailPesanan.vue";
 import ReceiptPage from "@/views/user/ReceiptPage.vue";
-import AkunProfile from "@/views/user/AkunProfile.vue";
+import UserProfile from "@/views/user/ProfilePage/UserProfile.vue";
 
 // PUBLIK PAGE
 import LoginPage from "@/views/LoginPage.vue";
@@ -122,12 +122,12 @@ const router = createRouter({
           meta: { title: "Struk Pesanan - Warung SE" },
         },
         {
-          path: "akun-saya",
-          name: "AkunProfile",
-          component: AkunProfile,
+          path: "profile",
+          name: "UserProfile",
+          component: UserProfile,
           meta: {
-            title: "Akun Saya - Warung SE",
-            requiresAuth: true // Tambahkan jika hanya untuk user yang login
+            title: "Profile Saya - Warung SE",
+            requiresAuth: true
           }
         }
       ],

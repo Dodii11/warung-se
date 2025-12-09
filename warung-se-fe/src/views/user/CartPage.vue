@@ -23,14 +23,14 @@
       <div class="flex-1 min-w-0">
         <!-- Nama Produk -->
         <h3
-          class="font-bold text-base sm:text-lg text-gray-900 leading-tight line-clamp-2 break-words"
+          class="font-bold text-base sm:text-lg text-gray-900 leading-tight line-clamp-2 wrap-break-word"
         >
           {{ item.name }}
         </h3>
 
         <!-- Harga satuan (now fully visible at small screens) -->
-        <p class="text-red-600 font-semibold mt-1 text-sm break-words min-w-0 w-full leading-snug">
-          Harga Satuan: {{ formatCurrency(item.price) }}
+        <p class="text-red-600 font-semibold mt-1 text-sm wrap-break-word min-w-0 w-full leading-snug">
+          {{ formatCurrency(item.price) }} /item
         </p>
       </div>
     </div>
@@ -70,7 +70,7 @@
     >
       <div class="text-right shrink min-w-0 mr-4">
         <p class="text-sm text-gray-500 whitespace-nowrap">Total Item:</p>
-        <p class="font-extrabold text-xl text-red-700 break-words">
+        <p class="font-extrabold text-xl text-red-700 wrap-break-word">
           {{ formatCurrency(item.total) }}
         </p>
       </div>
@@ -89,7 +89,7 @@
     >
       <div class="text-left min-w-0">
         <p class="text-sm text-gray-500">Total Item:</p>
-        <p class="font-extrabold text-lg text-red-700 break-words">
+        <p class="font-extrabold text-lg text-red-700 wrap-break-word">
           {{ formatCurrency(item.total) }}
         </p>
       </div>
