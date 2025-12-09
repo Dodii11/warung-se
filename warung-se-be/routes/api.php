@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\AlamatController;
 use Illuminate\Support\Facades\Route;
 
 // Controllers
@@ -16,6 +17,7 @@ use App\Http\Controllers\API\CartController;
 | PUBLIC ROUTES (Tanpa Authentication)
 |--------------------------------------------------------------------------
 */
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -57,6 +59,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/account/me', [AccountController::class, 'me']);
         Route::put('/account/me', [AccountController::class, 'update']);
         Route::delete('/account/me', [AccountController::class, 'destroy']);
+
+        // Alamat sendiri
+        Route::get('/alamat', [AlamatController::class, 'index']);
+        Route::get('/alamat/{id}', [AlamatController::class, 'show']);
+        Route::post('/alamat', [AlamatController::class, 'store']);
+        Route::put('/alamat/{id}', [AlamatController::class, 'update']);
+        Route::delete('/alamat/{id}', [AlamatController::class, 'destroy']);
     });
 
     /*
