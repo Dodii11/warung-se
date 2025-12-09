@@ -17,6 +17,7 @@ class Menu extends Model
         'menu',
         'harga',
         'kategori',
+        'status',
         'stok',
         'gambar_menu'
     ];

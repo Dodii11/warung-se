@@ -27,6 +27,7 @@ class MenuController extends Controller
             'harga'=>'required|integer',
             'kategori'=>'required|in:makanan,minum,paket',
             'stok'=>'required|integer',
+            'status' => 'required|in:tersedia,tidak tersedia',
         ]);
 
         $menu = Menu::create($request->all());
