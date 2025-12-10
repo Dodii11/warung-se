@@ -17,10 +17,10 @@ class Pesanan extends Model
         'id_pesanan',
         'id_user',
         'id_driver',
+        'id_alamat',
         'tanggal_pesanan',
         'total_harga',
         'status',
-        'alamat',
         'catatan'
     ];
 
@@ -37,5 +37,10 @@ class Pesanan extends Model
     public function driver()
     {
         return $this->belongsTo(Driver::class, 'id_driver', 'id_driver');
+    }
+
+    public function alamat()
+    {
+        return $this->belongsTo(Alamat::class, 'id_alamat', 'id_alamat');
     }
 }
