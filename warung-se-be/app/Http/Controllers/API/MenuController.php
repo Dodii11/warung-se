@@ -24,6 +24,7 @@ class MenuController extends Controller
     {
         $request->validate([
             'menu'=>'required|string',
+            'deskripsi'=>'nullable|string',
             'harga'=>'required|integer',
             'kategori'=>'required|in:makanan,minum,paket',
             'stok'=>'required|integer',
