@@ -169,31 +169,49 @@ const router = createRouter({
   },
 });
 
-// ===== NAVIGATION GUARD FINAL =====
-router.beforeEach((to, from, next) => {
+// ===== NAVIGATION GUARD DENGAN TUNGGU INIT =====
+router.beforeEach(async (to, from, next) => {
   const auth = useAuth();
+  await auth.waitForInitialization();
 
   document.title = to.meta.title || "Warung SE";
 
-  // 1. Butuh login tapi user belum punya token
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
+    console.log("Guard: Redirect to Login - Not authenticated after init.");
     return next({ name: "Login" });
   }
 
-  // 2. User sudah login → cegah masuk halaman login/register
   if (auth.isLoggedIn && (to.name === "Login" || to.name === "Register")) {
-    if (auth.user?.role === "admin") {
+    console.log("Guard: User logged in, redirecting from auth pages.");
+    if (auth.user?.role === "admin" || auth.user?.role === "super admin") {
       return next("/admin/dashboard");
     }
     return next("/");
   }
 
-  // 3. Cek role (admin/user)
-  if (to.meta.role && auth.user?.role !== to.meta.role) {
-    return next("/");
-  }
+  if (to.meta.role) {
+    const userRole = auth.user?.role;
+    const requiredRole = to.meta.role;
 
-  next();
+    console.log(`Guard: Checking role. User: ${userRole}, Required: ${requiredRole}`);
+
+    if (userRole === "super admin") {
+      console.log("Guard: Super admin access granted.");
+      next();
+    }
+
+    else if (userRole === requiredRole) {
+      console.log("Guard: Role match, access granted.");
+      next();
+    }
+    else {
+      console.log("Guard: Role mismatch, redirecting to home.");
+      return next("/");
+    }
+  } else {
+    console.log("Guard: User access granted.");
+    next();
+  }
 });
 
 export default router;
