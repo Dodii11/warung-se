@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MenuController extends Controller
 {
@@ -16,39 +17,100 @@ class MenuController extends Controller
     public function show($id)
     {
         $menu = Menu::find($id);
-        if(!$menu) return response()->json(['message'=>'Menu not found'],404);
+        if (!$menu) {
+            return response()->json(['message' => 'Menu not found'], 404);
+        }
         return response()->json($menu);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'menu'=>'required|string',
-            'deskripsi'=>'nullable|string',
-            'harga'=>'required|integer',
-            'kategori'=>'required|in:makanan,minum,paket',
-            'stok'=>'required|integer',
+            'menu' => 'required|string',
+            'deskripsi' => 'nullable|string',
+            'harga' => 'required|integer',
+            'kategori' => 'required|in:makanan,minuman,paket',
+            'stok' => 'required|integer',
             'status' => 'required|in:tersedia,tidak tersedia',
+            'gambar_menu' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $menu = Menu::create($request->all());
-        return response()->json($menu,201);
+        $path = null;
+        if ($request->hasFile('gambar_menu')) {
+            $path = $request->file('gambar_menu')->store('menu', 'public');
+        }
+
+        $menu = Menu::create([
+            'menu' => $request->menu,
+            'deskripsi' => $request->deskripsi,
+            'harga' => $request->harga,
+            'kategori' => $request->kategori,
+            'stok' => $request->stok,
+            'status' => $request->status,
+            'gambar_menu' => $path,
+        ]);
+
+        return response()->json($menu, 201);
     }
 
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
         $menu = Menu::find($id);
-        if(!$menu) return response()->json(['message'=>'Menu not found'],404);
+        if (!$menu) {
+            return response()->json(['message' => 'Menu not found'], 404);
+        }
 
-        $menu->update($request->all());
+        $request->validate([
+            'menu' => 'sometimes|required|string',
+            'deskripsi' => 'nullable|string',
+            'harga' => 'sometimes|required|integer',
+            'kategori' => 'sometimes|required|in:makanan,minuman,paket',
+            'stok' => 'sometimes|required|integer',
+            'status' => 'sometimes|required|in:tersedia,tidak tersedia',
+            'gambar_menu' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($request->hasFile('gambar_menu')) {
+            // hapus gambar lama jika ada
+            if ($menu->gambar_menu) {
+                Storage::disk('public')->delete($menu->gambar_menu);
+            }
+            $path = $request->file('gambar_menu')->store('menu', 'public');
+            $menu->gambar_menu = $path;
+        }
+
+        // update kolom lainnya
+        $menu->fill($request->except('gambar_menu'));
+        $menu->save();
+
         return response()->json($menu);
     }
 
     public function destroy($id)
     {
         $menu = Menu::find($id);
-        if(!$menu) return response()->json(['message'=>'Menu not found'],404);
+        if (!$menu) {
+            return response()->json(['message' => 'Menu not found'], 404);
+        }
+
         $menu->delete();
-        return response()->json(['message'=>'Deleted']);
+        return response()->json(['message' => 'Deleted']);
+    }
+
+    public function gambar($id)
+    {
+        $menu = Menu::find($id);
+        if (!$menu || !$menu->gambar_menu) {
+            return response()->json(['message' => 'Gambar tidak ditemukan'], 404);
+        }
+
+        // ambil file path
+        $path = storage_path('app/public/' . $menu->gambar_menu);
+
+        if (!file_exists($path)) {
+            return response()->json(['message' => 'File tidak ditemukan'], 404);
+        }
+
+        return response()->file($path);
     }
 }

@@ -34,6 +34,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Routes yang diizinkan semua role
     Route::get('/menu', [MenuController::class, 'index']);
     Route::get('/menu/{id}', [MenuController::class, 'show']);
+    Route::get('/menu/{id}/gambar', [MenuController::class, 'gambar']);
+
 
     Route::get('/pesanan/{id}/detail', [DetailPesananController::class, 'index']);
     Route::get('/detail-pesanan/{id}', [DetailPesananController::class, 'show']);
