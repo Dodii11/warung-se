@@ -143,7 +143,7 @@ const handleLogin = async () => {
     }
 
     // redirect sesuai role
-    if (auth.user?.role === "admin") {
+    if (auth.user?.role === "admin" || auth.user?.role === "super admin") {
       router.push("/admin/dashboard");
     } else {
       router.push("/");

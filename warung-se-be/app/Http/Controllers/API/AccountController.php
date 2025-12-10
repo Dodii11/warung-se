@@ -9,6 +9,33 @@ use Illuminate\Support\Facades\Hash;
 
 class AccountController extends Controller
 {
+
+        public function me(Request $request)
+    {
+        // $request->user() akan mengembalikan user yang token-nya valid
+        $user = $request->user();
+        if (!$user) {
+            // Ini seharusnya tidak terjadi jika sanctum bekerja dengan benar sebelum masuk sini
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        // Load relasi 'role' agar role_name bisa diakses
+        $user->load('role');
+
+        // Kembalikan data user beserta role-nya
+        // Pastikan struktur ini sesuai dengan yang dibutuhkan oleh FE di authStore
+        return response()->json([
+            'id_user' => $user->id_user,
+            'nama_user' => $user->nama_user,
+            'email_user' => $user->email_user,
+            'id_role' => $user->id_role,
+            'role' => $user->role->role_name, // <-- Ini penting untuk guard di FE
+            'no_telp' => $user->no_telp,
+            'status' => $user->status,
+            // Tambahkan field lain jika diperlukan
+        ]);
+    }
+
     // GET semua user beserta role
     public function index()
     {
