@@ -14,6 +14,7 @@ class AccountController extends Controller
     {
         // $request->user() akan mengembalikan user yang token-nya valid
         $user = $request->user();
+
         if (!$user) {
             // Ini seharusnya tidak terjadi jika sanctum bekerja dengan benar sebelum masuk sini
             return response()->json(['message' => 'User not authenticated'], 401);
