@@ -146,6 +146,13 @@ const router = createRouter({
       component: RegisterPage,
       meta: { title: "Daftar - Warung SE" },
     },
+    {
+  path: "/auth/google/callback",
+  name: "GoogleCallback",
+  component: () => import("@/views/callback.vue"),
+  meta: { title: "Login Google - Warung SE" }
+},
+
 
     // ---- FALLBACK ----
     {

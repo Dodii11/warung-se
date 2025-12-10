@@ -11,12 +11,18 @@ use App\Http\Controllers\API\DetailPesananController;
 use App\Http\Controllers\API\DriverController;
 use App\Http\Controllers\API\AccountController;
 use App\Http\Controllers\API\CartController;
+use App\Http\Controllers\Auth\SocialiteController;
+
 
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES (Tanpa Authentication)
 |--------------------------------------------------------------------------
 */
+/**
+ * socialite auth
+ */
+
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
