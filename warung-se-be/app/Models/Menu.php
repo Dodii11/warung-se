@@ -23,6 +23,15 @@ class Menu extends Model
         'gambar_menu'
     ];
 
+    protected $appends = ['gambar_url'];
+
+    public function getGambarUrlAttribute()
+    {
+        return $this->gambar_menu
+            ? asset('storage/' . $this->gambar_menu)
+            : null;
+    }
+
     public function detailPesanan()
     {
         return $this->hasMany(DetailPesanan::class, 'id_menu', 'id_menu');

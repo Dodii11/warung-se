@@ -1,16 +1,16 @@
-    <?php
+<?php
 
-    use App\Http\Controllers\API\AlamatController;
-    use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\AlamatController;
+use Illuminate\Support\Facades\Route;
 
-    // Controllers
-    use App\Http\Controllers\API\AuthController;
-    use App\Http\Controllers\API\MenuController;
-    use App\Http\Controllers\API\PesananController;
-    use App\Http\Controllers\API\DetailPesananController;
-    use App\Http\Controllers\API\DriverController;
-    use App\Http\Controllers\API\AccountController;
-    use App\Http\Controllers\API\CartController;
+// Controllers
+use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\MenuController;
+use App\Http\Controllers\API\PesananController;
+use App\Http\Controllers\API\DetailPesananController;
+use App\Http\Controllers\API\DriverController;
+use App\Http\Controllers\API\AccountController;
+use App\Http\Controllers\API\CartController;
 
     /*
     |--------------------------------------------------------------------------
@@ -34,6 +34,7 @@
         // Routes yang diizinkan semua role *yang sudah login*
         Route::get('/menu', [MenuController::class, 'index']);
         Route::get('/menu/{id}', [MenuController::class, 'show']);
+        Route::get('/menu/{id}/gambar', [MenuController::class, 'gambar']);
 
         // ✅ PINDAHKAN /account/me KE SINI, TANPA middleware role:user
         Route::get('/account/me', [AccountController::class, 'me']);
