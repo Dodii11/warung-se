@@ -1,7 +1,9 @@
 <!--  eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="min-h-screen bg-bg flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl shadow-xl overflow-hidden max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2">
+    <div
+      class="bg-white rounded-3xl shadow-xl overflow-hidden max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2"
+    >
       <!-- Form Section -->
       <div class="p-8 md:p-12 flex flex-col justify-center">
         <div class="mb-8">
@@ -84,7 +86,7 @@
 
       <!-- Image Section -->
       <div class="hidden lg:block relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-black/40 to-black/60"></div>
+        <div class="absolute inset-0 bg-linear-to-br from-black/40 to-black/60"></div>
         <img
           src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=800"
           alt="Warung SE"
@@ -104,46 +106,57 @@
 <script setup>
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuth } from "@/stores/auth";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
 
 const router = useRouter();
-const authStore = useAuthStore();
+const auth = useAuth();
 
+/* Form kamu tetap, TIDAK diubah */
 const formData = reactive({
   username: "",
   password: "",
   remember: false,
 });
 
+/* State loading */
 const isLoginLoading = ref(false);
 const isGoogleLoading = ref(false);
 
+/* Integrasi API */
 const handleLogin = async () => {
   try {
     isLoginLoading.value = true;
-    const res = await authStore.login({
-      email: formData.username,
+
+    // mapping field FE ke field BE
+    const payload = {
+      email_user: formData.username,
       password: formData.password,
-    });
-    if (res.success) {
+    };
+
+    const res = await auth.login(payload);
+
+    if (!res.success) {
+      alert(res.error || "Login gagal.");
+      return;
+    }
+
+    // redirect sesuai role
+    if (auth.user?.role === "admin") {
       router.push("/admin/dashboard");
     } else {
-      alert(res.error || "Login gagal, coba lagi!");
+      router.push("/");
     }
   } finally {
     isLoginLoading.value = false;
   }
 };
 
+/* Dummy Google tetap */
 const handleGoogleLogin = async () => {
-  try {
-    isGoogleLoading.value = true;
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    router.push("/admin/dashboard");
-  } finally {
-    isGoogleLoading.value = false;
-  }
+  isGoogleLoading.value = true;
+  await new Promise((res) => setTimeout(res, 1500));
+  isGoogleLoading.value = false;
 };
 </script>

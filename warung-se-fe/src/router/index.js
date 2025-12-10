@@ -1,6 +1,6 @@
 // router/index.js
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuth } from "@/stores/auth";
 
 // ADMIN PAGES
 import AdminLayout from "@/views/layouts/AdminLayout.vue";
@@ -169,27 +169,26 @@ const router = createRouter({
   },
 });
 
-// ---- NAVIGATION GUARDS ----
+// ===== NAVIGATION GUARD FINAL =====
 router.beforeEach((to, from, next) => {
-  const auth = useAuthStore();
+  const auth = useAuth();
 
   document.title = to.meta.title || "Warung SE";
 
-  // 🟩 1. Rute butuh login
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
+  // 1. Butuh login tapi user belum punya token
+  if (to.meta.requiresAuth && !auth.isLoggedIn) {
     return next({ name: "Login" });
   }
 
-  // 🟩 2. Jika sudah login, cegah buka login/register
-  if (auth.isAuthenticated && (to.path === "/login" || to.path === "/register")) {
+  // 2. User sudah login → cegah masuk halaman login/register
+  if (auth.isLoggedIn && (to.name === "Login" || to.name === "Register")) {
     if (auth.user?.role === "admin") {
       return next("/admin/dashboard");
-    } else {
-      return next("/");
     }
+    return next("/");
   }
 
-  // 🟩 3. Cek role (admin/user)
+  // 3. Cek role (admin/user)
   if (to.meta.role && auth.user?.role !== to.meta.role) {
     return next("/");
   }

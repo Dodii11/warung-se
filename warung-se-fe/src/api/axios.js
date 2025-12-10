@@ -1,15 +1,33 @@
 // src/api/axios.js
-import axios from 'axios';
+import axios from "axios";
 
-// Buat instance axios
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: true, // PENTING! Agar cookie (untuk login) bisa dikirim
+  baseURL: import.meta.env.VITE_API_BASE_URL + "/api",
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
 });
 
-// (Opsional tapi disarankan)
-// Panggil endpoint ini sebelum request login/register
-// untuk mendapatkan cookie CSRF dari Sanctum
-export const getCsrfCookie = () => apiClient.get('/sanctum/csrf-cookie');
+// Attach token sebelum request
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Jika token expired → auto logout
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;
