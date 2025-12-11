@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\API\AlamatController;
 use Illuminate\Support\Facades\Route;
 
 // Controllers
@@ -11,6 +10,7 @@ use App\Http\Controllers\API\DetailPesananController;
 use App\Http\Controllers\API\DriverController;
 use App\Http\Controllers\API\AccountController;
 use App\Http\Controllers\API\CartController;
+use App\Http\Controllers\API\AlamatController;
 
     /*
     |--------------------------------------------------------------------------
@@ -83,11 +83,6 @@ use App\Http\Controllers\API\CartController;
             Route::get('/dashboard', function () {
                 return response()->json(['message' => 'Admin Dashboard Accessed']);
             });
-
-            // CRUD Menu
-            Route::post('/menu', [MenuController::class, 'store']);
-            Route::put('/menu/{id}', [MenuController::class, 'update']);
-            Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
 
             // CRUD Driver
             Route::get('/driver', [DriverController::class, 'index']);

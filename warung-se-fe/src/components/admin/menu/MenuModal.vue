@@ -4,7 +4,6 @@
     @update:model-value="$emit('update:modelValue', $event)"
     :title="modalTitle"
   >
-
     <!-- FORM DETAIL (READ ONLY) -->
     <div v-if="mode === 'detail'" class="space-y-6">
       <!-- Card Utama: Gambar & Status -->
@@ -17,7 +16,7 @@
           alt="Menu Image"
         />
 
-        <!-- Badge Status (Otomatis merah jika stok habis) -->
+        <!-- Badge Status (Otomatis merah jika stok habis atau status BE 'tidak_tersedia') -->
         <div
           class="absolute top-4 right-4 px-3 py-1.5 rounded-full text-xs font-bold bg-white/90 backdrop-blur-sm shadow-md border"
           :class="isUnavailable ? 'text-red-600 border-red-100' : 'text-green-600 border-green-100'"
@@ -55,9 +54,7 @@
             <div class="flex items-start gap-3">
               <PackageSearchIcon class="w-4 h-4 text-blue-500 mt-1 shrink-0" />
               <div>
-                <label class="text-xs font-medium text-gray-500 block mb-1"
-                  >Stok Tersedia</label
-                >
+                <label class="text-xs font-medium text-gray-500 block mb-1">Stok Tersedia</label>
                 <p
                   class="font-bold text-lg"
                   :class="form.stock > 0 ? 'text-gray-900' : 'text-red-600'"
@@ -71,30 +68,30 @@
 
         <!-- Kategori & Deskripsi -->
         <div class="space-y-4">
-            <!-- Kategori Card -->
-            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <label class="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-2"
-                  >Kategori</label
-                >
-                <span
-                  class="px-3 py-1.5 rounded-lg bg-red-50 text-primary text-sm font-medium border border-red-100 inline-flex items-center gap-2"
-                >
-                  <Utensils class="w-4 h-4 text-current" />
-                  {{ form.category }}
-                </span>
-            </div>
+          <!-- Kategori Card -->
+          <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <label class="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-2"
+              >Kategori</label
+            >
+            <span
+              class="px-3 py-1.5 rounded-lg bg-red-50 text-primary text-sm font-medium border border-red-100 inline-flex items-center gap-2"
+            >
+              <Utensils class="w-4 h-4 text-current" />
+              {{ form.category }}
+            </span>
+          </div>
 
-            <!-- Deskripsi Card -->
-            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <label
-                  class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1"
-                >
-                  <ScrollTextIcon class="w-3 h-3 text-gray-400" /> Deskripsi
-                </label>
-                <p class="text-gray-700 text-sm leading-relaxed">
-                  {{ form.description || "Tidak ada deskripsi untuk menu ini." }}
-                </p>
-            </div>
+          <!-- Deskripsi Card -->
+          <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <label
+              class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1"
+            >
+              <ScrollTextIcon class="w-3 h-3 text-gray-400" /> Deskripsi
+            </label>
+            <p class="text-gray-700 text-sm leading-relaxed">
+              {{ form.description || "Tidak ada deskripsi untuk menu ini." }}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -112,11 +109,17 @@
             class="w-full h-full object-cover"
             alt="Preview"
           />
-          <ImagePlus />
+          <ImagePlus v-else />
         </div>
         <div class="flex-1 space-y-2">
           <label class="text-sm font-medium text-gray-700 flex items-center gap-1">
             <ImagePlus class="w-4 h-4 text-gray-400" /> Foto Menu
+            <!-- Tombol hapus gambar hanya muncul saat mode edit dan ada gambar -->
+            <span
+              v-if="mode === 'edit' && form.imagePreview && !form.imageFile"
+              class="text-xs text-red-500 cursor-pointer hover:underline ml-2"
+              @click="removeImage"
+            >(Hapus)</span>
           </label>
           <input
             type="file"
@@ -124,7 +127,7 @@
             accept="image/*"
             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-primary hover:file:bg-red-100 cursor-pointer transition-colors"
           />
-          <p class="text-xs text-gray-400">Format: JPG, PNG. Maksimal 1MB.</p>
+          <p class="text-xs text-gray-400">Format: JPG, PNG. Maksimal 2MB.</p>
         </div>
       </div>
 
@@ -162,6 +165,7 @@
               type="radio"
               v-model="form.status"
               value="Tersedia"
+              :disabled="Number(form.stock) <= 0" 
               class="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
             />
             <span class="text-sm text-gray-700">Tersedia</span>
@@ -176,6 +180,9 @@
             <span class="text-sm text-gray-700">Tidak Tersedia</span>
           </label>
         </div>
+        <p v-if="Number(form.stock) <= 0" class="text-xs text-red-500 mt-1">
+          Status otomatis menjadi 'Tidak Tersedia' karena Stok habis (0).
+        </p>
       </div>
 
       <!-- Deskripsi -->
@@ -206,7 +213,11 @@
         <BaseButton variant="outline-gray" @click="$emit('update:modelValue', false)">
           Batal
         </BaseButton>
-        <BaseButton @click="handleSubmit" :loading="isSaving">
+        <BaseButton
+          @click="handleSubmit"
+          :loading="isSaving || props.loading"
+          :disabled="isSaving || props.loading || !isFormValid"
+        >
           <template #icon-left><SaveIcon class="w-4 h-4" /></template>
           {{ mode === "edit" ? "Simpan Perubahan" : "Simpan Menu" }}
         </BaseButton>
@@ -216,7 +227,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed } from "vue";
+import { reactive, watch, computed, ref } from "vue"; // <-- ref DITAMBAHKAN di sini
 import {
   ImagePlus,
   Utensils,
@@ -239,17 +250,25 @@ const props = defineProps({
   mode: { type: String, default: "add" },
   itemData: { type: Object, default: null },
   categoryOptions: { type: Array, default: () => [] },
+  loading: { type: Boolean, default: false }, // Tambahkan prop loading dari parent
 });
 
-const emit = defineEmits(["update:modelValue", "save"]);
+const emit = defineEmits(["update:modelValue", "save"]); // Emit save ke parent
 
-const isSaving = ref(false);
+const isSaving = ref(false); // State loading untuk tombol submit
 
-// --- COMPUTED: LOGIKA STATUS OTOMATIS ---
+// --- COMPUTED: LOGIKA STATUS OTOMATIS (Hanya untuk Tampilan/UI) ---
 // Jika stok habis (<= 0) ATAU status diset manual ke 'Tidak Tersedia',
 // maka menu dianggap tidak tersedia.
 const isUnavailable = computed(() => {
   return Number(form.stock) <= 0 || form.status === "Tidak Tersedia";
+});
+
+// --- COMPUTED: VALIDASI FORM SEDERHANA ---
+const isFormValid = computed(() => {
+  // Pastikan name, price, dan category terisi
+  // Price harus angka positif
+  return form.name && form.price !== "" && Number(form.price) > 0 && form.category;
 });
 
 const modalTitle = computed(() => {
@@ -259,34 +278,51 @@ const modalTitle = computed(() => {
 });
 
 const defaultForm = {
+  id: null, // Tambahkan ID untuk memudahkan pengiriman data edit
   name: "",
   category: "",
-  price: "",
-  stock: "",
+  price: "", // Biarkan string dulu, validasi nanti
+  stock: "", // Biarkan string dulu, validasi nanti
   description: "",
-  imageFile: null,
-  imagePreview: null,
+  imageFile: null, // Objek File yang dipilih
+  imagePreview: "https://via.placeholder.com/150x150?text=No+Image  ", // Placeholder default
   status: "Tersedia", // Default status
 };
 
 const form = reactive({ ...defaultForm });
 
+// Watch untuk mengisi form saat itemData berubah (mode edit/detail)
 watch(
   () => props.itemData,
   (newItem) => {
-    if (newItem && (props.mode === "edit" || props.mode === "detail")) {
-      Object.assign(form, {
-        name: newItem.name,
-        category: newItem.category,
-        price: newItem.price,
-        stock: newItem.stock,
-        description: newItem.description,
-        imagePreview: newItem.image,
-        status: newItem.status || "Tersedia", // Fallback ke tersedia
-      });
+    // Reset form saat modal dibuka (juga saat ditutup, tapi watch akan mengisi ulang jika dibuka)
+    Object.assign(form, { ...defaultForm });
+    // Jangan reset imagePreview jika sedang edit/detail dan ada gambar dari BE
+    if (props.mode === "edit" || props.mode === "detail") {
+      form.imagePreview = newItem?.gambar_url || "https://via.placeholder.com/150x150?text=No+Image  ";
     } else {
-      Object.assign(form, { ...defaultForm });
-      form.imagePreview = null;
+      form.imagePreview = "https://via.placeholder.com/150x150?text=No+Image  "; // Reset jika mode add
+    }
+    form.imageFile = null; // Selalu reset file input FE
+
+    if (newItem && (props.mode === "edit" || props.mode === "detail")) {
+      console.log("Loading item data for edit/detail:", newItem); // Debug log
+      // 1. Pemuatan Data untuk Edit/Detail
+      Object.assign(form, {
+        id: newItem.id_menu, // <-- PENTING: Ambil ID untuk operasi Edit
+        name: newItem.menu,
+        category: newItem.kategori,
+        price: Number(newItem.harga).toString(), // Convert ke string untuk input type number
+        stock: Number(newItem.stok).toString(), // Convert ke string untuk input type number
+        description: newItem.deskripsi,
+        // imagePreview sudah diisi di atas
+        // Jangan set imageFile karena itu adalah objek File dari upload FE, bukan path dari BE
+        status: newItem.status.charAt(0).toUpperCase() + newItem.status.slice(1), // Ubah ke format Title Case
+      });
+      console.log("Form ID set to:", form.id); // Debug log
+    } else {
+      console.log("Loading default data for add"); // Debug log
+      // 2. Logika Default untuk Add
       if (props.categoryOptions.length > 0) {
         const validOption = props.categoryOptions.find((opt) => opt !== "Kategori");
         if (validOption) form.category = validOption;
@@ -296,37 +332,105 @@ watch(
   { immediate: true, deep: true }
 );
 
+// Watch untuk menonaktifkan radio "Tersedia" jika stok 0
+// Dan otomatis mengganti status jika stok 0 saat input berubah
+watch(
+  () => form.stock,
+  (newStock) => {
+    if (Number(newStock) <= 0) {
+      form.status = "Tidak Tersedia";
+    }
+  }
+);
+
 const handleFileChange = (e) => {
   const file = e.target.files[0];
   if (file) {
+    // --- VALIDASI SEDERHANA DI FE ---
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Hanya file gambar (JPG, PNG, GIF) yang diperbolehkan.');
+      // Reset input file agar tidak memilih file yang salah lagi
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB
+      alert('Ukuran file tidak boleh lebih dari 2MB.');
+      e.target.value = '';
+      return;
+    }
+    // ------------------------------------
+
     form.imageFile = file;
     form.imagePreview = URL.createObjectURL(file);
+  } else {
+    // Jika tidak ada file dipilih (misalnya user klik cancel atau menghapus pilihan)
+    // Kembalikan ke gambar lama jika sedang edit, atau ke placeholder jika add
+    if (props.mode === 'edit' && props.itemData?.gambar_url) {
+        form.imagePreview = props.itemData.gambar_url;
+    } else {
+        form.imagePreview = "https://via.placeholder.com/150x150?text=No+Image  ";
+    }
+    form.imageFile = null;
+  }
+};
+
+const removeImage = () => {
+  // Hapus file dan preview saat tombol hapus diklik
+  form.imageFile = null;
+  if (props.mode === 'edit') {
+    // Jika mode edit, set preview ke placeholder atau gambar lama sebelum edit
+    form.imagePreview = "https://via.placeholder.com/150x150?text=No+Image  ";
+  } else {
+    // Jika mode add, cukup reset preview
+    form.imagePreview = "https://via.placeholder.com/150x150?text=No+Image  ";
   }
 };
 
 const handleSubmit = async () => {
   if (props.mode === "detail") return;
 
-  // Mengganti alert() dengan pengecekan form yang lebih baik
-  if (!form.name || !form.price) {
-    console.error("Nama dan Harga wajib diisi!");
+  console.log("Submit clicked. Current form data:", { ...form });
+
+  // Validasi form sederhana
+  if (!isFormValid.value) {
+    console.error("Form tidak valid. Nama, Harga (positif), dan Kategori wajib diisi.");
     return;
   }
 
-  isSaving.value = true;
-  await new Promise((r) => setTimeout(r, 800));
-
-  // Update status otomatis jika stok 0 saat disimpan
+  // Logika Status saat DISIMPAN (Bukan saat input berubah)
+  // Tentukan status yang akan dikirim ke BE
+  let statusToSend = form.status;
   if (Number(form.stock) <= 0) {
-    form.status = "Tidak Tersedia";
+    statusToSend = "Tidak Tersedia";
   }
 
+  console.log("Emitting save event with data:", {
+    id: form.id,
+    name: form.name,
+    description: form.description,
+    price: Number(form.price),
+    category: form.category,
+    stock: Number(form.stock),
+    status: statusToSend,
+    imageFile: form.imageFile, // Bisa null jika tidak ada file baru
+  }); // Debug log
+
+  // Emit event save ke parent (AdminMenu.vue)
   emit("save", {
-    ...form,
-    id: props.itemData?.id,
+    id: form.id, // Penting untuk update
+    name: form.name,
+    description: form.description,
+    price: Number(form.price),
+    category: form.category,
+    stock: Number(form.stock),
+    status: statusToSend, // Kirim status yang sudah di-override jika perlu
+    imageFile: form.imageFile, // Kirim file jika ada, null jika tidak ada
   });
 
-  isSaving.value = false;
-  emit("update:modelValue", false);
+  // Parent (AdminMenu.vue) akan menangani loading dan penutupan modal
+  // isSaving.value akan diatur oleh parent
+  // emit("update:modelValue", false); // Parent akan tutup modal setelah sukses
 };
 </script>
