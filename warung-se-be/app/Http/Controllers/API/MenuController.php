@@ -84,14 +84,11 @@ class MenuController extends Controller
             $dataToUpdate['gambar_menu'] = $path;
         } else {
             // Jika field gambar_menu ada di validatedData (artinya FE mengirim gambar_menu: null)
-            if (isset($dataToUpdate['gambar_menu']) && is_null($dataToUpdate['gambar_menu'])) {
-                // User berniat menghapus gambar
-                if ($menu->gambar_menu) {
-                    Storage::disk('public')->delete($menu->gambar_menu);
-                }
-                // dataToUpdate['gambar_menu'] sudah null
+            if (array_key_exists('gambar_menu', $dataToUpdate) && $dataToUpdate['gambar_menu'] === '') {
+                // Hapus gambar lama
+                if ($menu->gambar_menu) Storage::disk('public')->delete($menu->gambar_menu);
+                $dataToUpdate['gambar_menu'] = null;
             } else {
-                // Jika tidak ada file dan bukan perintah hapus (null), hapus dari array update
                 unset($dataToUpdate['gambar_menu']);
             }
         }

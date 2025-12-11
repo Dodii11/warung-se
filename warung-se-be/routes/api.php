@@ -34,7 +34,7 @@ use App\Http\Controllers\API\AlamatController;
         // Routes yang diizinkan semua role *yang sudah login*
         Route::get('/menu', [MenuController::class, 'index']);
         Route::get('/menu/{id}', [MenuController::class, 'show']);
-        Route::get('/menu/{id}/gambar', [MenuController::class, 'gambar']);
+        Route::get('/menu/{id}/gambar', action: [MenuController::class, 'gambar']);
 
         // ✅ PINDAHKAN /account/me KE SINI, TANPA middleware role:user
         Route::get('/account/me', [AccountController::class, 'me']);
@@ -106,7 +106,7 @@ use App\Http\Controllers\API\AlamatController;
         Route::middleware(['role:super admin'])->group(function () {
 
             // CRUD Menu
-            Route::post('/menu', action: [MenuController::class, 'store']);
+            Route::post('/menu', [MenuController::class, 'store']);
             Route::put('/menu/{id}', [MenuController::class, 'update']);
             Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
 

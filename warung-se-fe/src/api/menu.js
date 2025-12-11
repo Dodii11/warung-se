@@ -11,14 +11,14 @@ export const menuApi = {
   // CREATE NEW MENU (Super Admin Only)
   create: (data) => apiClient.post("/menu", data, {
     headers: {
-      'Content-Type': 'multipart/form-data' // Penting!
+      'Content-Type': 'multipart/form-data'
     }
   }),
 
   // UPDATE EXISTING MENU (Super Admin Only)
-  update: (id, data) => apiClient.put(`/menu/${id}`, data, { // Gunakan PUT
+  update: (id, data) => apiClient.post(`/menu/${id}`, data, { // Gunakan PUT
     headers: {
-      'Content-Type': 'multipart/form-data' // Penting!
+      'Content-Type': 'multipart/form-data'
     }
   }),
 
