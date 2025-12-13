@@ -110,7 +110,6 @@ const form = ref({
   email: "",
   phone: "",
   address: "",
-  // Meskipun data dummy tidak memiliki 'status', kita tambahkan default
   status: "active",
 });
 
@@ -118,22 +117,28 @@ const form = ref({
 watch(
   () => props.itemData,
   (item) => {
-    // Saat itemData null (reset)
     if (!item) {
-      form.value = { id: "", name: "", email: "", phone: "", address: "", status: "active" };
+      form.value = {
+        id: "",
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        status: "",
+      };
       return;
     }
 
-    // Saat itemData memiliki nilai (saat tombol detail ditekan)
     form.value = {
-      id: item.id ?? "",
-      name: item.name ?? "",
-      email: item.email ?? "",
-      phone: item.phone ?? "",
-      address: item.address ?? "",
-      status: item.status ?? "active",
+      id: item.id_user ?? "",
+      name: item.nama_user ?? "",
+      email: item.email_user ?? "",
+      phone: item.no_telp ?? "-",
+      address: "-", // belum ada API alamat user di sini
+      status: item.status ?? "",
     };
   },
   { immediate: true }
 );
+
 </script>

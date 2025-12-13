@@ -24,7 +24,10 @@
         <h2 class="heading-2">Daftar Menu</h2>
         <div class="flex items-center">
           <!-- Tombol Tambah hanya muncul untuk Super Admin -->
-          <MenuAddButton v-if="auth.user?.role === 'admin' || auth.user?.role === 'super admin'" @click="openModal('add')" />
+          <MenuAddButton
+            v-if="auth.user?.role === 'admin' || auth.user?.role === 'super admin'"
+            @click="openModal('add')"
+          />
         </div>
       </div>
 
@@ -66,7 +69,7 @@
         <template #description="{ row }">
           <div class="max-w-60">
             <p class="text-gray-500 text-sm whitespace-normal truncate">
-              {{ row.deskripsi || '-' }}
+              {{ row.deskripsi || "-" }}
             </p>
           </div>
         </template>
@@ -93,12 +96,20 @@
 
         <!-- STATUS -->
         <template #status="{ row }">
-            <span
-              class="px-2 py-1 rounded-full text-xs font-medium"
-              :class="row.stok > 0 && row.status.toLowerCase() === 'tersedia' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
-            >
-              {{ row.stok > 0 && row.status.toLowerCase() === 'tersedia' ? 'Tersedia' : 'Tidak Tersedia' }}
-            </span>
+          <span
+            class="px-2 py-1 rounded-full text-xs font-medium"
+            :class="
+              row.stok > 0 && row.status.toLowerCase() === 'tersedia'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-red-100 text-red-700'
+            "
+          >
+            {{
+              row.stok > 0 && row.status.toLowerCase() === "tersedia"
+                ? "Tersedia"
+                : "Tidak Tersedia"
+            }}
+          </span>
         </template>
 
         <!-- ACTIONS -->
@@ -120,7 +131,10 @@
         :icon="UtensilsCrossed"
       >
         <div class="flex items-center justify-center">
-          <MenuAddButton v-if="auth.user?.role === 'admin' || auth.user?.role === 'super admin'" @click="openModal('add')" />
+          <MenuAddButton
+            v-if="auth.user?.role === 'admin' || auth.user?.role === 'super admin'"
+            @click="openModal('add')"
+          />
         </div>
       </BaseEmptyState>
 
@@ -144,7 +158,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, toRaw } from "vue";
 import { useAuth } from "@/stores/auth"; // Import store auth untuk cek role
 
 import BaseCard from "@/components/base/BaseCard.vue";
@@ -185,11 +199,11 @@ const fetchMenus = async () => {
   error.value = null;
   try {
     const res = await menuApi.getAll();
-    items.value = res.data.map(item => ({
-        ...item,
-        // Pastikan status di-lowercase agar konsisten saat pengecekan di computed
-        status: item.status ? item.status.toLowerCase() : 'tersedia',
-        stok: Number(item.stok) // Pastikan stok adalah angka
+    items.value = res.data.map((item) => ({
+      ...item,
+      // Pastikan status di-lowercase agar konsisten saat pengecekan di computed
+      status: item.status ? item.status.toLowerCase() : "tersedia",
+      stok: Number(item.stok), // Pastikan stok adalah angka
     }));
   } catch (err) {
     console.error("Gagal mengambil data menu:", err);
@@ -206,7 +220,9 @@ onMounted(() => {
 // --- Logic Modal ---
 const openModal = (mode, item = null) => {
   modalMode.value = mode;
-  selectedItem.value = item;
+
+  selectedItem.value = item ? JSON.parse(JSON.stringify(toRaw(item))) : null;
+
   showModal.value = true;
 };
 
@@ -232,13 +248,22 @@ const handleSaveMenu = async (formData) => {
     }
 
     // Jika tidak ada file, tapi di mode edit dan pengguna ingin menghapus gambar
-    else if (modalMode.value === 'edit' && formData.imagePreview === 'https://via.placeholder.com/150x150?text=No+Image') {
-        // Kirim null sebagai instruksi hapus gambar lama di BE
-        payload.append("gambar_menu", '');
+    else if (
+      modalMode.value === "edit" &&
+      formData.imagePreview === "https://via.placeholder.com/150x150?text=No+Image"
+    ) {
+      // Kirim null sebagai instruksi hapus gambar lama di BE
+      payload.append("gambar_menu", "");
     }
 
-        console.log("AdminMenu: Processing save. Mode:", modalMode.value, "FormData ID:", formData.id, "Has ID?", !!formData.id);
-
+    console.log(
+      "AdminMenu: Processing save. Mode:",
+      modalMode.value,
+      "FormData ID:",
+      formData.id,
+      "Has ID?",
+      !!formData.id
+    );
 
     if (modalMode.value === "edit" && formData.id) {
       // PENTING: Untuk PUT/PATCH request dengan FormData (karena ada file),
@@ -254,7 +279,6 @@ const handleSaveMenu = async (formData) => {
     }
 
     showModal.value = false;
-
   } catch (err) {
     console.error("Gagal menyimpan menu:", err);
     // Tampilkan pesan error dari BE

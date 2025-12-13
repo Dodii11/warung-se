@@ -1,4 +1,3 @@
-// src/api/menu.js
 import apiClient from "@/api/axios";
 
 export const menuApi = {
@@ -16,7 +15,7 @@ export const menuApi = {
   }),
 
   // UPDATE EXISTING MENU (Super Admin Only)
-  update: (id, data) => apiClient.post(`/menu/${id}`, data, { // Gunakan PUT
+  update: (id, data) => apiClient.post(`/menu/${id}`, data, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }

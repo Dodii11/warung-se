@@ -47,12 +47,13 @@
     </BaseCard>
 
     <!-- USER DETAIL MODAL -->
-    <UserModal v-model="showUserModal" :itemData="selectedUser" :key="selectedUser?.id" />
+    <UserModal v-model="showUserModal" :itemData="selectedUser" :key="selectedUser?.id_user" />
   </section>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { userApi } from "@/api/user";
 
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
@@ -63,44 +64,57 @@ import UserRowActions from "@/components/admin/user/UserRowActions.vue";
 import UserFilter from "@/components/admin/user/UserFilter.vue";
 import UserModal from "@/components/admin/user/UserModal.vue";
 
-import { userColumns, userRows } from "@/data/userData";
 import { Users } from "lucide-vue-next";
 
-// MODAL STATE
+const userStore = userApi();
+
+onMounted(() => {
+  userStore.fetchUsers();
+});
+
+const userColumns = [
+  { key: "id_user", label: "ID" },
+  { key: "nama_user", label: "Nama" },
+  { key: "email_user", label: "Email" },
+  { key: "no_telp", label: "No. Telepon" },
+];
+
+// MODAL
 const showUserModal = ref(false);
 const selectedUser = ref(null);
 
-// Open User Detail Modal
 const openUserDetail = (row) => {
-  selectedUser.value = { ...row };
+  selectedUser.value = {
+    id_user: row.id_user,
+    nama_user: row.nama_user,
+    email_user: row.email_user,
+    no_telp: row.no_telp,
+    status: row.status,
+  };
+
   showUserModal.value = true;
 };
 
-// SEARCH + FILTER
+// SEARCH & FILTER
 const search = ref("");
 const sortOrder = ref("asc");
 
-// Filter by search
 const filteredRows = computed(() => {
-  if (!search.value) return userRows;
+  if (!search.value) return userStore.users;
 
   const text = search.value.toLowerCase();
 
-  return userRows.filter((u) =>
-    [u.id, u.name, u.email].some((f) => String(f).toLowerCase().includes(text))
+  return userStore.users.filter((u) =>
+    [u.id_user, u.nama_user, u.email_user].some((f) => String(f).toLowerCase().includes(text))
   );
 });
 
-// Final sorted + filtered rows
 const sortedAndFilteredRows = computed(() => {
   return [...filteredRows.value].sort((a, b) => {
-    const aNum = Number(a.id.replace(/\D/g, ""));
-    const bNum = Number(b.id.replace(/\D/g, ""));
-    return sortOrder.value === "asc" ? aNum - bNum : bNum - aNum;
+    return sortOrder.value === "asc" ? a.id_user - b.id_user : b.id_user - a.id_user;
   });
 });
 
-// Search Handler
 const onSearch = (value) => {
   search.value = value;
 };

@@ -18,7 +18,7 @@ class AccountSeeder extends Seeder
         // Buat akun user
         Account::create([
             'nama_user' => 'User Biasa',
-            'email_user' => 'user@example.com',
+            'email_user' => 'user@gmail.com',
             'password' => Hash::make('password123'),
             'id_role' => $roleUser,
             'status' => 'aktif'
@@ -27,7 +27,7 @@ class AccountSeeder extends Seeder
         // Buat akun admin
         Account::create([
             'nama_user' => 'Admin',
-            'email_user' => 'admin@example.com',
+            'email_user' => 'admin@gmail.com',
             'password' => Hash::make('password123'),
             'id_role' => $roleAdmin,
             'status' => 'aktif'
@@ -36,7 +36,7 @@ class AccountSeeder extends Seeder
         // Buat akun super admin
         Account::create([
             'nama_user' => 'Super Admin',
-            'email_user' => 'superadmin@example.com',
+            'email_user' => 'superadmin@gmail.com',
             'password' => Hash::make('password123'),
             'id_role' => $roleSuper,
             'status' => 'aktif'

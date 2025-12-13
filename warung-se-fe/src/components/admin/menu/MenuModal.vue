@@ -114,12 +114,6 @@
         <div class="flex-1 space-y-2">
           <label class="text-sm font-medium text-gray-700 flex items-center gap-1">
             <ImagePlus class="w-4 h-4 text-gray-400" /> Foto Menu
-            <!-- Tombol hapus gambar hanya muncul saat mode edit dan ada gambar -->
-            <span
-              v-if="mode === 'edit' && form.imagePreview && !form.imageFile"
-              class="text-xs text-red-500 cursor-pointer hover:underline ml-2"
-              @click="removeImage"
-            >(Hapus)</span>
           </label>
           <input
             type="file"
@@ -165,7 +159,7 @@
               type="radio"
               v-model="form.status"
               value="Tersedia"
-              :disabled="Number(form.stock) <= 0" 
+              :disabled="Number(form.stock) <= 0"
               class="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
             />
             <span class="text-sm text-gray-700">Tersedia</span>
@@ -373,18 +367,6 @@ const handleFileChange = (e) => {
         form.imagePreview = "https://via.placeholder.com/150x150?text=No+Image  ";
     }
     form.imageFile = null;
-  }
-};
-
-const removeImage = () => {
-  // Hapus file dan preview saat tombol hapus diklik
-  form.imageFile = null;
-  if (props.mode === 'edit') {
-    // Jika mode edit, set preview ke placeholder atau gambar lama sebelum edit
-    form.imagePreview = "https://via.placeholder.com/150x150?text=No+Image  ";
-  } else {
-    // Jika mode add, cukup reset preview
-    form.imagePreview = "https://via.placeholder.com/150x150?text=No+Image  ";
   }
 };
 

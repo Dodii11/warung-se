@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-2 w-28">
-    <DetailButton :row="item" @click="emit('detail', item)"/>
+    <DetailButton @click="$emit('detail', item)"> </DetailButton>
   </div>
 </template>
 
@@ -11,5 +11,5 @@ defineProps({
   item: Object,
 });
 
-const emit = defineEmits(["detail"]);
+defineEmits(["detail"]);
 </script>
