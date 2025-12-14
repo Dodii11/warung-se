@@ -33,6 +33,7 @@ class DriverController extends Controller
         $validator = Validator::make($request->all(), [
             'nama_driver'     => 'required|string|max:100',
             'no_telp'         => 'nullable|numeric',
+            'status'          => 'in:aktif,tidak aktif',
             'tipe_kendaraan'  => 'required|in:motor,pick up',
             'plat_kendaraan'  => 'nullable|string|max:20',
             'gambar_driver'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048'

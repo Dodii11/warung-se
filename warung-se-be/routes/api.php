@@ -135,7 +135,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/user/{id}', [AccountController::class, 'destroy']);
         Route::get('/users/customer', [AccountController::class, 'indexUser']);
 
-
         // Assign Driver ke pesanan
         Route::put('/pesanan/{id}/assign-driver', [PesananController::class, 'assignDriver']);
 
