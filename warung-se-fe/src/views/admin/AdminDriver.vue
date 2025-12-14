@@ -82,85 +82,98 @@ import DriverSearch from "@/components/admin/driver/DriverSearch.vue";
 import DriverModal from "@/components/admin/driver/DriverModal.vue";
 import DriverAddButton from "@/components/admin/driver/DriverAddButton.vue";
 
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { Motorbike } from "lucide-vue-next";
-import { driverColumns, driverRows } from "@/data/driverData";
+import { driverColumns } from "@/data/driverData";
+import driverApi from "@/api/driver";
 
-// --- STATE MANAGEMENT ---
+// ================= STATE =================
 const search = ref("");
 const filterStatus = ref("Status");
 
-// Gunakan state reaktif untuk daftar driver agar bisa di-edit/tambah/hapus
-const driverList = ref(driverRows);
+// ⬅️ tetap pakai driverList seperti sebelumnya
+const driverList = ref([]);
 
 const isModalOpen = ref(false);
 const modalMode = ref("add");
-const selectedDriver = ref(null); // Driver yang dipilih untuk edit/detail
+const selectedDriver = ref(null);
 
-// --- MODAL HANDLERS ---
+// ================= MAPPER (PENTING) =================
+const mapDriverApiToRow = (driver) => ({
+  // field lama (WAJIB ADA)
+  id: driver.id_driver,
+  name: driver.nama_driver,
+  phone: driver.no_telp,
+  vehicleName: driver.plat_kendaraan,
+  vehicleType: driver.tipe_kendaraan === "motor"
+    ? "Sepeda Motor"
+    : "Truk Pick Up",
+  status: driver.status === "aktif" ? "Tersedia" : "Tidak Aktif",
+  image: driver.gambar_url,
+  lastUpdate: driver.updated_at
+    ? new Date(driver.updated_at).toLocaleDateString("id-ID")
+    : "-",
+
+  // simpan raw data kalau dibutuhkan
+  _raw: driver,
+});
+
+// ================= API =================
+const fetchDrivers = async () => {
+  try {
+    const res = await driverApi.getAll();
+    driverList.value = res.data.map(mapDriverApiToRow);
+  } catch (e) {
+    console.error("Gagal ambil driver:", e);
+  }
+};
+
+onMounted(fetchDrivers);
+
+// ================= MODAL =================
 const openModal = (mode, item = null) => {
   modalMode.value = mode;
-  selectedDriver.value = item;
+  selectedDriver.value = item?._raw || null;
   isModalOpen.value = true;
 };
 
-// --- CRUD DUMMY LOGIC ---
-const handleSave = (formData) => {
-  const { id, name, phone, vehicleName, vehicleType, status, image } = formData;
+const handleSave = async (formData) => {
+  try {
+    if (modalMode.value === "add") {
+      await driverApi.create(formData);
+    } else {
+      await driverApi.update(selectedDriver.value.id_driver, formData);
+    }
 
-  // Temukan Index
-  const index = driverList.value.findIndex((d) => d.id === id);
-
-  if (index !== -1) {
-    // Logika EDIT
-    Object.assign(driverList.value[index], {
-      name,
-      phone,
-      vehicleName,
-      vehicleType,
-      status,
-      image,
-      lastUpdate: new Date().toLocaleDateString("id-ID"),
-    });
-    console.log(`[CRUD DUMMY] Driver ${id} diperbarui.`);
-  } else {
-    // Logika ADD (asumsi ID sudah digenerate di DriverModal jika mode add)
-    driverList.value.push({
-      id,
-      name,
-      phone,
-      vehicleName,
-      vehicleType,
-      status,
-      image,
-      lastUpdate: new Date().toLocaleDateString("id-ID"),
-    });
-    console.log(`[CRUD DUMMY] Driver ${id} ditambahkan.`);
+    isModalOpen.value = false;
+    await fetchDrivers();
+  } catch (e) {
+    console.error("Gagal simpan driver:", e);
   }
 };
 
-// --- DELETE LOGIC (Menggunakan window.confirm) ---
-const handleDelete = (item) => {
-  if (confirm(`Hapus driver ${item.name} (${item.id})?`)) {
-    driverList.value = driverList.value.filter((d) => d.id !== item.id);
-    console.log(`[CRUD DUMMY] Driver ID: ${item.id} berhasil dihapus.`);
+const handleDelete = async (item) => {
+  if (!confirm(`Hapus driver ${item.name} (${item.id})?`)) return;
+
+  try {
+    await driverApi.remove(item.id);
+    await fetchDrivers();
+  } catch (e) {
+    console.error("Gagal hapus driver:", e);
   }
 };
 
-// --- FILTER + SEARCH LOGIC ---
+// ================= FILTER + SEARCH (TIDAK DIUBAH) =================
 const filteredRows = computed(() => {
   return driverList.value
     .filter((d) => {
-      // Filter Status
       if (filterStatus.value !== "Status") {
         return d.status === filterStatus.value;
       }
       return true;
     })
     .filter((d) => {
-      // Filter Search
       const key = search.value.toLowerCase();
-      // Melakukan pencarian berdasarkan ID, Nama driver, atau Kendaraan
       return (
         d.id.toLowerCase().includes(key) ||
         d.name.toLowerCase().includes(key) ||
@@ -169,3 +182,4 @@ const filteredRows = computed(() => {
     });
 });
 </script>
+
