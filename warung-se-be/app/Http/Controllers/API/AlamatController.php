@@ -11,7 +11,10 @@ class AlamatController extends Controller
 
     public function index(Request $request)
     {
-        return Alamat::where('id_user', $request->id_user)->get();
+        return $request->user()
+            ->alamat()
+            ->orderByDesc('is_default')
+            ->get();
     }
 
     /**
@@ -20,21 +23,24 @@ class AlamatController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'id_user' => 'required|exists:account,id_user',
             'alamat' => 'required|string',
+            'kecamatan' => 'required|string',
+            'kota' => 'required|string',
+            'data_lokasi' => 'nullable|string',
         ]);
 
-        $alamat = Alamat::create([
-            'id_user' => $request->id_user,
-            'data_lokasi' => $request->data_lokasi,
+        $user = $request->user();
+
+        $alamat = $user->alamat()->create([
             'alamat' => $request->alamat,
             'kecamatan' => $request->kecamatan,
             'kota' => $request->kota,
+            'data_lokasi' => $request->data_lokasi,
             'is_default' => false,
         ]);
 
-        // Jika user belum punya alamat default → jadikan default
-        if (!Alamat::where('id_user', $request->id_user)->where('is_default', true)->exists()) {
+        // jika belum ada default
+        if (!$user->alamat()->where('is_default', true)->exists()) {
             $alamat->setAsDefault();
         }
 
@@ -44,12 +50,15 @@ class AlamatController extends Controller
         ]);
     }
 
+
     /**
      * Ubah alamat
      */
     public function update(Request $request, $id_alamat)
     {
-        $alamat = Alamat::findOrFail($id_alamat);
+        $alamat = $request->user()
+            ->alamat()
+            ->findOrFail($id_alamat);
 
         $alamat->update($request->only([
             'data_lokasi',
@@ -82,9 +91,11 @@ class AlamatController extends Controller
     /**
      * Hapus alamat
      */
-    public function destroy($id_alamat)
+    public function destroy(Request $request, $id_alamat)
     {
-        $alamat = Alamat::findOrFail($id_alamat);
+        $alamat = $request->user()
+            ->alamat()
+            ->findOrFail($id_alamat);
 
         $alamat->delete();
 

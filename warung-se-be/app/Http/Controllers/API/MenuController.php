@@ -60,7 +60,8 @@ class MenuController extends Controller
             return response()->json(['message' => 'Menu not found'], 404);
         }
 
-        $request->validate([
+        // 1. Validasi Input. Menggunakan 'sometimes' agar hanya memvalidasi field yang dikirimkan
+        $validatedData = $request->validate([
             'menu' => 'sometimes|required|string',
             'deskripsi' => 'nullable|string',
             'harga' => 'sometimes|required|integer',
@@ -70,18 +71,30 @@ class MenuController extends Controller
             'gambar_menu' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
+        // Data awal untuk update adalah data yang sudah divalidasi
+        $dataToUpdate = $validatedData;
+
+        // 2. Handle Upload Gambar
         if ($request->hasFile('gambar_menu')) {
-            // hapus gambar lama jika ada
+            // Hapus gambar lama jika ada
             if ($menu->gambar_menu) {
                 Storage::disk('public')->delete($menu->gambar_menu);
             }
             $path = $request->file('gambar_menu')->store('menu', 'public');
-            $menu->gambar_menu = $path;
+            $dataToUpdate['gambar_menu'] = $path;
+        } else {
+            // Jika field gambar_menu ada di validatedData (artinya FE mengirim gambar_menu: null)
+            if (array_key_exists('gambar_menu', $dataToUpdate) && $dataToUpdate['gambar_menu'] === '') {
+                // Hapus gambar lama
+                if ($menu->gambar_menu) Storage::disk('public')->delete($menu->gambar_menu);
+                $dataToUpdate['gambar_menu'] = null;
+            } else {
+                unset($dataToUpdate['gambar_menu']);
+            }
         }
 
-        // update kolom lainnya
-        $menu->fill($request->except('gambar_menu'));
-        $menu->save();
+        // 3. Update Kolom Lainnya
+        $menu->update($dataToUpdate);
 
         return response()->json($menu);
     }

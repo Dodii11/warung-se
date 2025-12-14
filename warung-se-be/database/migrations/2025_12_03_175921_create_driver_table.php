@@ -15,6 +15,7 @@ return new class extends Migration
             $table->enum('status', ['aktif','tidak aktif'])->default('aktif');
             $table->enum('tipe_kendaraan', ['motor','pick up']);
             $table->string('plat_kendaraan')->nullable();
+            $table->string('gambar_driver')->nullable();
             $table->timestamps();
         });
     }

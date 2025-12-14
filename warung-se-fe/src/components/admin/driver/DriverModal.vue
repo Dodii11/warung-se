@@ -19,13 +19,6 @@
           >
             <UserIcon class="w-5 h-5" />
           </div>
-
-          <div>
-            <p class="text-xs font-medium text-blue-600 uppercase tracking-wider mb-0.5">
-              ID Driver
-            </p>
-            <p class="text-lg font-bold text-blue-900">{{ form.id }}</p>
-          </div>
         </div>
 
         <!-- Menampilkan status pengguna -->
@@ -106,11 +99,6 @@
          MODE FORM (ADD / EDIT)
          ========================= -->
     <form v-else @submit.prevent="handleSubmit" class="space-y-5">
-
-      <!-- Input ID Driver (Hanya di mode Add jika ingin diisi manual) -->
-      <BaseInput v-if="mode === 'add'" label="ID Driver" v-model="form.id" placeholder="#DRV-001">
-        <template #icon><HashIcon class="w-4 h-4 text-gray-400" /></template>
-      </BaseInput>
 
       <!-- Input Nama & Telepon -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -233,7 +221,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed } from "vue";
+import { ref, reactive, watch } from "vue";
 import BaseModal from "@/components/base/BaseModal.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseDropdown from "@/components/base/BaseDropdown.vue";
@@ -242,66 +230,62 @@ import DriverStatusBadge from "@/components/admin/driver/DriverStatusBadge.vue";
 
 import {
     UserIcon, PhoneIcon, TagIcon, CarIcon, TruckIcon,
-    ImagePlus, SaveIcon, UserCheckIcon, ActivityIcon, HashIcon, CameraIcon,
+    ImagePlus, SaveIcon, UserCheckIcon, ActivityIcon, CameraIcon,
     AlertTriangleIcon,
     Motorbike
 } from "lucide-vue-next";
 
 const props = defineProps({
   modelValue: Boolean,
-  mode: { type: String, default: "add" }, // 'add', 'edit', 'detail'
-  itemData: { type: Object, default: null },
+  mode: String,
+  itemData: Object,
 });
 
-const emit = defineEmits(["update:modelValue", "save", "delete"]);
+const emit = defineEmits(["update:modelValue", "save"]);
 
 const isSaving = ref(false);
 
-const vehicleOptions = ["Sepeda Motor", "Mobil", "Truk Pick Up"]; // Opsi tipe kendaraan
-
-const modalTitle = computed(() => {
-  if (props.mode === "detail") return "Detail Profil Driver";
-  if (props.mode === "edit") return `Update Driver: ${props.itemData?.name || ''}`;
-  return "Tambahkan Driver Baru";
-});
+const vehicleOptions = ["Sepeda Motor", "Truk Pick Up"];
 
 const defaultForm = {
-  id: "",
   name: "",
   phone: "",
   vehicleName: "",
   vehicleType: vehicleOptions[0],
+  status: "Tidak Aktif",
   imageFile: null,
-  imagePreview: "https://placehold.co/600x400/D1D5DB/4B5563?text=Foto+Profil",
-  status: "Tidak Aktif", // Default status saat tambah
-  lastUpdate: new Date().toLocaleDateString('id-ID'),
+  imagePreview: "",
 };
 
 const form = reactive({ ...defaultForm });
 
-// Logika Inisialisasi Form
+// mapping FE → DB enum
+const statusMap = {
+  "Tersedia": "aktif",
+  "Tidak Aktif": "tidak aktif",
+};
+
+const vehicleMap = {
+  "Sepeda Motor": "motor",
+  "Truk Pick Up": "pick up",
+};
+
 watch(
-  () => [props.itemData, props.mode],
-  ([newItem, newMode]) => {
-    // Reset form saat modal ditutup atau mode "add"
-    if (!newItem || newMode === 'add') {
-      Object.assign(form, { ...defaultForm, imagePreview: "" });
-      form.vehicleType = vehicleOptions[0];
+  () => props.itemData,
+  (data) => {
+    if (!data) {
+      Object.assign(form, defaultForm);
       return;
     }
 
-    // Inisialisasi dari itemData untuk mode 'edit' atau 'detail'
     Object.assign(form, {
-      id: newItem.id ?? "",
-      name: newItem.name ?? "",
-      phone: newItem.phone ?? "",
-      vehicleName: newItem.vehicleName ?? "",
-      vehicleType: newItem.vehicleType ?? vehicleOptions[0],
-      // Gunakan placeholder jika tidak ada gambar (atau URL gambar nyata jika ada)
-      imagePreview: newItem.image || "https://placehold.co/600x400/1D4ED8/FFFFFF?text=Driver+"+newItem.name.split(' ')[0],
-      status: newItem.status ?? "Tidak Aktif",
-      lastUpdate: newItem.lastUpdate ?? defaultForm.lastUpdate,
-      imageFile: null, // File selalu null saat diinisialisasi
+      name: data.nama_driver,
+      phone: data.no_telp,
+      vehicleName: data.plat_kendaraan,
+      vehicleType: data.tipe_kendaraan === "motor" ? "Sepeda Motor" : "Truk Pick Up",
+      status: data.status === "aktif" ? "Tersedia" : "Tidak Aktif",
+      imagePreview: data.gambar_url,
+      imageFile: null,
     });
   },
   { immediate: true }
@@ -316,24 +300,19 @@ const handleFileChange = (e) => {
 };
 
 const handleSubmit = async () => {
-  if (props.mode === "detail") return;
+  const fd = new FormData();
+  fd.append("nama_driver", form.name);
+  fd.append("no_telp", form.phone);
+  fd.append("status", statusMap[form.status]);
+  fd.append("tipe_kendaraan", vehicleMap[form.vehicleType]);
+  fd.append("plat_kendaraan", form.vehicleName);
 
-  if (!form.name || !form.phone || !form.vehicleName) {
-    console.error("Nama, Telepon, dan Nama Kendaraan wajib diisi!");
-    return;
+  if (form.imageFile) {
+    fd.append("gambar_driver", form.imageFile);
   }
 
   isSaving.value = true;
-  await new Promise((r) => setTimeout(r, 800));
-
-  emit("save", {
-    ...form,
-    // Pastikan ID dihasilkan jika mode 'add' dan ID manual kosong
-    id: form.id || (props.mode === 'add' ? `#DRV-${Math.floor(Math.random() * 99999).toString().padStart(5, '0')}` : props.itemData.id),
-    image: form.imagePreview, // Simpan URL gambar yang sudah di-preview
-  });
-
+  emit("save", fd);
   isSaving.value = false;
-  emit("update:modelValue", false);
 };
 </script>

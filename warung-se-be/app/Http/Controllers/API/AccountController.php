@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 class AccountController extends Controller
 {
 
-        public function me(Request $request)
+    public function me(Request $request)
     {
         // $request->user() akan mengembalikan user yang token-nya valid
         $user = $request->user();
@@ -48,7 +48,7 @@ class AccountController extends Controller
     public function show($id)
     {
         $user = Account::with('role')->find($id);
-        if(!$user) return response()->json(['message'=>'User not found'],404);
+        if (!$user) return response()->json(['message' => 'User not found'], 404);
         return response()->json($user);
     }
 
@@ -57,7 +57,7 @@ class AccountController extends Controller
     {
         $user = $request->user();
 
-        $data = $request->only('nama_user','no_telp');
+        $data = $request->only('nama_user', 'no_telp');
 
         // opsional: update role jika ada dan authorized
         if ($request->has('id_role')) {
@@ -73,9 +73,69 @@ class AccountController extends Controller
     public function destroy($id)
     {
         $user = Account::find($id);
-        if(!$user) return response()->json(['message'=>'User not found'],404);
+        if (!$user) return response()->json(['message' => 'User not found'], 404);
         $user->delete();
-        return response()->json(['message'=>'Deleted']);
+        return response()->json(['message' => 'Deleted']);
+    }
+
+    // filter user untuk manajemen user
+    public function indexUser()
+    {
+        return Account::with(['role', 'alamat']) // <- tambahkan 'alamat'
+            ->whereHas('role', function ($q) {
+                $q->where('role_name', 'user');
+            })
+            ->get();
+    }
+
+    // HANYA ADMIN (tanpa super admin)
+    public function indexAdmin()
+    {
+        return Account::with('role')
+            ->whereHas('role', function ($q) {
+                $q->where('role_name', 'admin');
+            })
+            ->get();
+    }
+
+    public function storeAdmin(Request $request)
+    {
+        $data = $request->validate([
+            'nama_user' => 'required|string',
+            'email_user' => 'required|email|unique:account,email_user',
+            'password' => 'required|min:8',
+        ]);
+
+        $data['password'] = Hash::make($data['password']);
+        $data['id_role'] = \App\Models\Role::where('role_name', 'admin')->value('id_role');
+        $data['status'] = 'aktif';
+
+        return Account::create($data);
+    }
+
+    public function updateByAdmin(Request $request, $id)
+    {
+        $user = Account::findOrFail($id);
+
+        $request->validate([
+            'nama_user' => 'required|string',
+            'email_user' => 'required|email|unique:account,email_user,' . $id . ',id_user',
+            'status' => 'required|in:aktif,tidak aktif',
+            'password' => 'nullable|min:8',
+        ]);
+
+        $data = $request->only([
+            'nama_user',
+            'email_user',
+            'status',
+        ]);
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return response()->json($user->load('role'));
     }
 }
-
