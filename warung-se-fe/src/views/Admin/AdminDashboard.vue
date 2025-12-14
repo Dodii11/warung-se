@@ -102,32 +102,53 @@ import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 import RowActions from "@/components/admin/dashboard/RowActions.vue";
 import OrdersModal from "@/components/admin/orders/OrdersModal.vue";
 
-import { ref, computed } from "vue";
-// Memuat data stat yang kini berisi ikon dan warna
-import { stats } from "@/data/dashboardData";
-
-import { columns, rows, statusOptions } from "@/data/ordersData";
-import {
-  ArrowRight,
-  // Ikon tambahan untuk estetika persentase
-  ArrowUpRightIcon,
-  ArrowDownRightIcon,
-  Receipt,
-} from "lucide-vue-next";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
-// --- PENGATURAN DATA KONSISTENSI ---
-const dashboardOrderColumns = [...columns];
+import { useStatistikStore } from "@/api/statistik";
+import { buildDashboardStats } from "@/data/dashboardData";
+import { getPesananTerbaru, getStatusOptions } from "@/api/orders";
 
-// Ambil baris lengkap dari ordersData dan potong 10 pesanan terbaru
-const recentOrders = computed(() => {
-  return rows.slice(0, 10);
+import { ArrowRight, ArrowUpRightIcon, ArrowDownRightIcon, Receipt } from "lucide-vue-next";
+
+/* ===============================
+   STATISTIK
+================================ */
+const statistikStore = useStatistikStore();
+
+const stats = computed(() => {
+  return buildDashboardStats(statistikStore.data);
 });
-// ----------------------------------------
 
-// Dummy Driver Options
-const dashboardDriverOptions = ["Belum ditetapkan", "Dodii", "Bagas", "Nopal", "Udin", "Supri"];
+/* ===============================
+   RECENT ORDERS
+================================ */
+const recentOrders = ref([]);
+const statusOptions = ref([]);
+const dashboardDriverOptions = ref(["Belum ditetapkan"]);
 
+const loadRecentOrders = async () => {
+  const res = await getPesananTerbaru();
+  recentOrders.value = res.data;
+};
+
+const loadStatusOptions = async () => {
+  const res = await getStatusOptions();
+  statusOptions.value = res.data;
+};
+
+const dashboardOrderColumns = [
+  { key: "id", label: "ID Pesanan" },
+  { key: "customer", label: "Customer" },
+  { key: "alamat", label: "Alamat" },
+  { key: "tanggal", label: "Tanggal" },
+  { key: "total", label: "Total" },
+  { key: "status", label: "Status" },
+];
+
+/* ===============================
+   MODAL & NAVIGATION
+================================ */
 const isModalOpen = ref(false);
 const selectedOrder = ref(null);
 
@@ -137,8 +158,13 @@ const openModal = (order) => {
 };
 
 const router = useRouter();
-// Fungsi untuk menangani navigasi "Semua Pesanan"
 const handleNavigation = (routeName) => {
   router.push({ name: routeName });
 };
+
+onMounted(() => {
+  statistikStore.loadStatistik();
+  loadRecentOrders();
+  loadStatusOptions();
+});
 </script>

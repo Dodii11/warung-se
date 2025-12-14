@@ -44,10 +44,10 @@
 
       <!-- Empty State -->
       <BaseEmptyState
-      v-else
-      title="Tidak ada Pesanan Ditemukan"
-      description="Silahkan ubah filter pencarian Anda."
-      :icon="Receipt"
+        v-else
+        title="Tidak ada Pesanan Ditemukan"
+        description="Silahkan ubah filter pencarian Anda."
+        :icon="Receipt"
       />
     </BaseCard>
 
@@ -57,56 +57,90 @@
       :mode="modalMode"
       :item-data="selectedItem"
       :status-options="statusOptions.filter(s => s !== 'Status')"
-      :driver-options="driverOptions"
+      :driver-options="driverOptions.map(d => d.nama_driver)"
       @save="handleSaveOrder"
     />
-
   </section>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
 import BaseStatusBadge from "@/components/base/BaseStatusBadge.vue";
 import OrdersSearch from "@/components/admin/orders/OrdersSearch.vue";
 import OrdersFilter from "@/components/admin/orders/OrdersFilter.vue";
 import OrdersRowActions from "@/components/admin/orders/OrdersRowActions.vue";
-import OrdersModal from "@/components/admin/orders/OrdersModal.vue"; // Modal Baru
-
-// Import Data
-import { columns, rows, statusOptions } from "@/data/ordersData";
+import OrdersModal from "@/components/admin/orders/OrdersModal.vue";
 import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 import { Receipt } from "lucide-vue-next";
+import { OrdersAPI } from "@/api/orders.js";
 
-// Dummy Driver Options (Nanti bisa diambil dari data driver)
-const driverOptions = ["Belum ditetapkan", "Dodii", "Bagas", "Nopal", "Udin", "Supri"];
+const columns = [
+  { label: "ID Pesanan", field: "id" },
+  { label: "Pelanggan", field: "customer" },
+  { label: "Tanggal", field: "date" },
+  { label: "Status", field: "status" },
+  { label: "Driver", field: "driver" },
+  { label: "Aksi", field: "action" }
+];
 
-// State
+const statusOptions = ["Diproses","Dikirim","Selesai","Dibatalkan"];
+const driverOptions = ref([]);
+
 const search = ref("");
 const filters = ref({ status: "", date: "" });
-const items = ref([...rows]);
+const items = ref([]);
 
 // Modal State
 const showModal = ref(false);
-const modalMode = ref('detail');
+const modalMode = ref("detail");
 const selectedItem = ref(null);
 
-// Logic Modal
+// ==============================
+// Fetch data pesanan & driver
+// ==============================
+const fetchOrders = async () => {
+  try {
+    const data = await OrdersAPI.getOrders();
+    items.value = data.map(order => ({
+      id: order.id_pesanan,
+      customer: order.user?.nama_user || "N/A",
+      customerPhone: order.user?.no_telp || "",
+      customerAddress: order.alamat?.alamat || "",
+      status: order.status,
+      driver: order.driver?.nama_driver || "Belum ditetapkan",
+      driverPhone: order.driver?.no_telp || "",
+      driverVehicle: order.driver ? `${order.driver.tipe_kendaraan} / ${order.driver.plat_kendaraan}` : "",
+      date: new Date(order.tanggal_pesanan).toLocaleDateString("id-ID"),
+      items: order.detail.map(d => ({
+        name: d.menu?.menu || "N/A",
+        qty: d.jumlah,
+        price: d.menu?.harga || 0,
+        image: d.menu?.gambar || "https://via.placeholder.com/150"
+      }))
+    }));
+  } catch (err) {
+    console.error("Gagal fetch pesanan:", err);
+  }
+};
+
+const fetchDrivers = async () => {
+  try {
+    driverOptions.value = await OrdersAPI.getDrivers();
+  } catch (err) {
+    console.error("Gagal fetch driver:", err);
+  }
+};
+
+// ==============================
+// Modal & Filter Logic
+// ==============================
 const openModal = (mode, item) => {
   modalMode.value = mode;
   selectedItem.value = item;
   showModal.value = true;
-}
-
-const handleSaveOrder = (formData) => {
-  console.log("Update Order:", formData);
-  // Update data lokal
-  const index = items.value.findIndex(i => i.id === formData.id);
-  if (index !== -1) {
-    items.value[index] = { ...items.value[index], ...formData };
-  }
-}
+};
 
 const updateFilter = (payload) => {
   filters.value = { ...filters.value, ...payload };
@@ -120,5 +154,33 @@ const filteredRows = computed(() => {
     const matchDate = !filters.value.date || item.date === filters.value.date;
     return matchSearch && matchStatus && matchDate;
   });
+});
+
+// ==============================
+// Handle save order
+// ==============================
+const handleSaveOrder = async ({ id, status, driver }) => {
+  try {
+    await OrdersAPI.updateStatus(id, status);
+
+    if (status === "Dikirim" && driver && driver !== "Belum ditetapkan") {
+      const driverData = driverOptions.value.find(d => d.nama_driver === driver);
+      if (driverData) {
+        await OrdersAPI.assignDriver(id, driverData.id_driver);
+      }
+    }
+
+    await fetchOrders();
+  } catch (err) {
+    console.error("Gagal update pesanan:", err);
+  }
+};
+
+// ==============================
+// Mounted
+// ==============================
+onMounted(() => {
+  fetchOrders();
+  fetchDrivers();
 });
 </script>

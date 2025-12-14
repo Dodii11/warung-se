@@ -122,4 +122,29 @@ class PesananController extends Controller
             $pesanan->load('detail.menu', 'alamat')
         );
     }
+
+    public function latest()
+    {
+        $pesanan = Pesanan::with([
+            'user:id_user,nama_user',
+            'driver:id_driver,nama_driver',
+            'alamat:id_alamat,alamat'
+        ])
+            ->orderBy('tanggal_pesanan', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($p) {
+                return [
+                    'id'        => $p->id_pesanan,
+                    'tanggal'  => $p->tanggal_pesanan->format('d M Y H:i'),
+                    'customer' => $p->user->nama_user ?? '-',
+                    'alamat'   => $p->alamat->alamat ?? '-',
+                    'total'    => $p->total_harga,
+                    'status'   => $p->status,
+                    'driver'   => $p->driver->nama_driver ?? 'Belum ditetapkan'
+                ];
+            });
+
+        return response()->json($pesanan);
+    }
 }

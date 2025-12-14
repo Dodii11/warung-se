@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Account;
+use App\Models\Alamat;
 use Illuminate\Support\Facades\Hash;
 
 class AccountSeeder extends Seeder
@@ -16,13 +17,23 @@ class AccountSeeder extends Seeder
         $roleSuper = \App\Models\Role::where('role_name', 'super admin')->first()->id_role;
 
         // Buat akun user
-        Account::create([
+        $user = Account::create([
             'nama_user' => 'User Biasa',
             'email_user' => 'user@gmail.com',
             'password' => Hash::make('password123'),
             'id_role' => $roleUser,
             'status' => 'aktif',
             'no_telp' => '081234567890',
+        ]);
+
+        // Tambahkan alamat untuk user
+        Alamat::create([
+            'id_user' => $user->id_user,
+            'alamat' => 'Jl. Merdeka No.1',
+            'kecamatan' => 'Gajah Mungkur',
+            'kota' => 'Surakarta',
+            'data_lokasi' => '{"lat":-7.565, "lng":110.831}',
+            'is_default' => true,
         ]);
 
         // Buat akun admin

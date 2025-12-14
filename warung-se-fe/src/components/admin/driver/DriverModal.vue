@@ -19,13 +19,6 @@
           >
             <UserIcon class="w-5 h-5" />
           </div>
-
-          <div>
-            <p class="text-xs font-medium text-blue-600 uppercase tracking-wider mb-0.5">
-              ID Driver
-            </p>
-            <p class="text-lg font-bold text-blue-900">{{ form.id }}</p>
-          </div>
         </div>
 
         <!-- Menampilkan status pengguna -->
@@ -106,11 +99,6 @@
          MODE FORM (ADD / EDIT)
          ========================= -->
     <form v-else @submit.prevent="handleSubmit" class="space-y-5">
-
-      <!-- Input ID Driver (Hanya di mode Add jika ingin diisi manual) -->
-      <BaseInput v-if="mode === 'add'" label="ID Driver" v-model="form.id" placeholder="#DRV-001">
-        <template #icon><HashIcon class="w-4 h-4 text-gray-400" /></template>
-      </BaseInput>
 
       <!-- Input Nama & Telepon -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -233,7 +221,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed } from "vue";
+import { ref, reactive, watch } from "vue";
 import BaseModal from "@/components/base/BaseModal.vue";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseDropdown from "@/components/base/BaseDropdown.vue";
@@ -242,7 +230,7 @@ import DriverStatusBadge from "@/components/admin/driver/DriverStatusBadge.vue";
 
 import {
     UserIcon, PhoneIcon, TagIcon, CarIcon, TruckIcon,
-    ImagePlus, SaveIcon, UserCheckIcon, ActivityIcon, HashIcon, CameraIcon,
+    ImagePlus, SaveIcon, UserCheckIcon, ActivityIcon, CameraIcon,
     AlertTriangleIcon,
     Motorbike
 } from "lucide-vue-next";

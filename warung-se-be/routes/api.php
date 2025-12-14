@@ -87,19 +87,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // CRUD Driver
         Route::get('/driver', [DriverController::class, 'index']);
         Route::get('/driver/{id}', [DriverController::class, 'show']);
-        Route::post('/driver', [DriverController::class, 'store']);
-        Route::put('/driver/{id}', [DriverController::class, 'update']);
-        Route::delete('/driver/{id}', [DriverController::class, 'destroy']);
 
         // Pesanan semua user
         Route::get('/pesanan', [PesananController::class, 'index']);
         Route::put('/pesanan/{id}', [PesananController::class, 'updateStatus']);
         Route::put('/detail-pesanan/{id}', [DetailPesananController::class, 'update']);
         Route::delete('/detail-pesanan/{id}', [DetailPesananController::class, 'destroy']);
+        Route::put('/pesanan/{id}/assign-driver', [PesananController::class, 'assignDriver']);
+
+        Route::get('/pesanan-terbaru', [PesananController::class, 'latest']);
+        Route::get('/pesanan/status-options', [PesananController::class, 'statusOptions']);
+
 
         // CRUD User
-        Route::get('/users/customer', [AccountController::class, 'indexUser']);
-
         Route::get('/statistik', [StatistikController::class, 'index']);
     });
 
@@ -138,6 +138,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/pesanan/{id}', [PesananController::class, 'updateStatus']);
         Route::put('/detail-pesanan/{id}', [DetailPesananController::class, 'update']);
         Route::delete('/detail-pesanan/{id}', [DetailPesananController::class, 'destroy']);
+
+        Route::get('/pesanan-terbaru', [PesananController::class, 'latest']);
+        Route::get('/pesanan/status-options', [PesananController::class, 'statusOptions']);
 
         // CRUD Admin
         Route::get('/admins', [AccountController::class, 'indexAdmin']);

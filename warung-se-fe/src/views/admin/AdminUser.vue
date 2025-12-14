@@ -77,7 +77,25 @@ const userColumns = [
   { key: "nama_user", label: "Nama" },
   { key: "email_user", label: "Email" },
   { key: "no_telp", label: "No. Telepon" },
+  { key: "alamat_display", label: "Alamat" },
 ];
+
+const usersWithAlamat = computed(() => {
+  return userStore.users.map((user) => {
+    let alamatDisplay = "-";
+
+    if (user.alamat && user.alamat.length > 0) {
+      const defaultAlamat = user.alamat.find((a) => a.is_default) ?? user.alamat[0];
+
+      alamatDisplay = `${defaultAlamat.alamat}, ${defaultAlamat.kecamatan}, ${defaultAlamat.kota}`;
+    }
+
+    return {
+      ...user,
+      alamat_display: alamatDisplay,
+    };
+  });
+});
 
 // MODAL
 const showUserModal = ref(false);
@@ -90,6 +108,7 @@ const openUserDetail = (row) => {
     email_user: row.email_user,
     no_telp: row.no_telp,
     status: row.status,
+    alamat: row.alamat ?? [],
   };
 
   showUserModal.value = true;
@@ -100,12 +119,14 @@ const search = ref("");
 const sortOrder = ref("asc");
 
 const filteredRows = computed(() => {
-  if (!search.value) return userStore.users;
+  if (!search.value) return usersWithAlamat.value;
 
   const text = search.value.toLowerCase();
 
-  return userStore.users.filter((u) =>
-    [u.id_user, u.nama_user, u.email_user].some((f) => String(f).toLowerCase().includes(text))
+  return usersWithAlamat.value.filter((u) =>
+    [u.id_user, u.nama_user, u.email_user, u.alamat_display].some((f) =>
+      String(f).toLowerCase().includes(text)
+    )
   );
 });
 

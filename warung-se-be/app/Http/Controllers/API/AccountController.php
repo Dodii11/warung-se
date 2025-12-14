@@ -81,7 +81,7 @@ class AccountController extends Controller
     // filter user untuk manajemen user
     public function indexUser()
     {
-        return Account::with('role')
+        return Account::with(['role', 'alamat']) // <- tambahkan 'alamat'
             ->whereHas('role', function ($q) {
                 $q->where('role_name', 'user');
             })

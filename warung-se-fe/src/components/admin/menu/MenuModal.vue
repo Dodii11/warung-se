@@ -279,7 +279,7 @@ const defaultForm = {
   stock: "", // Biarkan string dulu, validasi nanti
   description: "",
   imageFile: null, // Objek File yang dipilih
-  imagePreview: "https://via.placeholder.com/150x150?text=No+Image  ", // Placeholder default
+  imagePreview: "", // Placeholder default
   status: "Tersedia", // Default status
 };
 
@@ -293,9 +293,9 @@ watch(
     Object.assign(form, { ...defaultForm });
     // Jangan reset imagePreview jika sedang edit/detail dan ada gambar dari BE
     if (props.mode === "edit" || props.mode === "detail") {
-      form.imagePreview = newItem?.gambar_url || "https://via.placeholder.com/150x150?text=No+Image  ";
+      form.imagePreview = newItem?.gambar_url || "";
     } else {
-      form.imagePreview = "https://via.placeholder.com/150x150?text=No+Image  "; // Reset jika mode add
+      form.imagePreview = ""; // Reset jika mode add
     }
     form.imageFile = null; // Selalu reset file input FE
 
