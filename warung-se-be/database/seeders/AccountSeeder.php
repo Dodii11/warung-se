@@ -21,7 +21,8 @@ class AccountSeeder extends Seeder
             'email_user' => 'user@gmail.com',
             'password' => Hash::make('password123'),
             'id_role' => $roleUser,
-            'status' => 'aktif'
+            'status' => 'aktif',
+            'no_telp' => '081234567890',
         ]);
 
         // Buat akun admin

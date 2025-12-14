@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->string('email_user')->unique();
             $table->string('nama_user');
             $table->foreignId('id_role')->constrained('role', 'id_role');
+            $table->string('no_telp')->nullable();
             $table->enum('status', ['aktif','tidak aktif'])->default('aktif');
             $table->string('password');
             $table->timestamps();
