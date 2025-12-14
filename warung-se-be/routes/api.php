@@ -99,6 +99,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // CRUD User
         Route::get('/users/customer', [AccountController::class, 'indexUser']);
+
+        //manajement alamat pengguna
+        Route::get('/alamat', [AlamatController::class, 'index']);
+        Route::get('/alamat/{id}', [AlamatController::class, 'show']);
+        Route::post('/alamat', [AlamatController::class, 'store']);
+        Route::put('/alamat/{id}', [AlamatController::class, 'update']);
+        Route::delete('/alamat/{id}', [AlamatController::class, 'destroy']);
     });
 
     /*
