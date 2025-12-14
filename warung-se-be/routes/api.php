@@ -42,6 +42,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/pesanan/{id}/detail', [DetailPesananController::class, 'index']);
     Route::get('/detail-pesanan/{id}', [DetailPesananController::class, 'show']);
 
+    Route::get('/alamat', [AlamatController::class, 'index']);
+    Route::get('/alamat/{id}', [AlamatController::class, 'show']);
+    Route::post('/alamat', [AlamatController::class, 'store']);
+    Route::put('/alamat/{id}', [AlamatController::class, 'update']);
+    Route::delete('/alamat/{id}', [AlamatController::class, 'destroy']);
+
     /*
         |--------------------------------------------------------------------------
         | ROLE: USER
@@ -63,13 +69,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // ❌ HAPUS: Route::get('/account/me', [AccountController::class, 'me']);
         Route::put('/account/me', [AccountController::class, 'update']);
         Route::delete('/account/me', [AccountController::class, 'destroy']);
-
-        // Alamat sendiri
-        Route::get('/alamat', [AlamatController::class, 'index']);
-        Route::get('/alamat/{id}', [AlamatController::class, 'show']);
-        Route::post('/alamat', [AlamatController::class, 'store']);
-        Route::put('/alamat/{id}', [AlamatController::class, 'update']);
-        Route::delete('/alamat/{id}', [AlamatController::class, 'destroy']);
     });
 
     /*
@@ -99,13 +98,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // CRUD User
         Route::get('/users/customer', [AccountController::class, 'indexUser']);
-
-        //manajement alamat pengguna
-        Route::get('/alamat', [AlamatController::class, 'index']);
-        Route::get('/alamat/{id}', [AlamatController::class, 'show']);
-        Route::post('/alamat', [AlamatController::class, 'store']);
-        Route::put('/alamat/{id}', [AlamatController::class, 'update']);
-        Route::delete('/alamat/{id}', [AlamatController::class, 'destroy']);
     });
 
     /*
