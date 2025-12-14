@@ -29,6 +29,10 @@
             placeholder="Konfirmasi kata sandi"
           />
 
+          <!-- FORM RECAPTCHA -->
+           <div id="recaptcha-container" class="form-group"></div>
+           <div v-if="captchaError" class="alert alert-error">{{captchaError}}</div>
+
           <BaseButton
             variant="primary"
             :loading="isLoading"
@@ -90,7 +94,10 @@
 </template>
 
 <script setup>
-import { reactive, ref } from "vue";
+
+//TAMBAH ONMOUNTED
+import { reactive, ref, onMounted} from "vue";
+
 import { useRouter } from "vue-router";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
@@ -108,9 +115,76 @@ const formData = reactive({
   confirmPassword: "",
 });
 
+// TAMBAHAN
+const error = ref('');
+const successMessage = ref('');
+const captchaError = ref('');
+const widgetId = ref(null);
+// SAMPE SINI
+
 /* Loading state */
 const isLoading = ref(false);
 const isGoogleLoading = ref(false);
+
+// SKRIP RECAPTCHA V2
+const loadRecaptcha = () => {
+
+  // Check if script is already loaded
+  if (window.grecaptcha && window.grecaptcha.render) {
+
+    // Wait slightly to ensure DOM is ready
+    setTimeout(renderWidget, 100)
+    return
+  }
+
+  // Define callback for when script loads
+  window.onRecaptchaLoad = () => {
+    setTimeout(renderWidget, 100)
+  }
+
+  if (!document.getElementById('recaptcha-script')) {
+    const script = document.createElement('script')
+    script.id = 'recaptcha-script'
+    script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit'
+    script.async = true
+    script.defer = true
+    document.head.appendChild(script)
+  }
+}
+
+const renderWidget = () => {
+  const container = document.getElementById('recaptcha-container')
+  
+  // If widget already rendered or container missing, stop
+  if (widgetId.value !== null || !container) {
+    if (!container) {
+      console.warn('reCAPTCHA container not found, retrying...')
+      setTimeout(renderWidget, 500) // Retry if container missing
+    }
+    return
+  }
+  
+  try {
+    widgetId.value = window.grecaptcha.render('recaptcha-container', {
+      'sitekey': import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+      'callback': () => {
+        captchaError.value = ''
+      },
+      'expired-callback': () => {
+        captchaError.value = 'CAPTCHA expired. Please check the box again.'
+      }
+    })
+  } catch (e) {
+    console.error('Failed to render reCAPTCHA', e)
+  }
+}
+
+onMounted(() => {
+
+  // Ensure DOM is fully mounted before loading
+  setTimeout(loadRecaptcha, 100)
+})
+// SAMPE SINI
 
 /* Integrasi API */
 const handleRegister = async () => {
@@ -131,8 +205,24 @@ const handleRegister = async () => {
 
     const res = await auth.register(payload);
 
+  // SKRIP RECAPTCHA V2
+  error.value = ''
+  captchaError.value = ''
+  successMessage.value = ''
+  
+  if (formData.password !== formData.confirmPassword) {
+    error.value = 'Passwords do not match'
+    return
+  }
+
+  const recaptchaToken = window.grecaptcha.getResponse(widgetId.value)
+  if (!recaptchaToken) {
+    captchaError.value = 'Please complete the CAPTCHA'
+    return
+  }
+  // SAMPE SINI
+
     if (!res.success) {
-      alert(res.error || "Registrasi gagal.");
       return;
     }
 

@@ -8,6 +8,9 @@ use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
+// RECAPTCHA
+use App\Rules\Captcha;
+
 class AuthController extends Controller
 {
     public function register(Request $request)
@@ -16,6 +19,9 @@ class AuthController extends Controller
             'email_user' => 'required|email|unique:account,email_user',
             'nama_user' => 'required|string',
             'password' => 'required|string|min:6',
+
+            // --- TAMBAH VALIDASI CAPTCHA ---
+            'g-recaptcha-response' => ['required', new Captcha()],
         ]);
 
         $roleUser = Role::where('role_name', 'user')->first();
