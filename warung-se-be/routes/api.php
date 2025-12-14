@@ -11,6 +11,7 @@ use App\Http\Controllers\API\DriverController;
 use App\Http\Controllers\API\AccountController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\AlamatController;
+use App\Http\Controllers\API\StatistikController;
 
 /*
     |--------------------------------------------------------------------------
@@ -98,6 +99,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // CRUD User
         Route::get('/users/customer', [AccountController::class, 'indexUser']);
+
+        Route::get('/statistik', [StatistikController::class, 'index']);
     });
 
     /*
@@ -141,5 +144,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/admins', [AccountController::class, 'storeAdmin']);
         Route::post('/admins/{id}', [AccountController::class, 'updateByAdmin']);
         Route::delete('/admins/{id}', [AccountController::class, 'destroy']);
+
+        Route::get('/statistik', [StatistikController::class, 'index']);
     });
 });
