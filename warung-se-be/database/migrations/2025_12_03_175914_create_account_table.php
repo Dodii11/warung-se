@@ -15,13 +15,19 @@ return new class extends Migration {
             $table->foreignId('id_role')->constrained('role', 'id_role');
             $table->enum('status', ['aktif','tidak aktif'])->default('aktif');
             $table->string('password');
-            $table->timestamps();
+
+            // Contoh di tabel users (atau tabel terpisah)
+            $table->string('otp_code')->nullable();
+            $table->timestamp('otp_expires_at')->nullable();
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('account');
+        // TAMBAHAN
+        Schema::table('account', function (Blueprint $table) {
+            $table->dropColumn(['otp_code', 'otp_expires_at']);
+        });
     }
 };
 

@@ -152,6 +152,14 @@ const router = createRouter({
       path: "/:pathMatch(.*)*",
       redirect: "/",
     },
+
+    // ---- OTP VERIFICATION PAGE ----
+    {
+      path: "/verify-code",
+      name: "VerifyCode",
+      component: () => import("@/views/VerifyCode.vue"),
+      meta: { title: "Verifikasi Kode - Warung SE" },
+    }
   ],
 
   scrollBehavior(to, from, savedPosition) {
