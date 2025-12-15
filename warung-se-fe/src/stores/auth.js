@@ -12,6 +12,12 @@ export const useAuth = defineStore("auth", {
     error: null,
   }),
 
+  getters: {
+    role: (state) => state.user?.role || null,
+    isAdmin: (state) => state.user?.role === "admin",
+    isSuperAdmin: (state) => state.user?.role === "super admin",
+  },
+
   actions: {
     // Fungsi untuk menunggu inisialisasi selesai
     // Fungsi ini akan resolve Promise ketika initializing = false

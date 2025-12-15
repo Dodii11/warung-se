@@ -37,7 +37,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/menu/{id}', [MenuController::class, 'show']);
     Route::get('/menu/{id}/gambar', action: [MenuController::class, 'gambar']);
 
-    // ✅ PINDAHKAN /account/me KE SINI, TANPA middleware role:user
     Route::get('/account/me', [AccountController::class, 'me']);
 
     Route::get('/pesanan/{id}/detail', [DetailPesananController::class, 'index']);
@@ -67,7 +66,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/pesanan', [PesananController::class, 'checkout']);
 
         // Account sendiri - UPDATE & DELETE tetap untuk user biasa
-        // ❌ HAPUS: Route::get('/account/me', [AccountController::class, 'me']);
         Route::put('/account/me', [AccountController::class, 'update']);
         Route::delete('/account/me', [AccountController::class, 'destroy']);
     });
@@ -85,8 +83,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });
 
         // CRUD Driver
-        Route::get('/driver', [DriverController::class, 'index']);
-        Route::get('/driver/{id}', [DriverController::class, 'show']);
+
 
         // Pesanan semua user
         Route::get('/pesanan', [PesananController::class, 'index']);
@@ -116,11 +113,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
 
         // CRUD Driver
-        Route::get('/driver', [DriverController::class, 'index']);
-        Route::get('/driver/{id}', [DriverController::class, 'show']);
-        Route::post('/driver', [DriverController::class, 'store']);
-        Route::put('/driver/{id}', [DriverController::class, 'update']);
-        Route::delete('/driver/{id}', [DriverController::class, 'destroy']);
+
 
         // CRUD Account / user
         Route::get('/user', [AccountController::class, 'index']);
@@ -150,4 +143,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::get('/statistik', [StatistikController::class, 'index']);
     });
+
+    Route::middleware(['role:admin,super admin'])->group(function () {
+        Route::get('/driver', [DriverController::class, 'index']);
+    });
+
+    Route::middleware(['role:super admin'])->group(function () {
+    Route::get('/driver/{id}', [DriverController::class, 'show']);
+    Route::post('/driver', [DriverController::class, 'store']);
+    Route::put('/driver/{id}', [DriverController::class, 'update']);
+    Route::delete('/driver/{id}', [DriverController::class, 'destroy']);
+});
+
 });

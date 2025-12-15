@@ -37,7 +37,6 @@
               />
               <span class="ml-2 text-gray-900">Ingat saya</span>
             </label>
-            <a href="#" class="text-primary hover:underline">Lupa kata sandi Anda?</a>
           </div>
 
           <!-- Login Button -->
