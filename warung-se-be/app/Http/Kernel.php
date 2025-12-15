@@ -10,6 +10,9 @@ class Kernel extends HttpKernel
 {
     protected $middleware = [
         SubstituteBindings::class,
+
+        //TAMBAHAN
+        \Illuminate\Http\Middleware\HandleCors::class,
     ];
 
     protected $middlewareGroups = [
@@ -17,8 +20,11 @@ class Kernel extends HttpKernel
             SubstituteBindings::class,
         ],
         'api' => [
+
+            //TAMBAHAN ENSURE DAN SUBTITUTE
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
-            SubstituteBindings::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
 
