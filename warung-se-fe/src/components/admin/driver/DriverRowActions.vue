@@ -1,15 +1,26 @@
 <template>
-  <!-- Menghapus Modal Driver dari sini -->
   <div class="flex flex-col gap-2 w-28">
-    <!-- openModal(mode) diganti dengan emit event(item) -->
+    <!-- DETAIL: semua role admin boleh -->
     <DetailButton @click="$emit('detail', item)" />
-    <EditButton @click="$emit('edit', item)" />
-    <!-- confirmDelete diganti dengan emit delete(item) -->
-    <DeleteButton @click="$emit('delete', item)" />
+
+    <!-- EDIT: hanya super admin -->
+    <EditButton
+      v-if="isSuperAdmin"
+      @click="$emit('edit', item)"
+    />
+
+    <!-- DELETE: hanya super admin -->
+    <DeleteButton
+      v-if="isSuperAdmin"
+      @click="$emit('delete', item)"
+    />
   </div>
 </template>
 
 <script setup>
+import { computed } from "vue";
+import { useAuth } from "@/stores/auth";
+
 import DetailButton from "../RowButton/DetailButton.vue";
 import EditButton from "../RowButton/EditButton.vue";
 import DeleteButton from "../RowButton/DeleteButton.vue";
@@ -19,4 +30,10 @@ defineProps({
 });
 
 defineEmits(["edit", "detail", "delete"]);
+
+// ===== AUTH =====
+const auth = useAuth();
+
+// Ambil dari getter (yang kita sepakati barusan)
+const isSuperAdmin = computed(() => auth.isSuperAdmin);
 </script>

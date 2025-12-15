@@ -24,10 +24,7 @@
         <h2 class="heading-2">Daftar Menu</h2>
         <div class="flex items-center">
           <!-- Tombol Tambah hanya muncul untuk Super Admin -->
-          <MenuAddButton
-            v-if="auth.user?.role === 'admin' || auth.user?.role === 'super admin'"
-            @click="openModal('add')"
-          />
+          <MenuAddButton v-if="isSuperAdmin" @click="openModal('add')" />
         </div>
       </div>
 
@@ -50,7 +47,7 @@
         <template #image="{ row }">
           <!-- Gunakan accessor gambar_url dari model -->
           <img
-            :src="row.gambar_url || 'https://via.placeholder.com/150x150?text=No+Image'"
+            :src="row.gambar_url || ''"
             class="w-16 h-16 rounded-lg object-cover transition-opacity border border-gray-100"
             alt="menu-img"
           />
@@ -131,10 +128,7 @@
         :icon="UtensilsCrossed"
       >
         <div class="flex items-center justify-center">
-          <MenuAddButton
-            v-if="auth.user?.role === 'admin' || auth.user?.role === 'super admin'"
-            @click="openModal('add')"
-          />
+          <MenuAddButton v-if="isSuperAdmin" @click="openModal('add')" />
         </div>
       </BaseEmptyState>
 
@@ -176,6 +170,7 @@ import { Utensils, UtensilsCrossed } from "lucide-vue-next";
 import { menuApi } from "@/api/menu"; // Import API (Asumsi menuApi memiliki method create, update, delete, getAll)
 
 const auth = useAuth(); // Gunakan store auth
+const isSuperAdmin = computed(() => auth.isSuperAdmin);
 
 // State
 const search = ref("");

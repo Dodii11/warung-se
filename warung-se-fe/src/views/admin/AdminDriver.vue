@@ -24,7 +24,7 @@
       <div class="flex justify-between items-center mb-5">
         <h2 class="heading-2">Daftar Driver</h2>
         <div class="flex items-center">
-          <DriverAddButton @click="openModal('add')" />
+          <DriverAddButton @click="openModal('add')" v-if="isSuperAdmin" />
         </div>
       </div>
       <BaseTable v-if="filteredRows.length > 0" :columns="driverColumns" :rows="filteredRows">
@@ -53,7 +53,7 @@
       >
         <!-- Tombol Tambah Driver di dalam slot -->
         <div class="flex items-center justify-center">
-          <DriverAddButton @click="openModal('add')" />
+          <DriverAddButton @click="openModal('add')" v-if="isSuperAdmin" />
         </div>
       </BaseEmptyState>
     </BaseCard>
@@ -65,8 +65,6 @@
       :item-data="selectedDriver"
       @save="handleSave"
     />
-
-    <!-- Catatan: DriverFilter dan DriverSearch tidak disertakan karena tidak berubah. -->
   </section>
 </template>
 
@@ -86,6 +84,11 @@ import { ref, computed, onMounted } from "vue";
 import { Motorbike } from "lucide-vue-next";
 import { driverColumns } from "@/data/driverData";
 import driverApi from "@/api/driver";
+import { useAuth } from "@/stores/auth";
+
+// auth permission
+const auth = useAuth();
+const isSuperAdmin = computed(() => auth.isSuperAdmin);
 
 // ================= STATE =================
 const search = ref("");
@@ -105,14 +108,10 @@ const mapDriverApiToRow = (driver) => ({
   name: driver.nama_driver,
   phone: driver.no_telp,
   vehicleName: driver.plat_kendaraan,
-  vehicleType: driver.tipe_kendaraan === "motor"
-    ? "Sepeda Motor"
-    : "Truk Pick Up",
+  vehicleType: driver.tipe_kendaraan === "motor" ? "Sepeda Motor" : "Truk Pick Up",
   status: driver.status === "aktif" ? "Tersedia" : "Tidak Aktif",
   image: driver.gambar_url,
-  lastUpdate: driver.updated_at
-    ? new Date(driver.updated_at).toLocaleDateString("id-ID")
-    : "-",
+  lastUpdate: driver.updated_at ? new Date(driver.updated_at).toLocaleDateString("id-ID") : "-",
 
   // simpan raw data kalau dibutuhkan
   _raw: driver,
@@ -138,28 +137,31 @@ const openModal = (mode, item = null) => {
 };
 
 const handleSave = async (formData) => {
+  if (!isSuperAdmin.value) return;
+
   try {
     if (modalMode.value === "add") {
       await driverApi.create(formData);
     } else {
       await driverApi.update(selectedDriver.value.id_driver, formData);
     }
-
     isModalOpen.value = false;
     await fetchDrivers();
   } catch (e) {
-    console.error("Gagal simpan driver:", e);
+    console.error(e);
   }
 };
 
 const handleDelete = async (item) => {
-  if (!confirm(`Hapus driver ${item.name} (${item.id})?`)) return;
+  if (!isSuperAdmin.value) return;
+
+  if (!confirm(`Hapus driver ${item.name}?`)) return;
 
   try {
     await driverApi.remove(item.id);
     await fetchDrivers();
   } catch (e) {
-    console.error("Gagal hapus driver:", e);
+    console.error(e);
   }
 };
 
@@ -182,4 +184,3 @@ const filteredRows = computed(() => {
     });
 });
 </script>
-
