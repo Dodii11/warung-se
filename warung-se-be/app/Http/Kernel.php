@@ -33,4 +33,10 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         'role' => RoleMiddleware::class,
     ];
+
+    protected function schedule(\Illuminate\Console\Scheduling\Schedule $schedule)
+{
+    $schedule->command('backup:warungse')->hourly();
+}
+
 }
