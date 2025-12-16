@@ -11,6 +11,8 @@ use App\Http\Controllers\API\DetailPesananController;
 use App\Http\Controllers\API\DriverController;
 use App\Http\Controllers\API\AccountController;
 use App\Http\Controllers\API\CartController;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 
     /*
     |--------------------------------------------------------------------------
@@ -111,8 +113,8 @@ use App\Http\Controllers\API\CartController;
         Route::middleware(['role:super admin'])->group(function () {
 
             // CRUD Menu
-            Route::post('/menu', action: [MenuController::class, 'store']);
-            Route::put('/menu/{id}', [MenuController::class, 'update']);
+            Route::post('/menu', [MenuController::class, 'store']);
+            Route::post('/menu/{id}', [MenuController::class, 'update']);
             Route::delete('/menu/{id}', [MenuController::class, 'destroy']);
 
             // CRUD Driver
