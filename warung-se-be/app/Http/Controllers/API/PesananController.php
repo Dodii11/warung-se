@@ -147,4 +147,20 @@ class PesananController extends Controller
 
         return response()->json($pesanan);
     }
+    // USER
+    public function indexUser(Request $request)
+    {
+        return Pesanan::with('detail')
+            ->where('id_user', $request->user()->id_user)
+            ->orderByDesc('tanggal_pesanan')
+            ->get();
+    }
+
+    // ADMIN
+    public function indexAdmin()
+    {
+        return Pesanan::with(['user', 'detail', 'alamat'])
+            ->orderByDesc('tanggal_pesanan')
+            ->get();
+    }
 }
