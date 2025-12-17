@@ -107,9 +107,14 @@ import { useRouter } from "vue-router";
 
 import { useStatistikStore } from "@/api/statistik";
 import { buildDashboardStats } from "@/data/dashboardData";
-import { getPesananTerbaru, getStatusOptions } from "@/api/orders";
+import { OrdersAPI } from "@/api/orders";
 
-import { ArrowRight, ArrowUpRightIcon, ArrowDownRightIcon, Receipt } from "lucide-vue-next";
+import {
+  ArrowRight,
+  ArrowUpRightIcon,
+  ArrowDownRightIcon,
+  Receipt
+} from "lucide-vue-next";
 
 /* ===============================
    STATISTIK
@@ -121,21 +126,11 @@ const stats = computed(() => {
 });
 
 /* ===============================
-   RECENT ORDERS
+   RECENT ORDERS (SIMPLE)
 ================================ */
 const recentOrders = ref([]);
-const statusOptions = ref([]);
+const statusOptions = ref(["Tertunda", "Diproses", "Dikirim", "Selesai"]);
 const dashboardDriverOptions = ref(["Belum ditetapkan"]);
-
-const loadRecentOrders = async () => {
-  const res = await getPesananTerbaru();
-  recentOrders.value = res.data;
-};
-
-const loadStatusOptions = async () => {
-  const res = await getStatusOptions();
-  statusOptions.value = res.data;
-};
 
 const dashboardOrderColumns = [
   { key: "id", label: "ID Pesanan" },
@@ -143,8 +138,31 @@ const dashboardOrderColumns = [
   { key: "alamat", label: "Alamat" },
   { key: "tanggal", label: "Tanggal" },
   { key: "total", label: "Total" },
-  { key: "status", label: "Status" },
+  { key: "status", label: "Status" }
 ];
+
+const loadRecentOrders = async () => {
+  try {
+    const data = await OrdersAPI.getAdminOrders();
+
+    recentOrders.value = data
+      .slice(0, 5) // ambil 5 terbaru
+      .map(order => ({
+        id: order.id_pesanan,
+        customer: order.user?.nama_user || "-",
+        alamat: order.alamat?.alamat || "-",
+        tanggal: new Date(order.tanggal_pesanan).toLocaleDateString("id-ID"),
+        total: new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR"
+        }).format(order.total_harga),
+        status: order.status,
+        raw: order
+      }));
+  } catch (err) {
+    console.error("Gagal load pesanan terbaru:", err);
+  }
+};
 
 /* ===============================
    MODAL & NAVIGATION
@@ -162,9 +180,11 @@ const handleNavigation = (routeName) => {
   router.push({ name: routeName });
 };
 
+/* ===============================
+   MOUNT
+================================ */
 onMounted(() => {
   statistikStore.loadStatistik();
   loadRecentOrders();
-  loadStatusOptions();
 });
 </script>

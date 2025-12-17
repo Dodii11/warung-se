@@ -12,7 +12,7 @@
         </router-link>
         <span class="mx-2">/</span>
         <span class="font-bold text-gray-800">
-          {{ menu?.name || "Memuat..." }}
+          {{ menu?.menu || "Memuat..." }}
         </span>
       </nav>
 
@@ -26,8 +26,8 @@
               class="w-full aspect-square sm:aspect-4/3 rounded-2xl overflow-hidden shadow-lg border border-gray-100"
             >
               <img
-                :src="currentImage"
-                :alt="menu.name"
+                :src="menu.gambar_url || '/img/placeholder-menu.png'"
+                :alt="menu.menu"
                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
               />
             </div>
@@ -38,18 +38,18 @@
 
             <!-- Nama -->
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-3">
-              {{ menu.name }}
+              {{ menu.menu }}
             </h1>
 
             <!-- Harga -->
             <p class="text-red-600 font-bold text-2xl sm:text-3xl mb-4 border-b border-gray-100 pb-4">
-              Rp {{ menu.price }}
+              Rp {{ menu.harga }}
             </p>
 
             <!-- Deskripsi -->
             <h2 class="text-lg font-semibold text-gray-800 mb-1">Deskripsi Produk</h2>
             <p class="text-gray-600 leading-relaxed mb-6">
-              {{ menu.descDetail }}
+              {{ menu.deskripsi }}
             </p>
 
             <!-- Grid Kategori & Stok -->
@@ -60,25 +60,25 @@
                 <Tag class="w-5 h-5 text-red-600" />
                 <div>
                   <p class="text-xs font-medium text-gray-500">Kategori</p>
-                  <strong class="text-base text-gray-800">{{ menu.category }}</strong>
+                  <strong class="text-base text-gray-800">{{ menu.kategori }}</strong>
                 </div>
               </div>
 
               <!-- Stok -->
               <div
                 :class="[
-                  menu.stock > 0
+                  menu.stok > 0
                     ? 'bg-green-50/50 border-green-100'
                     : 'bg-red-50/50 border-red-100',
                   'flex items-center gap-3 p-3 rounded-lg border'
                 ]"
               >
-                <Box :class="[menu.stock > 0 ? 'text-green-600' : 'text-red-600', 'w-5 h-5']" />
+                <Box :class="[menu.stok > 0 ? 'text-green-600' : 'text-red-600', 'w-5 h-5']" />
                 <div>
                   <p class="text-xs font-medium text-gray-500">Ketersediaan</p>
                   <strong class="text-base text-gray-800">
-                    {{ menu.stock > 0 ? "Tersedia" : "Habis" }}
-                    ({{ menu.stock }} item)
+                    {{ menu.stok > 0 ? "Tersedia" : "Habis" }}
+                    ({{ menu.stok }} item)
                   </strong>
                 </div>
               </div>
@@ -93,7 +93,7 @@
               >
                 <button
                   @click="decrementQty"
-                  :disabled="qty <= 1 || menu.stock <= 0"
+                  :disabled="qty <= 1 || menu.stok <= 0"
                   class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Minus class="w-5 h-5" />
@@ -103,15 +103,15 @@
                   v-model.number="qty"
                   type="number"
                   min="1"
-                  :max="menu.stock"
-                  :disabled="menu.stock <= 0"
+                  :max="menu.stok"
+                  :disabled="menu.stok <= 0"
                   @change="validateQty"
                   class="w-full text-center text-lg font-medium border-none outline-none"
                 />
 
                 <button
                   @click="incrementQty"
-                  :disabled="qty >= menu.stock || menu.stock <= 0"
+                  :disabled="qty >= menu.stok || menu.stok <= 0"
                   class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus class="w-5 h-5" />
@@ -123,7 +123,7 @@
                 size="lg"
                 class="shadow-red-300/50 w-full sm:w-auto flex-1"
                 @click="addToCart"
-                :disabled="menu.stock <= 0 || qty === 0"
+                :disabled="menu.stok <= 0 || qty === 0"
               >
                 <template #icon-left>
                   <ShoppingCart class="w-5 h-5" />
@@ -170,84 +170,87 @@
 
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { menus } from "@/data/UserAppData";
+import { menuApi } from "@/api/menu";
+import { addToCart as addToCartApi } from "@/api/cart";
 
-// Mengimpor komponen base
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
 import UserAppButton from "@/components/baseUser/UserAppButton.vue";
-
-// Mengimpor ikon Lucide
-import { ShoppingCart, Plus, Minus, Tag, Box, CheckCircle, AlertTriangle } from "lucide-vue-next";
-
-// Data Dummy Gambar (untuk galeri mini)
-const dummyImages = [
-  "https://placehold.co/800x600/EE7D7D/ffffff?text=Ayam+Geprek+Utama",
-  "https://placehold.co/800x600/C83C3C/ffffff?text=Sambal+Matah+Detail",
-  "https://placehold.co/800x600/A00000/ffffff?text=Tampak+Samping",
-];
+import {
+  ShoppingCart,
+  Plus,
+  Minus,
+  Tag,
+  Box,
+  CheckCircle,
+  AlertTriangle
+} from "lucide-vue-next";
 
 const route = useRoute();
 const menu = ref(null);
 const qty = ref(1);
-const currentImage = ref(dummyImages[0]);
-
-// Notifikasi
 const showNotif = ref(false);
 const notifMessage = ref("");
+const loadingAdd = ref(false);
 
+// ================= LOAD MENU =================
+const loadMenu = async () => {
+  const name = decodeURIComponent(route.params.name);
+  const res = await menuApi.getAll();
+
+  const list = res.data.data ?? res.data;
+  menu.value = list.find((m) => m.menu === name) ?? null;
+
+  if (menu.value?.stok <= 0) qty.value = 0;
+};
+
+onMounted(loadMenu);
+
+// ================= QTY =================
 function incrementQty() {
-  if (menu.value && qty.value < menu.value.stock) qty.value++;
+  if (qty.value < menu.value.stok) qty.value++;
 }
+
 function decrementQty() {
   if (qty.value > 1) qty.value--;
 }
 
 function validateQty() {
-  // Pastikan qty adalah angka
-  let newQty = parseInt(qty.value, 10);
-  if (isNaN(newQty) || newQty < 1) {
-    newQty = 1;
-  }
-  // Batasi max berdasarkan stock
-  if (menu.value && newQty > menu.value.stock) {
-    newQty = menu.value.stock;
-  }
-  qty.value = newQty;
+  if (qty.value < 1) qty.value = 1;
+  if (qty.value > menu.value.stok) qty.value = menu.value.stok;
 }
 
-function addToCart() {
-  if (menu.value && menu.value.stock > 0 && qty.value > 0) {
-    notifMessage.value = `${qty.value} x ${menu.value.name} berhasil ditambahkan ke keranjang!`;
+// ================= ADD TO CART (BE) =================
+async function addToCart() {
+  if (!menu.value || qty.value <= 0) return;
+
+  try {
+    loadingAdd.value = true;
+
+    const payload = {
+      id_menu: menu.value.id_menu,
+      jumlah: qty.value,
+      subtotal: qty.value * Number(menu.value.harga),
+    };
+
+    await addToCartApi(payload);
+
+    notifMessage.value = `${qty.value} x ${menu.value.menu} ditambahkan ke keranjang`;
     showNotif.value = true;
 
-    // Logika penambahan ke keranjang (simulasi)
-    console.log(`Menambahkan ${qty.value} x ${menu.value.name} ke keranjang.`);
-
-    // Auto-hide notifikasi setelah 2 detik
-    setTimeout(() => {
-      showNotif.value = false;
-    }, 2000);
+    setTimeout(() => (showNotif.value = false), 2000);
+  } catch (err) {
+    notifMessage.value = "Gagal menambahkan ke keranjang";
+    showNotif.value = true;
+    setTimeout(() => (showNotif.value = false), 2000);
+  } finally {
+    loadingAdd.value = false;
   }
 }
-
-function loadMenu() {
-  const decodedName = decodeURIComponent(route.params.name);
-  menu.value = menus.find((m) => m.name === decodedName) ?? null;
-
-  // Reset kuantitas dan gambar saat menu dimuat
-  qty.value = menu.value && menu.value.stock > 0 ? 1 : 0; // Set 0 jika stok habis
-  currentImage.value = menu.value?.img || dummyImages[0]; // Menggunakan gambar dari data menu jika tersedia
-
-  // Jika stok habis, pastikan tombol Qty dinonaktifkan
-  if (menu.value && menu.value.stock <= 0) {
-    qty.value = 0;
-  }
-}
-
-watch(() => route.params.name, loadMenu, { immediate: true });
 </script>
+
+
 
 <style scoped>
 /* 🎬 Animasi notifikasi yang lebih elegan */
