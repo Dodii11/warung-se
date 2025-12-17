@@ -90,15 +90,16 @@ const loadingOrders = ref(false);
 const fetchOrders = async () => {
   loadingOrders.value = true;
   try {
-    const res = await OrdersAPI.getMyOrders();
+    const res = await OrdersAPI.getUserOrders();
 
-    // cek apakah res.data memang array
-    if (Array.isArray(res.data)) {
-      orders.value = res.data.map(adaptOrder);
-    } else {
-      console.warn("res.data bukan array:", res.data);
-      orders.value = []; // kosongkan agar tidak error
+    // karena orders.js sudah return res.data
+    if (!Array.isArray(res)) {
+      console.warn("Orders bukan array:", res);
+      orders.value = [];
+      return;
     }
+
+    orders.value = res.map(adaptOrder);
   } catch (error) {
     console.error("Gagal load orders:", error);
     orders.value = [];

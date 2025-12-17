@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { History, Truck } from "lucide-vue-next";
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
@@ -73,57 +73,59 @@ import BaseStatusBadge from "@/components/base/BaseStatusBadge.vue";
 import DetailButton from "@/components/admin/RowButton/DetailButton.vue";
 
 const props = defineProps({
-  // orders adalah array objek pesanan yang lengkap, e.g., [{id: 1, orderNumber: '...', status: 'Selesai', ...}]
-  orders: { type: Array, required: true },
+  orders: {
+    type: Array,
+    default: () => [],
+  },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-// Event yang akan ditangkap oleh Parent (di mana modal akan dibuka)
-const emit = defineEmits(["showDetailPesanan"]);
+defineEmits(["printReceipt"]);
 
-// Logika untuk menampilkan pesanan aktif
-const activeOrder = computed(() => {
-  // Cari pesanan
-  return props.orders.find((o) => ["Tertunda", "Diproses", "Dikirim"].includes(o.status)) || null;
-});
-
-// Logika Progress Bar Pesanan Aktif
-const activeOrderStatus = computed(() => activeOrder.value?.status || "");
+// ======================
+// ACTIVE ORDER (progress bar)
+// ======================
+const activeOrder = computed(() =>
+  props.orders.find(o =>
+    ["Tertunda", "Diproses", "Dikirim"].includes(o.status)
+  )
+);
 
 const currentOrderProgress = computed(() => {
-  if (!activeOrderStatus.value) return 0;
-
-  switch (activeOrder.value.status) {
-    case "Tertunda":
-      return 0;
-    case "Diproses":
-      return 33;
-    case "Dikirim":
-      return 66;
-    case "Selesai":
-      return 100;
-    case "Gagal":
-      return 0;
-    default:
-      return 0;
-  }
+  if (!activeOrder.value) return 0;
+  return {
+    Tertunda: 0,
+    Diproses: 33,
+    Dikirim: 66,
+    Selesai: 100,
+  }[activeOrder.value.status] || 0;
 });
 
-const progressClass = (threshold) => {
-  return currentOrderProgress.value >= threshold ? "text-red-600 font-bold" : "text-gray-500";
-};
+const progressClass = threshold =>
+  currentOrderProgress.value >= threshold
+    ? "text-red-600 font-bold"
+    : "text-gray-500";
 
-// Konfigurasi Kolom untuk BaseTable
-const orderColumns = ref([
+// ======================
+// TABLE CONFIG
+// ======================
+const orderColumns = [
   { key: "orderNumber", label: "ID Pesanan" },
   { key: "date", label: "Tanggal" },
-  { key: "items", label: "Jumlah" },
+  { key: "items", label: "Item" },
   { key: "total", label: "Total" },
   { key: "status", label: "Status" },
-]);
+  { key: "action", label: "Aksi" },
+];
 
-// Fungsi Aksi Detail
-const goToDetailPesanan = (orderData) => {
-  // Mengirimkan objek data pesanan lengkap ke parent
-  emit("showDetailPesanan", orderData);
+// ======================
+// ACTION
+// ======================
+const goToDetailPesanan = (row) => {
+  console.log("DETAIL PESANAN USER:", row.raw);
 };
 </script>
+

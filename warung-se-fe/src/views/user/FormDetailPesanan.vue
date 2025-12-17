@@ -200,175 +200,123 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { User, Truck, Receipt, CreditCard, Send } from "lucide-vue-next";
+import { useRouter } from "vue-router";
+import { fetchCart, clearCart } from "@/api/cart";
+import { checkoutPesanan } from "@/api/pesanan";
+
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
 import UserAppInput from "@/components/baseUser/UserAppInput.vue";
 import UserAppButton from "@/components/baseUser/UserAppButton.vue";
-
-// Import komponen baru
 import UserAppModal from "@/components/baseUser/UserAppModal.vue";
 import DetailPesanan from "@/views/user/DetailPesanan.vue";
 
-// --- State Formulir (REVISI STRUKTUR ALAMAT) ---
-const formData = ref({
-  name: "",
-  phone: "",
-  addressDetails: "", // Detail Lokasi / Ciri-ciri
-  addressStreet: "", // Alamat Jalan
-  addressDistrict: "", // Kecamatan/Kota
-  addressRegency: "", // Kabupaten
-  note: "",
-});
-const loading = ref(false);
-const validationErrors = ref({});
+import { User, Truck, Receipt, CreditCard, Send } from "lucide-vue-next";
 
-// --- State Modal & Data Pesanan Terbaru ---
+const router = useRouter();
+
+// ================= STATE =================
+const cartItems = ref([]);
+const subtotal = ref(0);
+const shippingFee = ref(5000);
+const ppn = ref(0);
+const loading = ref(false);
+
 const showOrderModal = ref(false);
 const latestOrderData = ref(null);
 const latestOrderId = ref(null);
 
-// --- State Data Pesanan dari CartPage (localStorage) ---
-const cartItems = ref([]);
-const subtotal = ref(0);
-const shippingFee = ref(5000); // Contoh biaya pengiriman tetap
-const ppnRate = 0; // 0% PPN
-const ppn = computed(() => subtotal.value * ppnRate);
-const total = computed(() => subtotal.value + shippingFee.value + ppn.value);
-
-// --- Lifecycle Hooks ---
-onMounted(() => {
-  loadCartData();
+// ================= FORM =================
+const formData = ref({
+  name: "",
+  phone: "",
+  addressDetails: "",
+  addressStreet: "",
+  addressDistrict: "",
+  addressRegency: "",
+  note: "",
 });
 
-// --- Methods ---
+const validationErrors = ref({});
 
-function loadCartData() {
-  const data = localStorage.getItem("checkoutCartData");
-  if (data) {
-    try {
-      const parsedData = JSON.parse(data);
-      cartItems.value = parsedData.items || [];
-      subtotal.value = parsedData.subtotal || 0;
+// ================= LOAD CART =================
+onMounted(async () => {
+  const res = await fetchCart();
 
-      if (cartItems.value.length === 0) {
-        console.error("Cart data is empty. Redirecting to cart.");
-        // router.replace({ name: 'CartPage' }) // Gunakan replace agar tidak kembali ke form kosong
-      }
-    } catch (e) {
-      console.error("Failed to parse cart data from localStorage:", e);
-      // router.replace({ name: 'CartPage' })
-    }
-  } else {
-    console.error("No cart data found in localStorage. Redirecting to cart.");
-    // router.replace({ name: 'CartPage' })
-  }
-}
+  cartItems.value = (res.data.data || []).map(item => ({
+    id_menu: item.id_menu,
+    name: item.menu?.menu ?? "Menu tidak ditemukan",
+    qty: item.jumlah ?? 0,
+    total: Number(item.subtotal ?? 0),
+  }));
 
-function validateForm() {
-  validationErrors.value = {};
-  let isValid = true;
+  subtotal.value = cartItems.value.reduce((s, i) => s + i.total, 0);
+});
 
-  if (!formData.value.name.trim()) {
-    validationErrors.value.name = "Nama lengkap wajib diisi.";
-    isValid = false;
-  }
-  if (!formData.value.phone.trim()) {
-    validationErrors.value.phone = "Nomor telepon wajib diisi.";
-    isValid = false;
-  }
+// ================= COMPUTED =================
+const total = computed(() => subtotal.value + shippingFee.value + ppn.value);
 
-  // REVISI VALIDASI UNTUK STRUKTUR ALAMAT BARU
-  if (!formData.value.addressDetails.trim()) {
-    validationErrors.value.addressDetails = "Detail lokasi wajib diisi.";
-    isValid = false;
-  }
-  if (!formData.value.addressStreet.trim()) {
-    validationErrors.value.addressStreet = "Alamat jalan wajib diisi.";
-    isValid = false;
-  }
-  if (!formData.value.addressDistrict.trim()) {
-    validationErrors.value.addressDistrict = "Kecamatan/Kota wajib diisi.";
-    isValid = false;
-  }
-  if (!formData.value.addressRegency.trim()) {
-    validationErrors.value.addressRegency = "Kabupaten wajib diisi.";
-    isValid = false;
-  }
+const isFormValid = computed(() =>
+  formData.value.name &&
+  formData.value.phone &&
+  formData.value.addressStreet
+);
 
-  return isValid;
-}
-
-function goBackToCart() {
-  // router.push({ name: 'CartPage' })
-  console.log("Navigasi ke halaman Keranjang.");
-}
-
-function submitOrder() {
-  if (!validateForm() || loading.value) return;
-
-  loading.value = true;
-
-  const newOrderId = Math.floor(Math.random() * 90000) + 10000;
-
-  // Gabungkan semua komponen alamat menjadi satu string 'address' untuk data order
-  const fullAddress = `${formData.value.addressStreet}, ${formData.value.addressDistrict}, ${formData.value.addressRegency} (${formData.value.addressDetails})`;
-
-  const orderData = {
-    customer: {
-      name: formData.value.name,
-      phone: formData.value.phone,
-      // Menggunakan alamat yang sudah digabung
-      address: fullAddress,
-      note: formData.value.note,
-    },
-    items: cartItems.value,
-    subtotal: subtotal.value,
-    shippingFee: shippingFee.value,
-    total: total.value,
-    date: new Date().toISOString(),
-    id: newOrderId, // Tambahkan ID ke data
-  };
-
-  // Simpan data order final (untuk simulasi)
-  localStorage.setItem("latestOrder", JSON.stringify(orderData));
-
-  // Simulasikan proses pengiriman/pembayaran
-  setTimeout(() => {
-    loading.value = false;
-
-    // 1. Simpan data ke state lokal
-    latestOrderData.value = orderData;
-    latestOrderId.value = newOrderId;
-
-    // 2. Tampilkan modal detail pesanan
-    showOrderModal.value = true;
-
-    // Opsional: Hapus data keranjang dari localStorage setelah sukses
-    localStorage.removeItem("checkoutCartData");
-  }, 1500);
-}
-
-// Format currency
-const formatCurrency = (value) => {
+// ================= UTIL =================
+function formatCurrency(val) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
-    minimumFractionDigits: 0,
-  })
-    .format(value)
-    .replace("Rp", "Rp ")
-    .replace(",00", "");
-};
+  }).format(val || 0);
+}
 
-// --- Computed Properties ---
-const isFormValid = computed(() => {
-  return (
-    formData.value.name.trim() !== "" &&
-    formData.value.phone.trim() !== "" &&
-    formData.value.addressDetails.trim() !== "" &&
-    formData.value.addressStreet.trim() !== "" &&
-    formData.value.addressDistrict.trim() !== "" &&
-    formData.value.addressRegency.trim() !== ""
-  );
-});
+// ================= SUBMIT ORDER =================
+async function submitOrder() {
+  try {
+    loading.value = true;
+
+    const payload = {
+      cart: cartItems.value.map(item => ({
+        id_menu: item.id_menu,
+        jumlah: item.qty, // ✅ FIX
+      })),
+      catatan: formData.value.note ?? "",
+    };
+    const res = await checkoutPesanan(payload);
+
+    latestOrderData.value = {
+      orderNumber: res.data.id_pesanan,
+      status: res.data.status,
+      customer: {
+        name: formData.value.name,
+        phone: formData.value.phone,
+        address: `${formData.value.addressStreet}, ${formData.value.addressDistrict}, ${formData.value.addressRegency}`,
+      },
+      items: res.data.detail.map(d => ({
+        name: d.menu?.menu ?? "-",
+        qty: d.jumlah,
+        total: d.subtotal,
+      })),
+      subtotal: res.data.total_harga,
+      shippingFee: shippingFee.value,
+      total: res.data.total_harga + shippingFee.value,
+    };
+
+    latestOrderId.value = res.data.id_pesanan;
+
+    // Simpan untuk ReceiptPage
+    localStorage.setItem("latestOrder", JSON.stringify(latestOrderData.value));
+
+    await clearCart();
+    showOrderModal.value = true;
+  } catch (err) {
+    console.error("CHECKOUT ERROR:", err);
+    alert("Gagal membuat pesanan");
+  } finally {
+    loading.value = false;
+  }
+}
+
+function goBackToCart() {
+  router.push("/cart");
+}
 </script>

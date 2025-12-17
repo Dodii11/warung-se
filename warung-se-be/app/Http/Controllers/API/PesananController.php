@@ -9,8 +9,8 @@ use App\Models\Menu;
 use App\Models\Alamat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class PesananController extends Controller
 {
@@ -18,7 +18,7 @@ class PesananController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role == 'user') {
+        if ($user->role === 'user') {
             return response()->json(
                 Pesanan::where('id_user', $user->id_user)->get()
             );
@@ -41,158 +41,89 @@ class PesananController extends Controller
     public function checkout(Request $request)
     {
         $request->validate([
-            'cart'      => 'required|array',
-            'id_alamat' => 'nullable|integer',
-            'catatan'   => 'nullable|string',
+            'cart' => 'required|array|min:1',
+            'cart.*.id_menu' => 'required|integer',
+            'cart.*.jumlah' => 'required|integer|min:1',
+            'catatan' => 'nullable|string',
+            'id_alamat' => 'nullable|integer'
         ]);
 
         $user = $request->user();
 
-        /**
-         * =========================
-         * VALIDASI ALAMAT
-         * =========================
-         */
-        if (!$request->id_alamat) {
-            $alamat = Alamat::where('id_user', $user->id_user)
-                ->where('is_default', true)
-                ->first();
+        // ====== ALAMAT ======
+        $alamat = $request->id_alamat
+            ? Alamat::where('id_alamat', $request->id_alamat)
+            ->where('id_user', $user->id_user)
+            ->first()
+            : Alamat::where('id_user', $user->id_user)
+            ->where('is_default', true)
+            ->first();
 
-            if (!$alamat) {
-                return response()->json([
-                    'message' => 'User tidak memiliki alamat default. Harap pilih alamat.'
-                ], 400);
-            }
-        } else {
-            $alamat = Alamat::where('id_alamat', $request->id_alamat)
-                ->where('id_user', $user->id_user)
-                ->first();
-
-            if (!$alamat) {
-                return response()->json([
-                    'message' => 'Alamat tidak valid atau bukan milik user.'
-                ], 400);
-            }
+        if (!$alamat) {
+            return response()->json(['message' => 'Alamat tidak ditemukan'], 400);
         }
 
-        /**
-         * =========================
-         * HITUNG TOTAL & VALIDASI STOK
-         * =========================
-         */
-        $total = 0;
+        DB::beginTransaction();
 
-        foreach ($request->cart as $item) {
-            $menu = Menu::find($item['id_menu']);
+        try {
+            $total = 0;
 
-            if (!$menu) {
-                return response()->json([
-                    'message' => "Menu {$item['id_menu']} not found"
-                ], 404);
+            foreach ($request->cart as $item) {
+                $menu = Menu::findOrFail($item['id_menu']);
+
+                if ($menu->stok < $item['jumlah']) {
+                    throw new \Exception("Stok {$menu->menu} tidak cukup");
+                }
+
+                $total += $menu->harga * $item['jumlah'];
             }
 
-            if ($menu->stok < $item['jumlah']) {
-                return response()->json([
-                    'message' => "Menu {$menu->menu} stok tidak cukup"
-                ], 400);
-            }
+            $id_pesanan = 'PS' . str_pad(Pesanan::count() + 1, 5, '0', STR_PAD_LEFT);
 
-            $total += $menu->harga * $item['jumlah'];
-        }
-
-        /**
-         * =========================
-         * GENERATE ID PESANAN
-         * =========================
-         */
-        $id_pesanan = 'PS' . str_pad(Pesanan::count() + 1, 4, '0', STR_PAD_LEFT);
-
-        /**
-         * =========================
-         * TRANSAKSI DATABASE
-         * =========================
-         */
-        $pesanan = DB::transaction(function () use (
-            $request,
-            $user,
-            $alamat,
-            $total,
-            $id_pesanan,
-        ) {
-            // Simpan pesanan
             $pesanan = Pesanan::create([
-                'id_pesanan'      => $id_pesanan,
-                'id_user'         => $user->id_user,
-                'id_alamat'       => $alamat->id_alamat,
-                'tanggal_pesanan' => Carbon::now(),
-                'total_harga'     => $total,
-                'status'          => 'Diproses',
-                'catatan'         => $request->catatan
+                'id_pesanan' => $id_pesanan,
+                'id_user' => $user->id_user,
+                'id_alamat' => $alamat->id_alamat,
+                'tanggal_pesanan' => now(),
+                'total_harga' => $total,
+                'status' => 'Diproses',
+                'catatan' => $request->catatan
             ]);
 
-            // Simpan detail pesanan
             foreach ($request->cart as $item) {
                 $menu = Menu::find($item['id_menu']);
 
-                $id_detail = 'DP' . str_pad(
-                    DetailPesanan::count() + 1,
-                    4,
-                    '0',
-                    STR_PAD_LEFT
-                );
-
                 DetailPesanan::create([
-                    'id_detail'  => $id_detail,
+                    'id_detail' => 'DP' . uniqid(),
                     'id_pesanan' => $id_pesanan,
-                    'id_menu'    => $menu->id_menu,
-                    'jumlah'     => $item['jumlah'],
-                    'subtotal'   => $menu->harga * $item['jumlah']
+                    'id_menu' => $menu->id_menu,
+                    'jumlah' => $item['jumlah'],
+                    'subtotal' => $menu->harga * $item['jumlah']
                 ]);
 
-                // Kurangi stok menu
                 $menu->decrement('stok', $item['jumlah']);
             }
-        });
 
-        /**
-         * =========================
-         * RESPONSE
-         * =========================
-         */
-        return response()->json(
-            $pesanan->load('detail.menu', 'alamat'),
-            201
-        );
+            DB::commit();
+
+            return response()->json(
+                $pesanan->load('detail.menu', 'alamat'),
+                201
+            );
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Checkout gagal',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function latest()
-    {
-        $pesanan = Pesanan::with([
-            'user:id_user,nama_user',
-            'driver:id_driver,nama_driver',
-            'alamat:id_alamat,alamat'
-        ])
-            ->orderBy('tanggal_pesanan', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(function ($p) {
-                return [
-                    'id'        => $p->id_pesanan,
-                    'tanggal'   => $p->tanggal_pesanan->format('d M Y H:i'),
-                    'customer'  => $p->user->nama_user ?? '-',
-                    'alamat'    => $p->alamat->alamat ?? '-',
-                    'total'     => $p->total_harga,
-                    'status'    => $p->status,
-                    'driver'    => $p->driver->nama_driver ?? 'Belum ditetapkan'
-                ];
-            });
 
-        return response()->json($pesanan);
-    }
     // USER
     public function indexUser(Request $request)
     {
-        return Pesanan::with('detail')
+        return Pesanan::with('detail.menu', 'alamat')
             ->where('id_user', $request->user()->id_user)
             ->orderByDesc('tanggal_pesanan')
             ->get();
@@ -201,7 +132,7 @@ class PesananController extends Controller
     // ADMIN
     public function indexAdmin()
     {
-        return Pesanan::with(['user', 'detail', 'alamat'])
+        return Pesanan::with(['user', 'detail.menu', 'alamat'])
             ->orderByDesc('tanggal_pesanan')
             ->get();
     }

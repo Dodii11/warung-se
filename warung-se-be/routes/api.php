@@ -79,17 +79,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
             fn() =>
             response()->json(['message' => 'Admin Dashboard Accessed'])
         );
-
-        Route::get('/admin/pesanan', [PesananController::class, 'indexAdmin']);
-        Route::put('/pesanan/{id}', [PesananController::class, 'updateStatus']);
-        Route::put('/detail-pesanan/{id}', [DetailPesananController::class, 'update']);
-        Route::delete('/detail-pesanan/{id}', [DetailPesananController::class, 'destroy']);
-        Route::put('/pesanan/{id}/assign-driver', [PesananController::class, 'assignDriver']);
-
-        Route::get('/pesanan-terbaru', [PesananController::class, 'latest']);
-        Route::get('/pesanan/status-options', [PesananController::class, 'statusOptions']);
-
-        Route::get('/statistik', [StatistikController::class, 'index']);
     });
 
     /*
@@ -110,32 +99,31 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/user/{id}', [AccountController::class, 'destroy']);
         Route::get('/users/customer', [AccountController::class, 'indexUser']);
 
-        Route::put('/pesanan/{id}/assign-driver', [PesananController::class, 'assignDriver']);
-
-        Route::get('/admin/pesanan', [PesananController::class, 'indexAdmin']);
-        Route::put('/pesanan/{id}', [PesananController::class, 'updateStatus']);
-        Route::put('/detail-pesanan/{id}', [DetailPesananController::class, 'update']);
-        Route::delete('/detail-pesanan/{id}', [DetailPesananController::class, 'destroy']);
-
-        Route::get('/pesanan-terbaru', [PesananController::class, 'latest']);
-        Route::get('/pesanan/status-options', [PesananController::class, 'statusOptions']);
-
         Route::get('/admins', [AccountController::class, 'indexAdmin']);
         Route::post('/admins', [AccountController::class, 'storeAdmin']);
         Route::post('/admins/{id}', [AccountController::class, 'updateByAdmin']);
         Route::delete('/admins/{id}', [AccountController::class, 'destroy']);
 
-        Route::get('/statistik', [StatistikController::class, 'index']);
-    });
-
-    Route::middleware(['role:admin,super admin'])->group(function () {
-        Route::get('/driver', [DriverController::class, 'index']);
-    });
-
-    Route::middleware(['role:super admin'])->group(function () {
         Route::get('/driver/{id}', [DriverController::class, 'show']);
         Route::post('/driver', [DriverController::class, 'store']);
         Route::put('/driver/{id}', [DriverController::class, 'update']);
         Route::delete('/driver/{id}', [DriverController::class, 'destroy']);
+    });
+
+    Route::middleware(['role:admin,super admin'])->group(function () {
+        Route::get('/driver', [DriverController::class, 'index']);
+
+        Route::get('/statistik', [StatistikController::class, 'index']);
+
+
+        Route::get('/admin/pesanan', [PesananController::class, 'indexAdmin']);
+        Route::put('/pesanan/{id}', [PesananController::class, 'updateStatus']);
+        Route::put('/detail-pesanan/{id}', [DetailPesananController::class, 'update']);
+        Route::delete('/detail-pesanan/{id}', [DetailPesananController::class, 'destroy']);
+        Route::put('/pesanan/{id}/assign-driver', [PesananController::class, 'assignDriver']);
+
+        Route::get('/pesanan-terbaru', [PesananController::class, 'latest']);
+        Route::get('/pesanan/status-options', [PesananController::class, 'statusOptions']);
+
     });
 });

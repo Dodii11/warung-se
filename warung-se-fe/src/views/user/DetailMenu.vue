@@ -173,11 +173,18 @@
 import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { menuApi } from "@/api/menu";
+import { addToCart as addToCartApi } from "@/api/cart";
 
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
 import UserAppButton from "@/components/baseUser/UserAppButton.vue";
 import {
-  ShoppingCart, Plus, Minus, Tag, Box, CheckCircle, AlertTriangle
+  ShoppingCart,
+  Plus,
+  Minus,
+  Tag,
+  Box,
+  CheckCircle,
+  AlertTriangle
 } from "lucide-vue-next";
 
 const route = useRoute();
@@ -185,7 +192,9 @@ const menu = ref(null);
 const qty = ref(1);
 const showNotif = ref(false);
 const notifMessage = ref("");
+const loadingAdd = ref(false);
 
+// ================= LOAD MENU =================
 const loadMenu = async () => {
   const name = decodeURIComponent(route.params.name);
   const res = await menuApi.getAll();
@@ -198,19 +207,49 @@ const loadMenu = async () => {
 
 onMounted(loadMenu);
 
+// ================= QTY =================
 function incrementQty() {
   if (qty.value < menu.value.stok) qty.value++;
 }
+
 function decrementQty() {
   if (qty.value > 1) qty.value--;
 }
 
-function addToCart() {
-  notifMessage.value = `${qty.value} x ${menu.value.menu} ditambahkan ke keranjang`;
-  showNotif.value = true;
-  setTimeout(() => (showNotif.value = false), 2000);
+function validateQty() {
+  if (qty.value < 1) qty.value = 1;
+  if (qty.value > menu.value.stok) qty.value = menu.value.stok;
+}
+
+// ================= ADD TO CART (BE) =================
+async function addToCart() {
+  if (!menu.value || qty.value <= 0) return;
+
+  try {
+    loadingAdd.value = true;
+
+    const payload = {
+      id_menu: menu.value.id_menu,
+      jumlah: qty.value,
+      subtotal: qty.value * Number(menu.value.harga),
+    };
+
+    await addToCartApi(payload);
+
+    notifMessage.value = `${qty.value} x ${menu.value.menu} ditambahkan ke keranjang`;
+    showNotif.value = true;
+
+    setTimeout(() => (showNotif.value = false), 2000);
+  } catch (err) {
+    notifMessage.value = "Gagal menambahkan ke keranjang";
+    showNotif.value = true;
+    setTimeout(() => (showNotif.value = false), 2000);
+  } finally {
+    loadingAdd.value = false;
+  }
 }
 </script>
+
 
 
 <style scoped>

@@ -47,8 +47,12 @@
         v-else
         title="Tidak ada Pesanan Ditemukan"
         description="Silahkan ubah filter pencarian Anda."
-        :icon="Receipt"
-      />
+      >
+        <template #icon>
+          <!-- gunakan component icon Vue bukan function -->
+          <Receipt class="w-12 h-12 text-gray-300" />
+        </template>
+      </BaseEmptyState>
     </BaseCard>
 
     <!-- MODAL ORDERS -->
@@ -65,17 +69,32 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+
+// ==============================
+// Base Components
+// ==============================
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
 import BaseStatusBadge from "@/components/base/BaseStatusBadge.vue";
+import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
+
+// ==============================
+// Orders Components
+// ==============================
 import OrdersSearch from "@/components/admin/orders/OrdersSearch.vue";
 import OrdersFilter from "@/components/admin/orders/OrdersFilter.vue";
 import OrdersRowActions from "@/components/admin/orders/OrdersRowActions.vue";
 import OrdersModal from "@/components/admin/orders/OrdersModal.vue";
-import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
+
+// ==============================
+// Icons & API
+// ==============================
 import { Receipt } from "lucide-vue-next";
 import { OrdersAPI } from "@/api/orders.js";
 
+// ==============================
+// TABLE CONFIG
+// ==============================
 const columns = [
   { label: "ID Pesanan", field: "id" },
   { label: "Pelanggan", field: "customer" },
@@ -85,43 +104,39 @@ const columns = [
   { label: "Aksi", field: "action" }
 ];
 
-const statusOptions = ["Diproses","Dikirim","Selesai","Dibatalkan"];
+const statusOptions = ["Diproses", "Dikirim", "Selesai", "Dibatalkan"];
 const driverOptions = ref([]);
 
 const search = ref("");
 const filters = ref({ status: "", date: "" });
 const items = ref([]);
 
-// Modal State
+// ==============================
+// MODAL STATE
+// ==============================
 const showModal = ref(false);
 const modalMode = ref("detail");
 const selectedItem = ref(null);
 
 // ==============================
-// Fetch data pesanan & driver
+// FETCH DATA
 // ==============================
 const fetchOrders = async () => {
   try {
-    const data = await OrdersAPI.getOrders();
+    const data = await OrdersAPI.getAdminOrders();
+    // mapping sesuai columns
     items.value = data.map(order => ({
-      id: order.id_pesanan,
-      customer: order.user?.nama_user || "N/A",
-      customerPhone: order.user?.no_telp || "",
-      customerAddress: order.alamat?.alamat || "",
+      id: order.id_pesanan.toString(), // pastikan string untuk filter search
+      customer: order.user?.nama_user || "-",
       status: order.status,
       driver: order.driver?.nama_driver || "Belum ditetapkan",
-      driverPhone: order.driver?.no_telp || "",
-      driverVehicle: order.driver ? `${order.driver.tipe_kendaraan} / ${order.driver.plat_kendaraan}` : "",
       date: new Date(order.tanggal_pesanan).toLocaleDateString("id-ID"),
-      items: order.detail.map(d => ({
-        name: d.menu?.menu || "N/A",
-        qty: d.jumlah,
-        price: d.menu?.harga || 0,
-        image: d.menu?.gambar || "https://via.placeholder.com/150"
-      }))
+      items: order.detail || [],
+      raw: order
     }));
   } catch (err) {
-    console.error("Gagal fetch pesanan:", err);
+    console.error("Gagal fetch pesanan admin:", err);
+    items.value = [];
   }
 };
 
@@ -134,7 +149,7 @@ const fetchDrivers = async () => {
 };
 
 // ==============================
-// Modal & Filter Logic
+// FILTER & MODAL
 // ==============================
 const openModal = (mode, item) => {
   modalMode.value = mode;
@@ -147,26 +162,35 @@ const updateFilter = (payload) => {
 };
 
 const filteredRows = computed(() => {
-  return items.value.filter((item) => {
+  return items.value.filter(item => {
     const q = search.value.toLowerCase();
-    const matchSearch = item.id.toLowerCase().includes(q) || item.customer.toLowerCase().includes(q);
-    const matchStatus = !filters.value.status || filters.value.status === "Status" || item.status === filters.value.status;
-    const matchDate = !filters.value.date || item.date === filters.value.date;
+    const matchSearch =
+      item.id.toLowerCase().includes(q) ||
+      item.customer.toLowerCase().includes(q);
+
+    const matchStatus =
+      !filters.value.status ||
+      filters.value.status === "Status" ||
+      item.status === filters.value.status;
+
+    const matchDate =
+      !filters.value.date || item.date === filters.value.date;
+
     return matchSearch && matchStatus && matchDate;
   });
 });
 
 // ==============================
-// Handle save order
+// SAVE UPDATE PESANAN
 // ==============================
 const handleSaveOrder = async ({ id, status, driver }) => {
   try {
     await OrdersAPI.updateStatus(id, status);
 
     if (status === "Dikirim" && driver && driver !== "Belum ditetapkan") {
-      const driverData = driverOptions.value.find(d => d.nama_driver === driver);
-      if (driverData) {
-        await OrdersAPI.assignDriver(id, driverData.id_driver);
+      const d = driverOptions.value.find(dr => dr.nama_driver === driver);
+      if (d) {
+        await OrdersAPI.assignDriver(id, d.id_driver);
       }
     }
 
@@ -177,7 +201,7 @@ const handleSaveOrder = async ({ id, status, driver }) => {
 };
 
 // ==============================
-// Mounted
+// MOUNT
 // ==============================
 onMounted(() => {
   fetchOrders();
