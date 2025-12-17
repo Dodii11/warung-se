@@ -1,17 +1,21 @@
-<script>
+<script setup>
 import { useAuth } from "@/stores/auth";
 import { useRouter } from "vue-router";
 
-const router = useRouter();
 const auth = useAuth();
+const router = useRouter();
 
-const params = new URLSearchParams(window.location.search);
-const token = params.get("token");
+const token = new URLSearchParams(window.location.search).get("token");
 
-if (token) {
-  auth.setToken(token);
-  router.push("/");
-} else {
-  router.push("/login");
-}
+(async () => {
+  if (token) {
+    auth.setToken(token);
+    await auth.fetchUser(); // sekarang aman
+    router.replace("/");
+  } else {
+    router.replace("/login");
+  }
+})();
 </script>
+
+

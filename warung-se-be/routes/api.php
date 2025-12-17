@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\API\AlamatController;
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Http\Request;
 // Controllers
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\MenuController;
@@ -43,6 +43,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/pesanan/{id}/detail', [DetailPesananController::class, 'index']);
     Route::get('/detail-pesanan/{id}', [DetailPesananController::class, 'show']);
+
+    
+
+Route::middleware(['auth:sanctum'])->get('/me', function (Request $request) {
+    return $request->user()->load('role');
+});
 
     /*
     |--------------------------------------------------------------------------

@@ -4,12 +4,12 @@ import { useAuth } from "@/stores/auth";
 
 // ADMIN PAGES
 import AdminLayout from "@/views/layouts/AdminLayout.vue";
-import AdminDashboard from "@/views/admin/AdminDashboard.vue";
-import AdminOrders from "@/views/admin/AdminOrders.vue";
-import AdminMenu from "@/views/admin/AdminMenu.vue";
-import AdminUser from "@/views/admin/AdminUser.vue";
-import AdminDriver from "@/views/admin/AdminDriver.vue";
-import AdminAdmin from "@/views/admin/AdminAdmin.vue";
+import AdminDashboard from "@/views/Admin/AdminDashboard.vue";
+import AdminOrders from "@/views/Admin/AdminOrders.vue";
+import AdminMenu from "@/views/Admin/AdminMenu.vue";
+import AdminUser from "@/views/Admin/AdminUser.vue";
+import AdminDriver from "@/views/Admin/AdminDriver.vue";
+import AdminAdmin from "@/views/Admin/AdminAdmin.vue";
 
 // CUSTOMER PAGES
 import UserLayout from "@/views/layouts/UserLayout.vue";
@@ -34,7 +34,7 @@ const router = createRouter({
     {
       path: "/admin",
       component: AdminLayout,
-      meta: { requiresAuth: true, role: "admin" },
+      meta: { requiresAuth: true, role: ["admin", "superadmin"]  },
       children: [
         { path: "", redirect: "/admin/dashboard" },
         {
@@ -150,7 +150,7 @@ const router = createRouter({
   path: "/auth/google/callback",
   name: "GoogleCallback",
   component: () => import("@/views/callback.vue"),
-  meta: { title: "Login Google - Warung SE" }
+  meta: { title: "Login Google - Warung SE", public: true, }
 },
 
 
@@ -179,28 +179,46 @@ const router = createRouter({
 // ===== NAVIGATION GUARD FINAL =====
 router.beforeEach((to, from, next) => {
   const auth = useAuth();
+  const token = localStorage.getItem("token");
 
-  document.title = to.meta.title || "Warung SE";
+  // Public route
+  if (to.meta.public) return next();
 
-  // 1. Butuh login tapi user belum punya token
-  if (to.meta.requiresAuth && !auth.isLoggedIn) {
+  // Auth required
+  if (to.meta.requiresAuth && !token) {
     return next({ name: "Login" });
   }
 
-  // 2. User sudah login → cegah masuk halaman login/register
-  if (auth.isLoggedIn && (to.name === "Login" || to.name === "Register")) {
-    if (auth.user?.role === "admin") {
+  // Cegah login/register kalau sudah login
+  if (token && auth.user && (to.name === "Login" || to.name === "Register")) {
+    if (["admin", "superadmin"].includes(auth.user.role)) {
       return next("/admin/dashboard");
     }
     return next("/");
   }
 
-  // 3. Cek role (admin/user)
-  if (to.meta.role && auth.user?.role !== to.meta.role) {
-    return next("/");
+  // FORCE admin redirect kalau masuk "/"
+  if (to.path === "/" && auth.user) {
+    if (["admin", "superadmin"].includes(auth.user.role)) {
+      return next("/admin/dashboard");
+    }
+  }
+
+  // 4. Role check
+  if (to.meta.role) {
+    const allowedRoles = Array.isArray(to.meta.role)
+      ? to.meta.role
+      : [to.meta.role];
+
+    if (!allowedRoles.includes(auth.user?.role)) {
+      return next("/");
+    }
   }
 
   next();
 });
+
+
+
 
 export default router;

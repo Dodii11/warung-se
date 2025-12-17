@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-// src/stores/auth.js
 import { defineStore } from "pinia";
 import apiClient from "@/api/axios";
 
@@ -13,6 +12,25 @@ export const useAuth = defineStore("auth", {
   }),
 
   actions: {
+    // 🔹 TAMBAHKAN INI
+    setToken(token, user = null) {
+      localStorage.setItem("token", token);
+      this.token = token;
+      this.isLoggedIn = true;
+
+      if (user) {
+        this.user = user;
+      }
+    },
+
+     async fetchUser() {
+        try {
+          const res = await apiClient.get("/me");
+          this.user = res.data;
+        } catch (e) {
+          this.logout();
+        }
+      },
     async login({ email_user, password }) {
       this.loading = true;
       this.error = null;
@@ -26,11 +44,8 @@ export const useAuth = defineStore("auth", {
         const token = res.data.access_token;
         const user = res.data.user;
 
-        localStorage.setItem("token", token);
-
-        this.token = token;
-        this.user = user;
-        this.isLoggedIn = true;
+        // pakai helper
+        this.setToken(token, user);
 
         return { success: true };
       } catch (err) {
@@ -46,12 +61,18 @@ export const useAuth = defineStore("auth", {
       this.error = null;
 
       try {
-        await apiClient.post("/register", {
+        const res = await apiClient.post("/register", {
           nama_user,
           email_user,
           no_telp,
           password,
         });
+
+        const token = res.data.access_token;
+        const user = res.data.user;
+
+        // 🔥 AUTO LOGIN
+        this.setToken(token, user);
 
         return { success: true };
       } catch (err) {

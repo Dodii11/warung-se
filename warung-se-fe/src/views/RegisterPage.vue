@@ -136,7 +136,7 @@ const handleRegister = async () => {
       return;
     }
 
-    router.push("/login");
+    router.push("/dashboard");
   } finally {
     isLoading.value = false;
   }
