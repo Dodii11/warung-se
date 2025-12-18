@@ -120,6 +120,7 @@ const adaptOrder = (p) => ({
   items: p.detail?.reduce((sum, d) => sum + d.jumlah, 0) || 0,
   total: `Rp ${Number(p.total_harga).toLocaleString("id-ID")}`,
   status: normalizeStatus(p.status),
+  driver: p.driver?.nama_driver || "Belum ditetapkan",
   raw: p,
 });
 

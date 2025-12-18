@@ -4,7 +4,11 @@
   <header class="fixed top-0 left-0 w-full bg-primary shadow-2xl z-50 h-[60px]">
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
       <!-- LEFT : LOGO & BRAND -->
-      <router-link to="/" class="flex items-center gap-3 transition-opacity duration-200 hover:opacity-80" @click="isOpen = false">
+      <router-link
+        to="/"
+        class="flex items-center gap-3 transition-opacity duration-200 hover:opacity-80"
+        @click="isOpen = false"
+      >
         <!-- Logo -->
         <img :src="logo" class="h-10 w-auto" alt="Logo WarungSE" />
         <div class="flex flex-col leading-tight">
@@ -16,14 +20,15 @@
       <!-- CENTER : MENU DESKTOP -->
       <ul class="hidden md:flex items-center gap-8">
         <li v-for="item in navItems" :key="item.path" class="relative group">
-          <router-link
-            :to="item.path"
-            custom
-          >
+          <router-link :to="item.path" custom>
             <a
               :href="item.path"
               class="text-sm font-medium transition duration-200 block"
-              :class="isLinkActive(item) ? 'text-warning font-bold' : 'text-white group-hover:text-warning'"
+              :class="
+                isLinkActive(item)
+                  ? 'text-warning font-bold'
+                  : 'text-white group-hover:text-warning'
+              "
               @click.prevent="handleNavClick(item)"
             >
               {{ item.name }}
@@ -42,7 +47,10 @@
         >
           <ShoppingCartIcon class="w-5 h-5" />
           <!-- Dummy Badge Keranjang -->
-          <span v-if="cartCount > 0" class="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-primary bg-warning"></span>
+          <span
+            v-if="cartCount > 0"
+            class="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-primary bg-warning"
+          ></span>
         </router-link>
 
         <!-- User Profile CTA -->
@@ -52,20 +60,35 @@
           aria-label="Akun Saya"
         >
           <!-- Text clickable -->
-          <span class="text-white text-sm font-medium transition group-hover:text-warning">Halo, User</span>
+          <span class="text-white text-sm font-medium transition group-hover:text-warning"
+            >Halo, {{ userName }}
+          </span>
           <!-- User Icon -->
-          <UserIcon class="h-6 w-6 text-warning border-2 border-warning rounded-full p-0.5 bg-white/10" />
+          <UserIcon
+            class="h-6 w-6 text-warning border-2 border-warning rounded-full p-0.5 bg-white/10"
+          />
         </router-link>
       </div>
 
       <!-- HAMBURGER MENU MOBILE -->
       <div class="md:hidden flex items-center gap-3">
-        <router-link to="/cart" class="text-white hover:text-warning transition duration-200 relative" aria-label="Keranjang Belanja">
+        <router-link
+          to="/cart"
+          class="text-white hover:text-warning transition duration-200 relative"
+          aria-label="Keranjang Belanja"
+        >
           <ShoppingCartIcon class="w-6 h-6" />
-          <span v-if="cartCount > 0" class="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-primary bg-warning"></span>
+          <span
+            v-if="cartCount > 0"
+            class="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-primary bg-warning"
+          ></span>
         </router-link>
 
-        <button @click="isOpen = !isOpen" class="text-white p-1 rounded-md hover:bg-primary-dark/50 transition focus:outline-none" aria-label="Toggle Menu">
+        <button
+          @click="isOpen = !isOpen"
+          class="text-white p-1 rounded-md hover:bg-primary-dark/50 transition focus:outline-none"
+          aria-label="Toggle Menu"
+        >
           <MenuIcon v-if="!isOpen" class="w-6 h-6" />
           <XIcon v-else class="w-6 h-6" />
         </button>
@@ -100,8 +123,10 @@
             @click="isOpen = false"
           >
             <!-- User Icon Mobile -->
-            <UserIcon class="h-6 w-6 text-warning border border-warning rounded-full p-0.5 bg-white/10" />
-            Halo, User (Akun Saya)
+            <UserIcon
+              class="h-6 w-6 text-warning border border-warning rounded-full p-0.5 bg-white/10"
+            />
+            Halo, {{ userName }} (Akun Saya)
           </router-link>
         </li>
       </ul>
@@ -110,15 +135,23 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { MenuIcon, XIcon, ShoppingCartIcon, UserIcon } from "lucide-vue-next";
 import logo from "@/assets/LogoDashboardAdmin.png"; // Memastikan logo yang benar diimpor
+import { useAuth } from "@/stores/auth";
 
 const router = useRouter();
 const route = useRoute();
 const isOpen = ref(false);
 const cartCount = ref(3); // Dummy untuk badge keranjang
+
+const auth = useAuth();
+
+
+const userName = computed(() => {
+  return auth.user?.nama_user || auth.user?.name || "Pengguna";
+});
 
 // Item navigasi, Kontrol hash link
 const navItems = [
@@ -132,14 +165,16 @@ const navItems = [
  * Mengatasi masalah path '/' yang selalu dianggap aktif (partial match) dan hash link.
  */
 const isLinkActive = (item) => {
-    if (item.path === '/') {
-        return route.path === '/' && (route.hash === '' || route.hash === null || route.hash === undefined);
-    }
-    if (item.hash) {
-        return route.path === '/' && route.hash === item.hash;
-    }
-    return route.path === item.path;
-}
+  if (item.path === "/") {
+    return (
+      route.path === "/" && (route.hash === "" || route.hash === null || route.hash === undefined)
+    );
+  }
+  if (item.hash) {
+    return route.path === "/" && route.hash === item.hash;
+  }
+  return route.path === item.path;
+};
 
 /**
  * Menangani klik navigasi.
