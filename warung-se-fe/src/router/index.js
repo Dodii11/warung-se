@@ -34,7 +34,7 @@ const router = createRouter({
     {
       path: "/admin",
       component: AdminLayout,
-      meta: { requiresAuth: true, role: ["admin", "superadmin"]  },
+      meta: { requiresAuth: true, role: ["admin", "superadmin", "super admin"]  },
       children: [
         { path: "", redirect: "/admin/dashboard" },
         {
