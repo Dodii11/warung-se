@@ -134,7 +134,7 @@ const dashboardDriverOptions = ref(["Belum ditetapkan"]);
 
 const dashboardOrderColumns = [
   { key: "id", label: "ID Pesanan" },
-  { key: "customer", label: "Customer" },
+  { key: "customer", label: "Pelanggan" },
   { key: "alamat", label: "Alamat" },
   { key: "tanggal", label: "Tanggal" },
   { key: "total", label: "Total" },
