@@ -37,6 +37,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/account/me', [AccountController::class, 'me']);
     Route::put('/account/me', [AccountController::class, 'update']);
+    Route::get('/account/me/checkout', [AccountController::class, 'checkoutProfile']);
     Route::put('/account/password', [AccountController::class, 'updatePassword']);
 
     Route::get('/pesanan/{id}/detail', [DetailPesananController::class, 'index']);

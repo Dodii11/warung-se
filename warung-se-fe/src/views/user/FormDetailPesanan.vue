@@ -203,6 +203,8 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { fetchCart, clearCart } from "@/api/cart";
 import { checkoutPesanan } from "@/api/pesanan";
+import { fetchCheckoutProfile } from "@/api/account";
+
 
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
 import UserAppInput from "@/components/baseUser/UserAppInput.vue";
@@ -240,6 +242,7 @@ const validationErrors = ref({});
 
 // ================= LOAD CART =================
 onMounted(async () => {
+  await autofillCheckout();
   const res = await fetchCart();
 
   cartItems.value = (res.data.data || []).map(item => ({
@@ -315,6 +318,28 @@ async function submitOrder() {
     loading.value = false;
   }
 }
+
+async function autofillCheckout() {
+  try {
+    const res = await fetchCheckoutProfile();
+    const data = res.data;
+
+    // data user
+    formData.value.name = data.nama_user ?? "";
+    formData.value.phone = data.no_telp ?? "";
+
+    // data alamat default
+    if (data.alamat) {
+      formData.value.addressDetails = data.alamat.data_lokasi ?? "";
+      formData.value.addressStreet = data.alamat.alamat ?? "";
+      formData.value.addressDistrict = data.alamat.kecamatan ?? "";
+      formData.value.addressRegency = data.alamat.kota ?? "";
+    }
+  } catch (e) {
+    console.warn("Autofill gagal", e);
+  }
+}
+
 
 function goBackToCart() {
   router.push("/cart");

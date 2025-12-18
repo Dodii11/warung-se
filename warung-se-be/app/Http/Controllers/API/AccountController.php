@@ -165,4 +165,25 @@ class AccountController extends Controller
             'message' => 'Password berhasil diperbarui'
         ]);
     }
+
+    public function checkoutProfile(Request $request)
+    {
+        $user = $request->user();
+
+        // ambil alamat default
+        $alamat = $user->alamat()
+            ->where('is_default', true)
+            ->first();
+
+        return response()->json([
+            'nama_user' => $user->nama_user,
+            'no_telp'   => $user->no_telp,
+            'alamat'    => $alamat ? [
+                'data_lokasi' => $alamat->data_lokasi,
+                'alamat'      => $alamat->alamat,
+                'kecamatan'   => $alamat->kecamatan,
+                'kota'        => $alamat->kota,
+            ] : null
+        ]);
+    }
 }
