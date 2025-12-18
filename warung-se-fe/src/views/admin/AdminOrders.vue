@@ -60,8 +60,9 @@
       v-model="showModal"
       :mode="modalMode"
       :item-data="selectedItem"
-      :status-options="statusOptions.filter(s => s !== 'Status')"
-      :driver-options="driverOptions.map(d => d.nama_driver)"
+      :status-options="statusOptions.filter((s) => s !== 'Status')"
+      :driver-options="driverOptions"
+      :driver-options-map="driverMap"
       @save="handleSaveOrder"
     />
   </section>
@@ -96,20 +97,35 @@ import { OrdersAPI } from "@/api/orders.js";
 // TABLE CONFIG
 // ==============================
 const columns = [
-  { label: "ID Pesanan", field: "id" },
-  { label: "Pelanggan", field: "customer" },
-  { label: "Tanggal", field: "date" },
-  { label: "Status", field: "status" },
-  { label: "Driver", field: "driver" },
-  { label: "Aksi", field: "action" }
+  { label: "ID Pesanan", key: "id" },
+  { label: "Pelanggan", key: "customer" },
+  { label: "Tanggal", key: "date" },
+  { label: "Total", key: "total" },
+  { label: "Status", key: "status" },
+  { label: "Driver", key: "driver" },
 ];
 
-const statusOptions = ["Diproses", "Dikirim", "Selesai", "Dibatalkan"];
+const statusOptions = ["Tertunda", "Diproses", "Dikirim", "Selesai", "Dibatalkan"];
 const driverOptions = ref([]);
 
 const search = ref("");
 const filters = ref({ status: "", date: "" });
 const items = ref([]);
+const driverMap = ref({});
+
+const SHIPPING_COST = 5000;
+
+const calculateTotal = (details = []) => {
+  if (!Array.isArray(details)) return 0;
+
+  const subtotal = details.reduce((sum, item) => {
+    return sum + (item.jumlah || 0) * (item.menu?.harga || 0);
+  }, 0);
+
+  return subtotal + SHIPPING_COST;
+};
+
+const formatCurrency = (v) => `Rp ${Number(v).toLocaleString("id-ID")}`;
 
 // ==============================
 // MODAL STATE
@@ -124,16 +140,22 @@ const selectedItem = ref(null);
 const fetchOrders = async () => {
   try {
     const data = await OrdersAPI.getAdminOrders();
-    // mapping sesuai columns
-    items.value = data.map(order => ({
-      id: order.id_pesanan.toString(), // pastikan string untuk filter search
-      customer: order.user?.nama_user || "-",
-      status: order.status,
-      driver: order.driver?.nama_driver || "Belum ditetapkan",
-      date: new Date(order.tanggal_pesanan).toLocaleDateString("id-ID"),
-      items: order.detail || [],
-      raw: order
-    }));
+
+    items.value = data.map((order) => {
+      const total = calculateTotal(order.detail);
+      return {
+        id: order.id_pesanan.toString(),
+        customer: order.user?.nama_user || "-",
+        status: order.status,
+        driver: order.driver?.nama_driver || "Belum ditetapkan",
+        date: new Date(order.tanggal_pesanan).toLocaleDateString("id-ID"),
+
+        total: formatCurrency(total),
+
+        items: order.detail || [],
+        raw: order,
+      };
+    });
   } catch (err) {
     console.error("Gagal fetch pesanan admin:", err);
     items.value = [];
@@ -142,7 +164,16 @@ const fetchOrders = async () => {
 
 const fetchDrivers = async () => {
   try {
-    driverOptions.value = await OrdersAPI.getDrivers();
+    const data = await OrdersAPI.getDrivers();
+
+    // dropdown BUTUH NAMA
+    driverOptions.value = data.map((d) => d.nama_driver);
+
+    // map NAMA -> ID
+    driverMap.value = data.reduce((acc, d) => {
+      acc[d.nama_driver] = d.id_driver;
+      return acc;
+    }, {});
   } catch (err) {
     console.error("Gagal fetch driver:", err);
   }
@@ -153,7 +184,7 @@ const fetchDrivers = async () => {
 // ==============================
 const openModal = (mode, item) => {
   modalMode.value = mode;
-  selectedItem.value = item;
+  selectedItem.value = item.raw;
   showModal.value = true;
 };
 
@@ -162,19 +193,17 @@ const updateFilter = (payload) => {
 };
 
 const filteredRows = computed(() => {
-  return items.value.filter(item => {
+  return items.value.filter((item) => {
     const q = search.value.toLowerCase();
     const matchSearch =
-      item.id.toLowerCase().includes(q) ||
-      item.customer.toLowerCase().includes(q);
+      item.id.toLowerCase().includes(q) || item.customer.toLowerCase().includes(q);
 
     const matchStatus =
       !filters.value.status ||
       filters.value.status === "Status" ||
       item.status === filters.value.status;
 
-    const matchDate =
-      !filters.value.date || item.date === filters.value.date;
+    const matchDate = !filters.value.date || item.date === filters.value.date;
 
     return matchSearch && matchStatus && matchDate;
   });
@@ -187,16 +216,20 @@ const handleSaveOrder = async ({ id, status, driver }) => {
   try {
     await OrdersAPI.updateStatus(id, status);
 
-    if (status === "Dikirim" && driver && driver !== "Belum ditetapkan") {
-      const d = driverOptions.value.find(dr => dr.nama_driver === driver);
-      if (d) {
-        await OrdersAPI.assignDriver(id, d.id_driver);
+    if (status === "Dikirim" && driver) {
+      const driverId = driverMap.value[driver]; // NAMA → ID
+
+      if (!driverId) {
+        console.error("Driver ID tidak ditemukan untuk:", driver);
+        return;
       }
+
+      await OrdersAPI.assignDriver(id, driverId);
     }
 
     await fetchOrders();
-  } catch (err) {
-    console.error("Gagal update pesanan:", err);
+  } catch (e) {
+    console.error("Gagal update pesanan", e);
   }
 };
 

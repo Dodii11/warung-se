@@ -38,8 +38,9 @@
       </div>
 
       <div class="rounded-xl border border-gray-100 overflow-hidden">
-        <BaseTable :columns="orderColumns" :rows="props.orders">
+        <BaseTable :columns="orderColumns" :rows="orders">
           <!-- Slot untuk Kolom TOTAL (untuk format mata uang) -->
+
           <template #total="{ row }">
             <span class="font-semibold text-gray-800">{{ row.total }}</span>
           </template>
@@ -61,16 +62,18 @@
         Anda belum memiliki riwayat pesanan.
       </div>
     </UserAppCard>
+    <OrdersModal v-model="showModal" mode="detail" :itemData="selectedOrder" />
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import { History, Truck } from "lucide-vue-next";
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
 import BaseStatusBadge from "@/components/base/BaseStatusBadge.vue";
 import DetailButton from "@/components/admin/RowButton/DetailButton.vue";
+import OrdersModal from "@/components/admin/orders/OrdersModal.vue";
 
 const props = defineProps({
   orders: {
@@ -88,26 +91,33 @@ defineEmits(["printReceipt"]);
 // ======================
 // ACTIVE ORDER (progress bar)
 // ======================
-const activeOrder = computed(() =>
-  props.orders.find(o =>
-    ["Tertunda", "Diproses", "Dikirim"].includes(o.status)
-  )
-);
+const activeOrder = computed(() => {
+  if (!props.orders.length) return null;
+
+  const activeStatuses = ["Tertunda", "Diproses", "Dikirim"];
+
+  return (
+    [...props.orders]
+      .filter((o) => activeStatuses.includes(o.status))
+      .sort((a, b) => new Date(b.raw.tanggal_pesanan) - new Date(a.raw.tanggal_pesanan))[0] || null
+  );
+});
 
 const currentOrderProgress = computed(() => {
   if (!activeOrder.value) return 0;
-  return {
-    Tertunda: 0,
+
+  const map = {
+    Tertunda: 5,
     Diproses: 33,
     Dikirim: 66,
     Selesai: 100,
-  }[activeOrder.value.status] || 0;
+  };
+
+  return map[activeOrder.value.status] ?? 0;
 });
 
-const progressClass = threshold =>
-  currentOrderProgress.value >= threshold
-    ? "text-red-600 font-bold"
-    : "text-gray-500";
+const progressClass = (threshold) =>
+  currentOrderProgress.value >= threshold ? "text-red-600 font-bold" : "text-gray-500";
 
 // ======================
 // TABLE CONFIG
@@ -118,14 +128,16 @@ const orderColumns = [
   { key: "items", label: "Item" },
   { key: "total", label: "Total" },
   { key: "status", label: "Status" },
-  { key: "action", label: "Aksi" },
 ];
 
 // ======================
 // ACTION
 // ======================
+const showModal = ref(false);
+const selectedOrder = ref(null);
+
 const goToDetailPesanan = (row) => {
-  console.log("DETAIL PESANAN USER:", row.raw);
+  selectedOrder.value = row.raw;
+  showModal.value = true;
 };
 </script>
-

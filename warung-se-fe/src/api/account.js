@@ -7,3 +7,7 @@ export const updateProfile = (payload) => {
 export const updatePassword = (payload) => {
   return apiClient.put("/account/password", payload);
 };
+
+export const fetchCheckoutProfile = () => {
+  return apiClient.get("/account/me/checkout");
+};

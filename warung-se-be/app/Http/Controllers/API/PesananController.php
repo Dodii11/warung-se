@@ -86,7 +86,7 @@ class PesananController extends Controller
                 'id_alamat' => $alamat->id_alamat,
                 'tanggal_pesanan' => now(),
                 'total_harga' => $total,
-                'status' => 'Diproses',
+                'status' => 'Tertunda',
                 'catatan' => $request->catatan
             ]);
 
@@ -119,20 +119,67 @@ class PesananController extends Controller
         }
     }
 
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|string'
+        ]);
+
+        $pesanan = Pesanan::find($id);
+
+        if (!$pesanan) {
+            return response()->json(['message' => 'Pesanan tidak ditemukan'], 404);
+        }
+
+        $pesanan->update([
+            'status' => $request->status
+        ]);
+
+        return response()->json($pesanan);
+    }
+
+
+    public function assignDriver(Request $request, $id)
+    {
+        $request->validate([
+            'id_driver' => 'required|exists:driver,id_driver'
+        ]);
+
+        $pesanan = Pesanan::find($id);
+
+        if (!$pesanan) {
+            return response()->json(['message' => 'Pesanan tidak ditemukan'], 404);
+        }
+
+        $pesanan->update([
+            'id_driver' => $request->id_driver
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $pesanan->load('driver')
+        ]);
+    }
 
     // USER
     public function indexUser(Request $request)
     {
-        return Pesanan::with('detail.menu', 'alamat')
+        return Pesanan::with([
+            'user',
+            'driver',
+            'alamat',
+            'detail.menu'
+        ])
             ->where('id_user', $request->user()->id_user)
             ->orderByDesc('tanggal_pesanan')
             ->get();
     }
 
+
     // ADMIN
     public function indexAdmin()
     {
-        return Pesanan::with(['user', 'detail.menu', 'alamat'])
+        return Pesanan::with(['user', 'detail.menu', 'alamat', 'driver'])
             ->orderByDesc('tanggal_pesanan')
             ->get();
     }
