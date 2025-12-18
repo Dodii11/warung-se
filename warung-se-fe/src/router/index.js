@@ -4,12 +4,12 @@ import { useAuth } from "@/stores/auth";
 
 // ADMIN PAGES
 import AdminLayout from "@/views/layouts/AdminLayout.vue";
-import AdminDashboard from "@/views/admin/AdminDashboard.vue";
-import AdminOrders from "@/views/admin/AdminOrders.vue";
-import AdminMenu from "@/views/admin/AdminMenu.vue";
-import AdminUser from "@/views/admin/AdminUser.vue";
-import AdminDriver from "@/views/admin/AdminDriver.vue";
-import AdminAdmin from "@/views/admin/AdminAdmin.vue";
+import AdminDashboard from "@/views/Admin/AdminDashboard.vue";
+import AdminOrders from "@/views/Admin/AdminOrders.vue";
+import AdminMenu from "@/views/Admin/AdminMenu.vue";
+import AdminUser from "@/views/Admin/AdminUser.vue";
+import AdminDriver from "@/views/Admin/AdminDriver.vue";
+import AdminAdmin from "@/views/Admin/AdminAdmin.vue";
 
 // CUSTOMER PAGES
 import UserLayout from "@/views/layouts/UserLayout.vue";
@@ -34,7 +34,7 @@ const router = createRouter({
     {
       path: "/admin",
       component: AdminLayout,
-      meta: { requiresAuth: true, role: "admin" },
+      meta: { requiresAuth: true, role: ["admin", "superadmin"]  },
       children: [
         { path: "", redirect: "/admin/dashboard" },
         {
@@ -146,6 +146,13 @@ const router = createRouter({
       component: RegisterPage,
       meta: { title: "Daftar - Warung SE" },
     },
+    {
+  path: "/auth/google/callback",
+  name: "GoogleCallback",
+  component: () => import("@/views/callback.vue"),
+  meta: { title: "Login Google - Warung SE", public: true, }
+},
+
 
     // ---- FALLBACK ----
     {
@@ -172,46 +179,64 @@ const router = createRouter({
 // ===== NAVIGATION GUARD DENGAN TUNGGU INIT =====
 router.beforeEach(async (to, from, next) => {
   const auth = useAuth();
+
+  // 1. Tunggu auth siap (Google Login / restore session)
   await auth.waitForInitialization();
 
-  document.title = to.meta.title || "Warung SE";
+  // 2. Public route
+  if (to.meta.public) {
+    return next();
+  }
 
+  // 3. Route butuh login
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
-    console.log("Guard: Redirect to Login - Not authenticated after init.");
+    console.log("Guard: Redirect to Login - Not authenticated.");
     return next({ name: "Login" });
   }
 
-  if (auth.isLoggedIn && (to.name === "Login" || to.name === "Register")) {
-    console.log("Guard: User logged in, redirecting from auth pages.");
-    if (auth.user?.role === "admin" || auth.user?.role === "super admin") {
+  // 4. Cegah Login / Register kalau sudah login
+  if (auth.isLoggedIn && ["Login", "Register"].includes(to.name)) {
+    console.log("Guard: User already logged in.");
+
+    if (["admin", "superadmin", "super admin"].includes(auth.user?.role)) {
       return next("/admin/dashboard");
     }
+
     return next("/");
   }
 
+  // 5. FORCE admin redirect kalau buka "/"
+  if (to.path === "/" && auth.isLoggedIn) {
+    if (["admin", "superadmin", "super admin"].includes(auth.user?.role)) {
+      return next("/admin/dashboard");
+    }
+  }
+
+  // 6. Role-based access
   if (to.meta.role) {
     const userRole = auth.user?.role;
-    const requiredRole = to.meta.role;
+    const requiredRoles = Array.isArray(to.meta.role)
+      ? to.meta.role
+      : [to.meta.role];
 
-    console.log(`Guard: Checking role. User: ${userRole}, Required: ${requiredRole}`);
+    console.log(
+      `Guard: Checking role. User: ${userRole}, Required: ${requiredRoles}`
+    );
 
-    if (userRole === "super admin") {
-      console.log("Guard: Super admin access granted.");
-      next();
+    // Super admin selalu lolos
+    if (userRole === "super admin" || userRole === "superadmin") {
+      return next();
     }
 
-    else if (userRole === requiredRole) {
-      console.log("Guard: Role match, access granted.");
-      next();
-    }
-    else {
+    if (!requiredRoles.includes(userRole)) {
       console.log("Guard: Role mismatch, redirecting to home.");
       return next("/");
     }
-  } else {
-    console.log("Guard: User access granted.");
-    next();
   }
+
+  // 7. Semua aman
+  console.log("Guard: Access granted.");
+  next();
 });
 
 export default router;

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // src/stores/auth.js
 import { defineStore } from "pinia";
 import apiClient from "@/api/axios";
@@ -5,64 +6,92 @@ import apiClient from "@/api/axios";
 export const useAuth = defineStore("auth", {
   state: () => ({
     user: null,
-    token: localStorage.getItem("token") || null,
-    isLoggedIn: !!localStorage.getItem("token"),
+    token: localStorage.getItem("token"),
+    isLoggedIn: false,
     loading: false,
-    initializing: true, // Tetap gunakan flag ini
+    initializing: true,
     error: null,
   }),
 
   getters: {
     role: (state) => state.user?.role || null,
     isAdmin: (state) => state.user?.role === "admin",
-    isSuperAdmin: (state) => state.user?.role === "super admin",
+    isSuperAdmin: (state) =>
+      state.user?.role === "super admin" || state.user?.role === "superadmin",
   },
 
   actions: {
-    // Fungsi untuk menunggu inisialisasi selesai
-    // Fungsi ini akan resolve Promise ketika initializing = false
+    // =========================
+    // INIT / RESTORE SESSION
+    // =========================
     async waitForInitialization() {
-      // Jika sudah selesai, langsung resolve
-      if (!this.initializing) {
-        return;
-      }
+      if (!this.initializing) return;
 
-      // Jika masih initializing, buat promise yang resolve ketika initializing menjadi false
-      // Gunakan $subscribe untuk memonitor perubahan state secara spesifik
       return new Promise((resolve) => {
-        const unsubscribe = this.$subscribe((mutation, state) => {
+        const unsubscribe = this.$subscribe((_, state) => {
           if (!state.initializing) {
-            unsubscribe(); // Hentikan watcher setelah kondisi terpenuhi
+            unsubscribe();
             resolve();
           }
         });
       });
     },
 
-    async fetchUser() {
-      if (!this.token) {
-        this.user = null;
-        this.isLoggedIn = false;
+    async initializeAuth() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
         this.initializing = false;
+        this.isLoggedIn = false;
+        this.user = null;
         return;
       }
 
+      this.token = token;
+      await this.fetchUser();
+    },
+
+    // =========================
+    // USER
+    // =========================
+    async fetchUser() {
       this.loading = true;
       this.initializing = true;
+
       try {
         const res = await apiClient.get("/account/me");
         this.user = res.data;
         this.isLoggedIn = true;
-        console.log("User data loaded after refresh:", this.user);
+        console.log("Auth initialized, user loaded:", this.user);
       } catch (err) {
-        console.error("Gagal mengambil data user setelah refresh:", err);
-        this.logout(); // Ini akan mengatur ulang state
+        console.error("Fetch user gagal:", err);
+        this.clearAuth();
       } finally {
         this.loading = false;
         this.initializing = false;
       }
     },
 
+    // =========================
+    // AUTH HELPERS
+    // =========================
+    setAuth(token, user) {
+      localStorage.setItem("token", token);
+      this.token = token;
+      this.user = user;
+      this.isLoggedIn = true;
+    },
+
+    clearAuth() {
+      localStorage.removeItem("token");
+      this.token = null;
+      this.user = null;
+      this.isLoggedIn = false;
+    },
+
+    // =========================
+    // LOGIN / REGISTER
+    // =========================
     async login({ email_user, password }) {
       this.loading = true;
       this.error = null;
@@ -73,15 +102,7 @@ export const useAuth = defineStore("auth", {
           password,
         });
 
-        const token = res.data.access_token;
-        const user = res.data.user;
-
-        localStorage.setItem("token", token);
-
-        this.token = token;
-        this.user = user;
-        this.isLoggedIn = true;
-
+        this.setAuth(res.data.access_token, res.data.user);
         return { success: true };
       } catch (err) {
         this.error = err.response?.data?.message || "Login gagal";
@@ -96,13 +117,15 @@ export const useAuth = defineStore("auth", {
       this.error = null;
 
       try {
-        await apiClient.post("/register", {
+        const res = await apiClient.post("/register", {
           nama_user,
           email_user,
           no_telp,
           password,
         });
 
+        // auto login
+        this.setAuth(res.data.access_token, res.data.user);
         return { success: true };
       } catch (err) {
         this.error = err.response?.data?.message || "Pendaftaran gagal";
@@ -112,19 +135,19 @@ export const useAuth = defineStore("auth", {
       }
     },
 
+    // =========================
+    // LOGOUT
+    // =========================
     async logout() {
       try {
         if (this.token) {
           await apiClient.post("/logout");
         }
       } catch (err) {
-        console.error("Logout API gagal:", err);
+        console.warn("Logout API gagal:", err);
       }
 
-      localStorage.removeItem("token");
-      this.user = null;
-      this.token = null;
-      this.isLoggedIn = false;
+      this.clearAuth();
       this.initializing = false;
     },
   },
