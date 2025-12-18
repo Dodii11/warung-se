@@ -119,9 +119,7 @@
           <div class="space-y-3 text-sm text-gray-700">
             <!-- Rincian Item -->
             <div v-for="item in cartItems" :key="item.id" class="flex justify-between items-start">
-              <span class="text-gray-600 pr-2 grow min-w-0"
-                >{{ item.name }} ({{ item.qty }}x)</span
-              >
+              <span class="text-gray-600 pr-2 grow min-w-0">{{ item.name }} ({{ item.qty }}x)</span>
               <span class="font-medium text-gray-800 shrink-0 whitespace-nowrap">{{
                 formatCurrency(item.total)
               }}</span>
@@ -138,8 +136,7 @@
             <!-- Biaya Pengiriman -->
             <div class="flex justify-between">
               <span class="grow min-w-0"
-                >Biaya Pengiriman
-                <Truck class="w-4 h-4 inline ml-1 text-red-500"
+                >Biaya Pengiriman <Truck class="w-4 h-4 inline ml-1 text-red-500"
               /></span>
               <span class="font-semibold shrink-0 whitespace-nowrap">{{
                 formatCurrency(shippingFee)
@@ -192,7 +189,7 @@
       <DetailPesanan
         :order-data="latestOrderData"
         :order-id="latestOrderId"
-        @close="showOrderModal = false"
+        @close="handleCloseDetail"
       />
     </UserAppModal>
   </div>
@@ -204,7 +201,6 @@ import { useRouter } from "vue-router";
 import { fetchCart, clearCart } from "@/api/cart";
 import { checkoutPesanan } from "@/api/pesanan";
 import { fetchCheckoutProfile } from "@/api/account";
-
 
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
 import UserAppInput from "@/components/baseUser/UserAppInput.vue";
@@ -245,7 +241,7 @@ onMounted(async () => {
   await autofillCheckout();
   const res = await fetchCart();
 
-  cartItems.value = (res.data.data || []).map(item => ({
+  cartItems.value = (res.data.data || []).map((item) => ({
     id_menu: item.id_menu,
     name: item.menu?.menu ?? "Menu tidak ditemukan",
     qty: item.jumlah ?? 0,
@@ -258,10 +254,8 @@ onMounted(async () => {
 // ================= COMPUTED =================
 const total = computed(() => subtotal.value + shippingFee.value + ppn.value);
 
-const isFormValid = computed(() =>
-  formData.value.name &&
-  formData.value.phone &&
-  formData.value.addressStreet
+const isFormValid = computed(
+  () => formData.value.name && formData.value.phone && formData.value.addressStreet
 );
 
 // ================= UTIL =================
@@ -278,9 +272,9 @@ async function submitOrder() {
     loading.value = true;
 
     const payload = {
-      cart: cartItems.value.map(item => ({
+      cart: cartItems.value.map((item) => ({
         id_menu: item.id_menu,
-        jumlah: item.qty, // ✅ FIX
+        jumlah: item.qty,
       })),
       catatan: formData.value.note ?? "",
     };
@@ -294,10 +288,11 @@ async function submitOrder() {
         phone: formData.value.phone,
         address: `${formData.value.addressStreet}, ${formData.value.addressDistrict}, ${formData.value.addressRegency}`,
       },
-      items: res.data.detail.map(d => ({
+      items: res.data.detail.map((d) => ({
         name: d.menu?.menu ?? "-",
         qty: d.jumlah,
         total: d.subtotal,
+        image: d.menu?.image_url ? `/storage/${d.menu.image_url}` : null,
       })),
       subtotal: res.data.total_harga,
       shippingFee: shippingFee.value,
@@ -339,7 +334,6 @@ async function autofillCheckout() {
     console.warn("Autofill gagal", e);
   }
 }
-
 
 function goBackToCart() {
   router.push("/cart");

@@ -125,9 +125,9 @@ const progressClass = (threshold) =>
 const orderColumns = [
   { key: "orderNumber", label: "ID Pesanan" },
   { key: "date", label: "Tanggal" },
-  { key: "items", label: "Item" },
   { key: "total", label: "Total" },
   { key: "status", label: "Status" },
+  { key: "driver", label: "Driver" },
 ];
 
 // ======================
