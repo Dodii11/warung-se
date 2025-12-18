@@ -176,65 +176,55 @@ const router = createRouter({
   },
 });
 
-// ===== NAVIGATION GUARD DENGAN TUNGGU INIT =====
+
+//Navigasi Guard
 router.beforeEach(async (to, from, next) => {
-  // 1. Tunggu auth siap (Google Login / restore session)
+  const auth = useAuth();
+
+  // ⏳ tunggu auth init dari main.js
   await auth.waitForInitialization();
 
-  // 2. Public route
-  if (to.meta.public) {
-    return next();
-  }
+  // public route
+  if (to.meta.public) return next();
 
-  // 3. Route butuh login
+  // butuh login
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
-    console.log("Guard: Redirect to Login - Not authenticated.");
     return next({ name: "Login" });
   }
 
-  // 4. Cegah Login / Register kalau sudah login
+  // cegah login/register kalau sudah login
   if (auth.isLoggedIn && ["Login", "Register"].includes(to.name)) {
-    console.log("Guard: User already logged in.");
-
     if (["admin", "superadmin", "super admin"].includes(auth.user?.role)) {
       return next("/admin/dashboard");
     }
-
     return next("/");
   }
 
-  // 5. FORCE admin redirect kalau buka "/"
+  // force admin ke dashboard
   if (to.path === "/" && auth.isLoggedIn) {
     if (["admin", "superadmin", "super admin"].includes(auth.user?.role)) {
       return next("/admin/dashboard");
     }
   }
 
-  // 6. Role-based access
+  // role-based access
   if (to.meta.role) {
     const userRole = auth.user?.role;
-    const requiredRoles = Array.isArray(to.meta.role)
+    const allowedRoles = Array.isArray(to.meta.role)
       ? to.meta.role
       : [to.meta.role];
 
-    console.log(
-      `Guard: Checking role. User: ${userRole}, Required: ${requiredRoles}`
-    );
-
-    // Super admin selalu lolos
-    if (userRole === "super admin" || userRole === "superadmin") {
-      return next();
-    }
-
-    if (!requiredRoles.includes(userRole)) {
-      console.log("Guard: Role mismatch, redirecting to home.");
+    if (
+      userRole !== "super admin" &&
+      userRole !== "superadmin" &&
+      !allowedRoles.includes(userRole)
+    ) {
       return next("/");
     }
   }
 
-  // 7. Semua aman
-  console.log("Guard: Access granted.");
   next();
 });
+
 
 export default router;
