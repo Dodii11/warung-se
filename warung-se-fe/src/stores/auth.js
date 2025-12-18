@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-// src/stores/auth.js
 import { defineStore } from "pinia";
 import apiClient from "@/api/axios";
 
@@ -22,8 +21,25 @@ export const useAuth = defineStore("auth", {
 
   actions: {
     // =========================
-    // INIT / RESTORE SESSION
+    // INIT (TANPA API CALL)
     // =========================
+    async initializeAuth() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        this.token = null;
+        this.user = null;
+        this.isLoggedIn = false;
+        this.initializing = false;
+        return;
+      }
+
+      // token ada, tapi JANGAN fetch user di sini
+      this.token = token;
+      this.isLoggedIn = true; // asumsi sementara
+      this.initializing = false;
+    },
+
     async waitForInitialization() {
       if (!this.initializing) return;
 
@@ -37,38 +53,21 @@ export const useAuth = defineStore("auth", {
       });
     },
 
-    async initializeAuth() {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        this.initializing = false;
-        this.isLoggedIn = false;
-        this.user = null;
-        return;
-      }
-
-      this.token = token;
-      await this.fetchUser();
-    },
-
     // =========================
-    // USER
+    // LOAD USER (ON DEMAND)
     // =========================
-    async fetchUser() {
+    async ensureUserLoaded() {
+      if (this.user || !this.token) return;
+
       this.loading = true;
-      this.initializing = true;
-
       try {
         const res = await apiClient.get("/account/me");
         this.user = res.data;
         this.isLoggedIn = true;
-        console.log("Auth initialized, user loaded:", this.user);
       } catch (err) {
-        console.error("Fetch user gagal:", err);
         this.clearAuth();
       } finally {
         this.loading = false;
-        this.initializing = false;
       }
     },
 
@@ -124,7 +123,6 @@ export const useAuth = defineStore("auth", {
           password,
         });
 
-        // auto login
         this.setAuth(res.data.access_token, res.data.user);
         return { success: true };
       } catch (err) {
@@ -148,7 +146,6 @@ export const useAuth = defineStore("auth", {
       }
 
       this.clearAuth();
-      this.initializing = false;
     },
   },
 });

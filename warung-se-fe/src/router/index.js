@@ -181,18 +181,32 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const auth = useAuth();
 
+  if (to.path === "/" || ["Login", "Register"].includes(to.name)) {
+    return next();
+  }
+
   // ⏳ tunggu auth init dari main.js
   await auth.waitForInitialization();
 
   // public route
-  if (to.meta.public) return next();
-
-  // butuh login
-  if (to.meta.requiresAuth && !auth.isLoggedIn) {
-    return next({ name: "Login" });
+  if (to.meta.public) {
+    return next();
   }
 
-  // cegah login/register kalau sudah login
+  // 🔐 route yang butuh login
+  if (to.meta.requiresAuth) {
+    if (!auth.token) {
+      return next({ name: "Login" });
+    }
+
+    await auth.ensureUserLoaded();
+
+    if (!auth.user) {
+      return next({ name: "Login" });
+    }
+  }
+
+  // 🚫 cegah login/register kalau sudah login
   if (auth.isLoggedIn && ["Login", "Register"].includes(to.name)) {
     if (["admin", "superadmin", "super admin"].includes(auth.user?.role)) {
       return next("/admin/dashboard");
@@ -200,14 +214,7 @@ router.beforeEach(async (to, from, next) => {
     return next("/");
   }
 
-  // force admin ke dashboard
-  if (to.path === "/" && auth.isLoggedIn) {
-    if (["admin", "superadmin", "super admin"].includes(auth.user?.role)) {
-      return next("/admin/dashboard");
-    }
-  }
-
-  // role-based access
+  // 🔑 role-based access
   if (to.meta.role) {
     const userRole = auth.user?.role;
     const allowedRoles = Array.isArray(to.meta.role)
@@ -225,6 +232,5 @@ router.beforeEach(async (to, from, next) => {
 
   next();
 });
-
 
 export default router;
