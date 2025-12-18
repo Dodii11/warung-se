@@ -178,8 +178,6 @@ const router = createRouter({
 
 // ===== NAVIGATION GUARD DENGAN TUNGGU INIT =====
 router.beforeEach(async (to, from, next) => {
-  const auth = useAuth();
-
   // 1. Tunggu auth siap (Google Login / restore session)
   await auth.waitForInitialization();
 
