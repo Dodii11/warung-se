@@ -9,7 +9,7 @@ const token = new URLSearchParams(window.location.search).get("token");
 
 (async () => {
   if (token) {
-    auth.setToken(token);
+    auth.setAuth(token);
     await auth.fetchUser(); // sekarang aman
     router.replace("/");
   } else {
