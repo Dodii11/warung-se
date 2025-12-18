@@ -38,7 +38,7 @@
       </div>
 
       <div class="rounded-xl border border-gray-100 overflow-hidden">
-        <BaseTable :columns="orderColumns" :rows="props.orders">
+        <BaseTable :columns="orderColumns" :rows="orders">
           <!-- Slot untuk Kolom TOTAL (untuk format mata uang) -->
 
           <template #total="{ row }">

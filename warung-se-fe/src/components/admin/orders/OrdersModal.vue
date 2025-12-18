@@ -68,7 +68,7 @@
                     : 'text-red-500 italic'
                 "
               >
-                {{ form.driver || "Belum ditetapkan" }}
+                {{ driverName }}
               </dt>
             </div>
             <div class="flex flex-col pt-2 border-t border-gray-50">
@@ -106,11 +106,7 @@
                 <div
                   class="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden shrink-0"
                 >
-                  <img
-                    :src="item.image || '/img/placeholder.png'"
-                    class="w-full h-full object-cover"
-                    alt="item"
-                  />
+                  <img :src="item.image || ''" class="w-full h-full object-cover" alt="item" />
                 </div>
                 <div>
                   <p class="text-sm font-medium text-gray-900 line-clamp-1">
@@ -124,6 +120,17 @@
               <span class="font-semibold text-gray-700 text-sm">
                 Rp {{ formatCurrency(item.qty * item.price) }}
               </span>
+            </div>
+
+            <!-- CATATAN PESANAN -->
+            <div
+              v-if="form.catatan"
+              class="border-t bg-gray-50 border-gray-200  px-4 py-3 text-sm text-gray-700"
+            >
+              <p class="text-xs font-semibold text-gray-500 ">Catatan Pelanggan</p>
+              <p class="text-xs whitespace-pre-line">
+                {{ form.catatan }}
+              </p>
             </div>
           </div>
 
@@ -156,9 +163,7 @@
           <UserIcon class="w-5 h-5" />
         </div>
         <div class="flex-1">
-          <p class="text-xs text-blue-600 font-bold uppercase tracking-wider mb-0.5">
-            Pelanggan
-          </p>
+          <p class="text-xs text-blue-600 font-bold uppercase tracking-wider mb-0.5">Pelanggan</p>
           <p class="text-blue-900 font-bold text-lg">{{ form.customer }}</p>
           <p class="text-xs text-blue-500">ID: {{ form.id }}</p>
         </div>
@@ -232,16 +237,19 @@ const props = defineProps({
   itemData: { type: Object, default: null },
   statusOptions: { type: Array, default: () => [] },
   driverOptions: { type: Array, default: () => [] },
+  driverOptionsMap: { type: Object, default: () => ({}) },
 });
 
 const emit = defineEmits(["update:modelValue", "save"]);
 
 const isSaving = ref(false);
-const shippingCost = 10000;
+const shippingCost = 5000;
 
-const modalTitle = computed(() =>
-  props.mode === "detail" ? "Detail Pesanan" : "Update Pesanan"
-);
+const modalTitle = computed(() => (props.mode === "detail" ? "Detail Pesanan" : "Update Pesanan"));
+const driverName = computed(() => {
+  if (!form.driver) return "Belum ditetapkan";
+  return props.driverOptionsMap[form.driver] || form.driver;
+});
 
 const defaultForm = {
   id: "",
@@ -255,11 +263,16 @@ const defaultForm = {
   driverPhone: "",
   driverVehicle: "",
   items: [],
+  catatan: "",
 };
 
 const form = reactive({ ...defaultForm });
 
 const isShippingStatus = computed(() => form.status === "Dikirim");
+const formatAlamat = (a) => {
+  if (!a) return "-";
+  return `${a.alamat}, ${a.kecamatan}, ${a.data_lokasi}`;
+};
 
 const initForm = () => {
   const d = props.itemData || {};
@@ -269,19 +282,18 @@ const initForm = () => {
     id: d.id_pesanan || "-",
     apiId: d.id_pesanan,
     status: d.status || "Tertunda",
-    date: d.tanggal_pesanan
-      ? new Date(d.tanggal_pesanan).toLocaleDateString("id-ID")
-      : "-",
+    date: d.tanggal_pesanan ? new Date(d.tanggal_pesanan).toLocaleDateString("id-ID") : "-",
     customer: d.user?.nama_user || "-",
-    customerPhone: d.user?.telepon || "-",
-    customerAddress: d.alamat?.alamat || "-",
-    driver: d.driver ? { label: d.driver.nama_driver, value: d.driver.id_driver } : null,
+    customerPhone: d.user?.no_telp || "-",
+    customerAddress: formatAlamat(d.alamat),
+    driver: d.driver?.id_driver || "",
     driverPhone: d.driver?.no_telp || "-",
     driverVehicle: d.driver?.plat_kendaraan || "-",
+    catatan: d.catatan || "",
     items: Array.isArray(d.detail)
       ? d.detail.map((i) => ({
           name: i.menu?.menu || "-",
-          image: i.menu?.gambar || "",
+          image: i.menu?.gambar_url || "",
           qty: i.jumlah,
           price: i.menu?.harga || 0,
         }))
@@ -297,9 +309,7 @@ watch(
 );
 
 const subtotal = computed(() =>
-  Array.isArray(form.items)
-    ? form.items.reduce((sum, i) => sum + i.price * i.qty, 0)
-    : 0
+  Array.isArray(form.items) ? form.items.reduce((sum, i) => sum + i.price * i.qty, 0) : 0
 );
 
 const grandTotal = computed(() => subtotal.value + shippingCost);
@@ -311,7 +321,7 @@ const handleSubmit = async () => {
   await emit("save", {
     id: form.apiId,
     status: form.status,
-    driver: isShippingStatus.value ? form.driver?.value : null,
+    driver: isShippingStatus.value ? form.driver : null, // NAMA
   });
 
   isSaving.value = false;

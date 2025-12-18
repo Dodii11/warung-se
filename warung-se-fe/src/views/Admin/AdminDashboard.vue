@@ -85,10 +85,11 @@
     <!-- Meneruskan driverOptions ke modal -->
     <OrdersModal
       v-model="isModalOpen"
-      :order="selectedOrder"
       mode="detail"
+      :item-data="selectedOrder"
       :status-options="statusOptions.filter((s) => s !== 'Status')"
-      :driver-options="dashboardDriverOptions"
+      :driver-options="driverOptions"
+      :driver-options-map="driverMap"
     />
   </section>
 </template>
@@ -109,12 +110,7 @@ import { useStatistikStore } from "@/api/statistik";
 import { buildDashboardStats } from "@/data/dashboardData";
 import { OrdersAPI } from "@/api/orders";
 
-import {
-  ArrowRight,
-  ArrowUpRightIcon,
-  ArrowDownRightIcon,
-  Receipt
-} from "lucide-vue-next";
+import { ArrowRight, ArrowUpRightIcon, ArrowDownRightIcon, Receipt } from "lucide-vue-next";
 
 /* ===============================
    STATISTIK
@@ -130,15 +126,16 @@ const stats = computed(() => {
 ================================ */
 const recentOrders = ref([]);
 const statusOptions = ref(["Tertunda", "Diproses", "Dikirim", "Selesai"]);
-const dashboardDriverOptions = ref(["Belum ditetapkan"]);
+const driverOptions = ref([]);
+const driverMap = ref({});
 
 const dashboardOrderColumns = [
   { key: "id", label: "ID Pesanan" },
   { key: "customer", label: "Pelanggan" },
-  { key: "alamat", label: "Alamat" },
   { key: "tanggal", label: "Tanggal" },
   { key: "total", label: "Total" },
-  { key: "status", label: "Status" }
+  { key: "status", label: "Status" },
+  { key: "driver", label: "Driver" },
 ];
 
 const loadRecentOrders = async () => {
@@ -147,17 +144,17 @@ const loadRecentOrders = async () => {
 
     recentOrders.value = data
       .slice(0, 5) // ambil 5 terbaru
-      .map(order => ({
+      .map((order) => ({
         id: order.id_pesanan,
         customer: order.user?.nama_user || "-",
-        alamat: order.alamat?.alamat || "-",
+        driver: order.driver?.nama_driver || "Belum ditetapkan",
         tanggal: new Date(order.tanggal_pesanan).toLocaleDateString("id-ID"),
         total: new Intl.NumberFormat("id-ID", {
           style: "currency",
-          currency: "IDR"
+          currency: "IDR",
         }).format(order.total_harga),
         status: order.status,
-        raw: order
+        raw: order,
       }));
   } catch (err) {
     console.error("Gagal load pesanan terbaru:", err);
@@ -170,8 +167,8 @@ const loadRecentOrders = async () => {
 const isModalOpen = ref(false);
 const selectedOrder = ref(null);
 
-const openModal = (order) => {
-  selectedOrder.value = order;
+const openModal = (row) => {
+  selectedOrder.value = row.raw;
   isModalOpen.value = true;
 };
 
@@ -180,11 +177,27 @@ const handleNavigation = (routeName) => {
   router.push({ name: routeName });
 };
 
+const fetchDrivers = async () => {
+  try {
+    const data = await OrdersAPI.getDrivers();
+
+    driverOptions.value = data.map((d) => d.nama_driver);
+
+    driverMap.value = data.reduce((acc, d) => {
+      acc[d.nama_driver] = d.id_driver;
+      return acc;
+    }, {});
+  } catch (e) {
+    console.error("Gagal fetch driver", e);
+  }
+};
+
 /* ===============================
    MOUNT
 ================================ */
 onMounted(() => {
   statistikStore.loadStatistik();
   loadRecentOrders();
+  fetchDrivers();
 });
 </script>

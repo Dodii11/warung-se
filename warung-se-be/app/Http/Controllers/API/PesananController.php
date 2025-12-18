@@ -164,16 +164,22 @@ class PesananController extends Controller
     // USER
     public function indexUser(Request $request)
     {
-        return Pesanan::with('detail.menu', 'alamat')
+        return Pesanan::with([
+            'user',
+            'driver',
+            'alamat',
+            'detail.menu'
+        ])
             ->where('id_user', $request->user()->id_user)
             ->orderByDesc('tanggal_pesanan')
             ->get();
     }
 
+
     // ADMIN
     public function indexAdmin()
     {
-        return Pesanan::with(['user', 'detail.menu', 'alamat'])
+        return Pesanan::with(['user', 'detail.menu', 'alamat', 'driver'])
             ->orderByDesc('tanggal_pesanan')
             ->get();
     }

@@ -62,6 +62,7 @@
       :item-data="selectedItem"
       :status-options="statusOptions.filter((s) => s !== 'Status')"
       :driver-options="driverOptions"
+      :driver-options-map="driverMap"
       @save="handleSaveOrder"
     />
   </section>
@@ -99,6 +100,7 @@ const columns = [
   { label: "ID Pesanan", key: "id" },
   { label: "Pelanggan", key: "customer" },
   { label: "Tanggal", key: "date" },
+  { label: "Total", key: "total" },
   { label: "Status", key: "status" },
   { label: "Driver", key: "driver" },
 ];
@@ -109,6 +111,21 @@ const driverOptions = ref([]);
 const search = ref("");
 const filters = ref({ status: "", date: "" });
 const items = ref([]);
+const driverMap = ref({});
+
+const SHIPPING_COST = 5000;
+
+const calculateTotal = (details = []) => {
+  if (!Array.isArray(details)) return 0;
+
+  const subtotal = details.reduce((sum, item) => {
+    return sum + (item.jumlah || 0) * (item.menu?.harga || 0);
+  }, 0);
+
+  return subtotal + SHIPPING_COST;
+};
+
+const formatCurrency = (v) => `Rp ${Number(v).toLocaleString("id-ID")}`;
 
 // ==============================
 // MODAL STATE
@@ -123,16 +140,22 @@ const selectedItem = ref(null);
 const fetchOrders = async () => {
   try {
     const data = await OrdersAPI.getAdminOrders();
-    // mapping sesuai columns
-    items.value = data.map((order) => ({
-      id: order.id_pesanan.toString(), // pastikan string untuk filter search
-      customer: order.user?.nama_user || "-",
-      status: order.status,
-      driver: order.driver?.nama_driver || "Belum ditetapkan",
-      date: new Date(order.tanggal_pesanan).toLocaleDateString("id-ID"),
-      items: order.detail || [],
-      raw: order,
-    }));
+
+    items.value = data.map((order) => {
+      const total = calculateTotal(order.detail);
+      return {
+        id: order.id_pesanan.toString(),
+        customer: order.user?.nama_user || "-",
+        status: order.status,
+        driver: order.driver?.nama_driver || "Belum ditetapkan",
+        date: new Date(order.tanggal_pesanan).toLocaleDateString("id-ID"),
+
+        total: formatCurrency(total),
+
+        items: order.detail || [],
+        raw: order,
+      };
+    });
   } catch (err) {
     console.error("Gagal fetch pesanan admin:", err);
     items.value = [];
@@ -142,10 +165,15 @@ const fetchOrders = async () => {
 const fetchDrivers = async () => {
   try {
     const data = await OrdersAPI.getDrivers();
-    driverOptions.value = data.map((d) => ({
-      label: d.nama_driver,
-      value: d.id_driver,
-    }));
+
+    // dropdown BUTUH NAMA
+    driverOptions.value = data.map((d) => d.nama_driver);
+
+    // map NAMA -> ID
+    driverMap.value = data.reduce((acc, d) => {
+      acc[d.nama_driver] = d.id_driver;
+      return acc;
+    }, {});
   } catch (err) {
     console.error("Gagal fetch driver:", err);
   }
@@ -189,7 +217,14 @@ const handleSaveOrder = async ({ id, status, driver }) => {
     await OrdersAPI.updateStatus(id, status);
 
     if (status === "Dikirim" && driver) {
-      await OrdersAPI.assignDriver(id, driver);
+      const driverId = driverMap.value[driver]; // NAMA → ID
+
+      if (!driverId) {
+        console.error("Driver ID tidak ditemukan untuk:", driver);
+        return;
+      }
+
+      await OrdersAPI.assignDriver(id, driverId);
     }
 
     await fetchOrders();
