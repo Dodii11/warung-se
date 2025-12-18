@@ -52,9 +52,8 @@
         </div>
       </section>
 
-      <!-- MENU TERBARU SECTION (REVISI: Menghilangkan Filter Kategori) -->
+      <!-- MENU TERBARU SECTION  -->
       <section id="menu" class="py-16 sm:py-24 bg-gray-50 w-full">
-        <!-- Kontainer Putih Besar dengan Shadow untuk efek Floating Card -->
         <div
           class="max-w-7xl mx-auto px-6 py-12 bg-white rounded-3xl shadow-2xl shadow-gray-200/50"
         >
@@ -65,34 +64,48 @@
             Temukan pilihan menu baru yang paling diminati oleh pelanggan kami!
           </p>
 
-          <!-- HAPUS: Filter Kategori dihilangkan -->
+          <!-- Loading -->
+          <div v-if="isLoadingMenus" class="text-center py-10 text-gray-500">
+            Memuat menu terbaru...
+          </div>
 
-          <!-- Daftar Menu (menggunakan data 5 item terbaru/teratas dari 'menus') -->
+          <!-- Error -->
+          <div v-else-if="menuError" class="text-center py-10 text-red-500">
+            {{ menuError }}
+          </div>
+
+          <!-- Data -->
           <div
+            v-else
             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8"
           >
-            <!-- Menggunakan 'latestMenus' (5 menu teratas) dari script setup -->
             <UserAppCard
-              v-for="(item, index) in latestMenus"
-              :key="index"
+              v-for="item in latestMenus"
+              :key="item.id_menu"
               padding="sm"
               class="flex flex-col justify-between hover:shadow-red-200/50 transform hover:scale-[1.02] transition-all duration-300"
             >
               <div class="grow">
-                <!-- Gambar dengan rasio dan sudut yang lebih halus -->
                 <img
-                  :src="item.img"
+                  :src="item.gambar_url"
                   class="rounded-xl w-full h-36 object-cover mb-4 shadow-sm border border-gray-100"
-                  :alt="'Gambar ' + item.name"
+                  :alt="item.menu"
                 />
 
-                <h3 class="font-bold text-gray-900 text-lg mb-1 line-clamp-2">{{ item.name }}</h3>
-                <!-- Harga Menonjol dengan warna Merah -->
-                <p class="text-red-600 font-extrabold text-xl">Rp {{ item.price }}</p>
+                <h3 class="font-bold text-gray-900 text-lg mb-1 line-clamp-2">
+                  {{ item.menu }}
+                </h3>
+
+                <p class="text-red-600 font-extrabold text-xl">
+                  Rp {{ item.harga.toLocaleString("id-ID") }}
+                </p>
               </div>
 
-              <!-- Button Menggunakan UserAppButton + Icon -->
-              <UserAppButton size="sm" class="mt-3 w-full shadow-sm" @click="goToDetail(item.name)">
+              <UserAppButton
+                size="sm"
+                class="mt-3 w-full shadow-sm"
+                @click="goToDetail(item)"
+              >
                 <template #icon-left>
                   <ChefHat class="w-4 h-4" />
                 </template>
@@ -103,14 +116,14 @@
 
           <!-- Tombol untuk melihat semua menu -->
           <div class="text-center pt-10">
-              <UserAppButton
-                size="md"
-                variant="secondary"
-                @click="goToMenu"
-                class="shadow-md shadow-gray-200/50"
-              >
-                Lihat Semua Menu
-              </UserAppButton>
+            <UserAppButton
+              size="md"
+              variant="secondary"
+              @click="goToMenu"
+              class="shadow-md shadow-gray-200/50"
+            >
+              Lihat Semua Menu
+            </UserAppButton>
           </div>
         </div>
       </section>
@@ -193,43 +206,70 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { getLatestMenus } from "@/api/menuService";
+
 import heroImg from "@/assets/Ayam Geprek.png";
 import heroImg2 from "@/assets/Restaurant Interior.png";
 
-import { computed } from "vue";
-import { useRouter } from "vue-router";
 import Navbar from "@/components/Navbar.vue";
-
-import { menus, contactInfo } from "@/data/UserAppData"; // categories tidak digunakan lagi
 import UserAppButton from "@/components/baseUser/UserAppButton.vue";
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
-// import UserAppCategoryButton dari sini karena tidak digunakan lagi
 import { ShoppingCart, ChefHat, PhoneCall, Mail, MessageSquare } from "lucide-vue-next";
-
-const router = useRouter();
+import { contactInfo } from "@/data/UserAppData";
 
 // --- STATE & LOGIC MENU ---
+const router = useRouter();
 
-// REVISI: Mengambil 5 menu teratas (atau menu terbaru)
-// Saya menggunakan slice(0, 5) untuk mengambil 5 item pertama dari array 'menus'.
-const latestMenus = computed(() => menus.slice(0, 5));
+const latestMenus = ref([]);
+const isLoadingMenus = ref(false);
+const menuError = ref(null);
 
+async function fetchLatestMenus() {
+  try {
+    isLoadingMenus.value = true;
+    menuError.value = null;
 
-// --- NAVIGATION & SCROLL LOGIC ---
+    const res = await getLatestMenus(5);
+    console.log("MENU API RESPONSE:", res.data);
 
-function goToMenu() {
-  // Mengarahkan ke halaman full menu
-  router.push({ path: "/menu" });
+    let menus = [];
+
+    if (Array.isArray(res.data)) {
+      menus = res.data;
+    } else if (Array.isArray(res.data?.data)) {
+      menus = res.data.data;
+    } else if (Array.isArray(res.data?.data?.data)) {
+      menus = res.data.data.data;
+    }
+
+    latestMenus.value = menus.slice(0, 5);
+  } catch (err) {
+    console.error("FETCH MENU ERROR:", err);
+    menuError.value = "Gagal memuat menu terbaru";
+  } finally {
+    isLoadingMenus.value = false;
+  }
 }
 
-function goToDetail(name) {
-  router.push({ name: "DetailMenu", params: { name: encodeURIComponent(name) } });
+onMounted(fetchLatestMenus);
+
+// --- NAVIGATION & SCROLL LOGIC ---
+function goToMenu() {
+  router.push("/menu");
+}
+
+function goToDetail(menu) {
+  router.push({
+    name: "DetailMenu",
+    params: { name: encodeURIComponent(menu.menu) },
+  });
 }
 
 function scrollToSection(id) {
   const element = document.getElementById(id);
   if (element) {
-    // Scroll dengan smooth behavior, memberikan offset untuk Navbar
     window.scrollTo({
       top: element.offsetTop - 80,
       behavior: "smooth",

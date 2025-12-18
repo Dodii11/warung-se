@@ -83,23 +83,10 @@
       MODE FORM (ADD / EDIT)
       ========================= -->
     <form v-else @submit.prevent="handleSubmit" class="space-y-5">
-      <!-- Nama, ID -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Nama -->
         <BaseInput label="Nama Lengkap" v-model="form.name" placeholder="Nama Admin">
           <template #icon><UserIcon class="w-4 h-4 text-gray-400" /></template>
         </BaseInput>
-        <!-- ID -->
-        <BaseInput
-          label="ID Pengguna"
-          v-model="form.id"
-          placeholder="AD00X"
-          :disabled="mode === 'edit'"
-          :help-text="mode === 'edit' ? 'ID tidak dapat diubah' : 'Kosongkan untuk ID otomatis'"
-        >
-          <template #icon><HashIcon class="w-4 h-4 text-gray-400" /></template>
-        </BaseInput>
-      </div>
 
       <!-- Email -->
       <BaseInput label="Email" v-model="form.email" type="email" placeholder="contoh@domain.com">
@@ -111,7 +98,7 @@
         :label="mode === 'add' ? 'Kata Sandi' : 'Kata Sandi Baru (Kosongkan jika tidak diubah)'"
         v-model="form.password"
         type="password"
-        placeholder="Minimal 8 karakter"
+        help-text="Minimal 8 karakter"
       >
         <template #icon><LockIcon class="w-4 h-4 text-gray-400" /></template>
       </BaseInput>
@@ -200,7 +187,6 @@ import {
   LockIcon,
   ShieldCheckIcon,
   ActivityIcon,
-  HashIcon,
   SaveIcon,
   UserCircleIcon,
 } from "lucide-vue-next";

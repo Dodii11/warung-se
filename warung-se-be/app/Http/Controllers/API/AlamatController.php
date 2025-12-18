@@ -8,45 +8,99 @@ use Illuminate\Http\Request;
 
 class AlamatController extends Controller
 {
-    public function index()
+
+    public function index(Request $request)
     {
-        return response()->json(Alamat::all());
+        return $request->user()
+            ->alamat()
+            ->orderByDesc('is_default')
+            ->get();
     }
 
-    public function show($id)
-    {
-        $alamat = Alamat::find($id);
-        if (!$alamat) return response()->json(['message' => 'Alamat not found'], 404);
-
-        return response()->json($alamat);
-    }
-
+    /**
+     * Tambah alamat baru
+     */
     public function store(Request $request)
     {
         $request->validate([
-            'id_user' => 'required|exists:users,id',
             'alamat' => 'required|string',
+            'kecamatan' => 'required|string',
+            'kota' => 'required|string',
+            'data_lokasi' => 'nullable|string',
         ]);
 
-        $alamat = Alamat::create($request->all());
-        return response()->json($alamat, 201);
+        $user = $request->user();
+
+        $alamat = $user->alamat()->create([
+            'alamat' => $request->alamat,
+            'kecamatan' => $request->kecamatan,
+            'kota' => $request->kota,
+            'data_lokasi' => $request->data_lokasi,
+            'is_default' => false,
+        ]);
+
+        // jika belum ada default
+        if (!$user->alamat()->where('is_default', true)->exists()) {
+            $alamat->setAsDefault();
+        }
+
+        return response()->json([
+            'message' => 'Alamat berhasil ditambahkan',
+            'data' => $alamat,
+        ]);
     }
 
-    public function update(Request $request, $id)
-    {
-        $alamat = Alamat::find($id);
-        if (!$alamat) return response()->json(['message' => 'Alamat not found'], 404);
 
-        $alamat->update($request->all());
-        return response()->json($alamat);
+    /**
+     * Ubah alamat
+     */
+    public function update(Request $request, $id_alamat)
+    {
+        $alamat = $request->user()
+            ->alamat()
+            ->findOrFail($id_alamat);
+
+        $alamat->update($request->only([
+            'data_lokasi',
+            'alamat',
+            'kecamatan',
+            'kota'
+        ]));
+
+        return response()->json([
+            'message' => 'Alamat berhasil diperbarui',
+            'data' => $alamat,
+        ]);
     }
 
-    public function destroy($id)
+    /**
+     * Set alamat default manual
+     */
+    public function setDefault($id_alamat)
     {
-        $alamat = Alamat::find($id);
-        if (!$alamat) return response()->json(['message' => 'Alamat not found'], 404);
+        $alamat = Alamat::findOrFail($id_alamat);
+
+        $alamat->setAsDefault();
+
+        return response()->json([
+            'message' => 'Alamat ini menjadi default',
+            'data' => $alamat,
+        ]);
+    }
+
+    /**
+     * Hapus alamat
+     */
+    public function destroy(Request $request, $id_alamat)
+    {
+        $alamat = $request->user()
+            ->alamat()
+            ->findOrFail($id_alamat);
 
         $alamat->delete();
-        return response()->json(['message' => 'Deleted']);
+
+        return response()->json([
+            'message' => 'Alamat berhasil dihapus',
+        ]);
     }
 }

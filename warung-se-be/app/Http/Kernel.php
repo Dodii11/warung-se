@@ -9,6 +9,7 @@ use App\Http\Middleware\RoleMiddleware;
 class Kernel extends HttpKernel
 {
     protected $middleware = [
+        \Illuminate\Http\Middleware\HandleCors::class,
         SubstituteBindings::class,
     ];
 
@@ -17,6 +18,7 @@ class Kernel extends HttpKernel
             SubstituteBindings::class,
         ],
         'api' => [
+            \Illuminate\Http\Middleware\HandleCors::class,
             'throttle:api',
             SubstituteBindings::class,
         ],
@@ -31,4 +33,10 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         'role' => RoleMiddleware::class,
     ];
+
+    protected function schedule(\Illuminate\Console\Scheduling\Schedule $schedule)
+{
+    $schedule->command('backup:warungse')->hourly();
+}
+
 }

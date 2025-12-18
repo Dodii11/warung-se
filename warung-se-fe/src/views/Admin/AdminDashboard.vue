@@ -102,32 +102,71 @@ import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 import RowActions from "@/components/admin/dashboard/RowActions.vue";
 import OrdersModal from "@/components/admin/orders/OrdersModal.vue";
 
-import { ref, computed } from "vue";
-// Memuat data stat yang kini berisi ikon dan warna
-import { stats } from "@/data/dashboardData";
-
-import { columns, rows, statusOptions } from "@/data/ordersData";
-import {
-  ArrowRight,
-  // Ikon tambahan untuk estetika persentase
-  ArrowUpRightIcon,
-  ArrowDownRightIcon,
-  Receipt,
-} from "lucide-vue-next";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
-// --- PENGATURAN DATA KONSISTENSI ---
-const dashboardOrderColumns = [...columns];
+import { useStatistikStore } from "@/api/statistik";
+import { buildDashboardStats } from "@/data/dashboardData";
+import { OrdersAPI } from "@/api/orders";
 
-// Ambil baris lengkap dari ordersData dan potong 10 pesanan terbaru
-const recentOrders = computed(() => {
-  return rows.slice(0, 10);
+import {
+  ArrowRight,
+  ArrowUpRightIcon,
+  ArrowDownRightIcon,
+  Receipt
+} from "lucide-vue-next";
+
+/* ===============================
+   STATISTIK
+================================ */
+const statistikStore = useStatistikStore();
+
+const stats = computed(() => {
+  return buildDashboardStats(statistikStore.data);
 });
-// ----------------------------------------
 
-// Dummy Driver Options
-const dashboardDriverOptions = ["Belum ditetapkan", "Dodii", "Bagas", "Nopal", "Udin", "Supri"];
+/* ===============================
+   RECENT ORDERS (SIMPLE)
+================================ */
+const recentOrders = ref([]);
+const statusOptions = ref(["Tertunda", "Diproses", "Dikirim", "Selesai"]);
+const dashboardDriverOptions = ref(["Belum ditetapkan"]);
 
+const dashboardOrderColumns = [
+  { key: "id", label: "ID Pesanan" },
+  { key: "customer", label: "Customer" },
+  { key: "alamat", label: "Alamat" },
+  { key: "tanggal", label: "Tanggal" },
+  { key: "total", label: "Total" },
+  { key: "status", label: "Status" }
+];
+
+const loadRecentOrders = async () => {
+  try {
+    const data = await OrdersAPI.getAdminOrders();
+
+    recentOrders.value = data
+      .slice(0, 5) // ambil 5 terbaru
+      .map(order => ({
+        id: order.id_pesanan,
+        customer: order.user?.nama_user || "-",
+        alamat: order.alamat?.alamat || "-",
+        tanggal: new Date(order.tanggal_pesanan).toLocaleDateString("id-ID"),
+        total: new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR"
+        }).format(order.total_harga),
+        status: order.status,
+        raw: order
+      }));
+  } catch (err) {
+    console.error("Gagal load pesanan terbaru:", err);
+  }
+};
+
+/* ===============================
+   MODAL & NAVIGATION
+================================ */
 const isModalOpen = ref(false);
 const selectedOrder = ref(null);
 
@@ -137,8 +176,15 @@ const openModal = (order) => {
 };
 
 const router = useRouter();
-// Fungsi untuk menangani navigasi "Semua Pesanan"
 const handleNavigation = (routeName) => {
   router.push({ name: routeName });
 };
+
+/* ===============================
+   MOUNT
+================================ */
+onMounted(() => {
+  statistikStore.loadStatistik();
+  loadRecentOrders();
+});
 </script>

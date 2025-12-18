@@ -138,97 +138,76 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { Trash2, Minus, Plus, ShoppingCart, ArrowRight, ShoppingBag } from 'lucide-vue-next'
-// Menggunakan impor relatif agar komponen dapat berjalan di lingkungan ini.
-// Catatan: Karena saya tidak memiliki definisi UserAppCard dan UserAppButton, saya asumsikan ia ada di path ini.
-import UserAppCard from '@/components/baseUser/UserAppCard.vue'
-import UserAppButton from '@/components/baseUser/UserAppButton.vue'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { Trash2, Minus, Plus, ShoppingCart, ArrowRight, ShoppingBag } from "lucide-vue-next";
 
-const router = useRouter()
+import UserAppCard from "@/components/baseUser/UserAppCard.vue";
+import UserAppButton from "@/components/baseUser/UserAppButton.vue";
 
-// --- Data & State ---
-// Dummy data keranjang. Gunakan ref() agar reaktif.
-const cartItems = ref([
-  { id: 1, name: "Ayam Geprek Original Sambal Matah", price: 18000, qty: 2, image: "https://placehold.co/100x100/fecaca/991b1b?text=Ayam" },
-  { id: 2, name: "Es Teh Manis Jumbo", price: 3000, qty: 1, image: "https://placehold.co/100x100/fecaca/991b1b?text=Es+Teh" },
-  { id: 3, name: "Nasi Putih Extra", price: 5000, qty: 3, image: "https://placehold.co/100x100/fecaca/991b1b?text=Nasi" },
-])
+import { fetchCart, deleteCartItem } from "@/api/cart";
 
-// Hitung total awal per item
-cartItems.value.forEach(item => {
-  item.total = item.price * item.qty
-})
+const router = useRouter();
+const cartItems = ref([]);
 
-// --- Computed Properties ---
-const subtotal = computed(() => {
-  return cartItems.value.reduce((sum, item) => sum + item.price * item.qty, 0)
-})
+// ================= FETCH CART =================
+onMounted(async () => {
+  const res = await fetchCart();
+  cartItems.value = res.data.data.map(item => ({
+    id_menu: item.id_menu,
+    name: item.menu.menu,
+    price: Number(item.menu.harga),
+    qty: item.jumlah,
+    image: item.menu.gambar_url || "https://placehold.co/100x100",
+    total: Number(item.subtotal),
+  }));
+});
 
-// Format currency
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(value).replace('Rp', 'Rp ').replace(',00', '')
-}
+// ================= COMPUTED =================
+const subtotal = computed(() =>
+  cartItems.value.reduce((sum, item) => sum + item.total, 0)
+);
 
-// --- Methods ---
-
-function updateItemTotal(index) {
-  const item = cartItems.value[index]
-  // Pastikan kuantitas adalah angka positif
-  if (item.qty < 1 || isNaN(item.qty)) {
-    item.qty = 1
-  } else if (item.qty > 99) {
-    item.qty = 99
-  }
-  item.total = item.price * item.qty
-}
-
+// ================= METHODS =================
 function incrementQty(index) {
-  if (cartItems.value[index].qty < 99) {
-    cartItems.value[index].qty++
-    updateItemTotal(index)
-  }
+  cartItems.value[index].qty++;
+  updateItemTotal(index);
 }
 
 function decrementQty(index) {
   if (cartItems.value[index].qty > 1) {
-    cartItems.value[index].qty--
-    updateItemTotal(index)
+    cartItems.value[index].qty--;
+    updateItemTotal(index);
   }
 }
 
-function removeItem(index) {
-  cartItems.value.splice(index, 1)
+function updateItemTotal(index) {
+  const item = cartItems.value[index];
+  item.total = item.price * item.qty;
 }
 
-// Navigasi ke FormDetailPesanan dan Simpan Data Keranjang
+async function removeItem(index) {
+  const item = cartItems.value[index];
+  await deleteCartItem(item.id_menu);
+  cartItems.value.splice(index, 1);
+}
+
 function proceedToCheckout() {
-  if (cartItems.value.length === 0) return
-
-  // Simpan data penting ke localStorage sebelum navigasi
-  const cartData = {
-    items: cartItems.value.map(item => ({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      qty: item.qty,
-      total: item.total
-    })),
-    subtotal: subtotal.value,
-  }
-
-  localStorage.setItem("checkoutCartData", JSON.stringify(cartData))
-
-  // Navigasi ke halaman detail pesanan
-  // Catatan: Asumsi rute 'FormDetailPesanan' sudah terdaftar di router Anda
-  router.push({ name: 'FormDetailPesanan' })
+  router.push({ name: "FormDetailPesanan" });
 }
+
+// ================= FORMAT =================
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  })
+    .format(value)
+    .replace("Rp", "Rp ")
+    .replace(",00", "");
 </script>
+
 <style scoped>
 /* Menghilangkan panah spinner pada input number */
 input[type="number"]::-webkit-outer-spin-button,

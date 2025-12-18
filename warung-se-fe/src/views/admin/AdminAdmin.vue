@@ -30,7 +30,7 @@
       <div class="flex justify-between items-center mb-5">
         <h2 class="heading-2">Daftar Admin</h2>
         <div class="flex items-center">
-          <AdminAddButton @click="openModal('add')"/>
+          <AdminAddButton @click="openModal('add')" />
         </div>
       </div>
 
@@ -63,10 +63,9 @@
         description="Silahkan ubah filter pencarian Anda atau tambahkan Admin baru untuk memulai."
         :icon="UserRoundCog"
       >
-
-      <div class="flex items-center justify-center">
-        <AdminAddButton @click="openModal('add')" />
-      </div>
+        <div class="flex items-center justify-center">
+          <AdminAddButton @click="openModal('add')" />
+        </div>
       </BaseEmptyState>
     </BaseCard>
 
@@ -81,27 +80,29 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
 import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 import { UserRoundCog } from "lucide-vue-next";
 
-// Komponen Manajemen Admin
+// UI Components
 import AdminStatusBadge from "@/components/admin/adminn/AdminStatusBadge.vue";
 import AdminRowActions from "@/components/admin/adminn/AdminRowActions.vue";
 import AdminModal from "@/components/admin/adminn/AdminModal.vue";
 import AdminAddButton from "@/components/admin/adminn/AdminAddButton.vue";
-
-// Asumsi komponen ini ada (tidak perlu dibuat karena fokusnya di modal)
 import AdminSearch from "@/components/admin/adminn/AdminSearch.vue";
 import AdminFilterStatus from "@/components/admin/adminn/AdminFilter.vue";
 
-// Impor data
-import { adminColumns, adminRows } from "@/data/adminData";
+// API STORE
+import { adminApi } from "@/api/admin";
 
-// --- STATE MANAGEMENT ---
-const users = ref([...adminRows]);
+// TABLE COLUMNS (tetap pakai yang lama)
+import { adminColumns } from "@/data/adminData";
+
+// STATE
+const adminStore = adminApi();
+
 const search = ref("");
 const filterStatus = ref("Semua");
 
@@ -109,71 +110,69 @@ const isModalOpen = ref(false);
 const modalMode = ref("add");
 const selectedUser = ref(null);
 
-// --- MODAL HANDLERS ---
-const openModal = (mode, item = null) => {
-  modalMode.value = mode;
-  selectedUser.value = item;
-  isModalOpen.value = true;
-};
+// FETCH
+onMounted(() => {
+  adminStore.fetchAdmins();
+});
 
-// --- CRUD DUMMY LOGIC ---
-const handleSave = (formData) => {
-  const { id, name, email, role, status, profileImage } = formData;
+// MAPPING API → UI
+const admins = computed(() =>
+  adminStore.admins.map((a) => ({
+    id: a.id_user,
+    name: a.nama_user,
+    email: a.email_user,
+    role: "Admin",
+    status: a.status === "aktif" ? "Aktif" : "Nonaktif",
+  }))
+);
 
-  // Cari Index
-  const index = users.value.findIndex((u) => u.id === id);
-
-  if (index !== -1) {
-    // Logika EDIT
-    Object.assign(users.value[index], {
-      name,
-      email,
-      role,
-      status,
-      profileImage,
-    });
-    console.log(`[CRUD DUMMY] Admin ${id} diperbarui.`);
-  } else {
-    // Logika ADD
-    users.value.push({
-      id,
-      name,
-      email,
-      role,
-      status,
-      profileImage,
-    });
-    console.log(`[CRUD DUMMY] Admin ${id} ditambahkan.`);
-  }
-};
-
-const handleDelete = (item) => {
-  // Logika HAPUS (Menggunakan window.confirm)
-  if (confirm(`Hapus akun admin ${item.name} (${item.id})?`)) {
-    const initialLength = users.value.length;
-    users.value = users.value.filter((u) => u.id !== item.id);
-    if (users.value.length < initialLength) {
-      console.log(`[CRUD DUMMY] Admin ID: ${item.id} berhasil dihapus.`);
-    } else {
-      console.error(`[CRUD DUMMY] Admin ID: ${item.id} tidak ditemukan.`);
-    }
-  }
-};
-
-// --- FILTER DAN PENCARIAN ---
+// FILTER
 const filteredUsers = computed(() => {
-  return users.value.filter((user) => {
-    // 1. Filter berdasarkan Status
-    const matchStatus = filterStatus.value === "Semua" || user.status === filterStatus.value;
+  return admins.value.filter((u) => {
+    const matchStatus = filterStatus.value === "Semua" || u.status === filterStatus.value;
 
-    // 2. Filter berdasarkan Pencarian (ID atau Nama)
     const key = search.value.toLowerCase();
     const matchSearch =
-      user.id.toLowerCase().includes(key) ||
-      user.name.toLowerCase().includes(key) ||
-      user.email.toLowerCase().includes(key);
+      u.id.toString().includes(key) ||
+      u.name.toLowerCase().includes(key) ||
+      u.email.toLowerCase().includes(key);
 
     return matchStatus && matchSearch;
   });
 });
+
+// MODAL
+const openModal = (mode, item = null) => {
+  modalMode.value = mode;
+  selectedUser.value = item ? { ...item } : null;
+  isModalOpen.value = true;
+};
+
+// SAVE
+const handleSave = async (form) => {
+  if (modalMode.value === "add") {
+    await adminStore.createAdmin({
+      nama_user: form.name,
+      email_user: form.email,
+      password: form.password,
+    });
+  }
+
+  if (modalMode.value === "edit") {
+    await adminStore.updateAdmin(form.id, {
+      nama_user: form.name,
+      email_user: form.email,
+      status: form.status === "Aktif" ? "aktif" : "tidak aktif",
+      password: form.password || null,
+    });
+  }
+
+  isModalOpen.value = false;
+};
+
+// DELETE
+const handleDelete = async (item) => {
+  if (!confirm(`Hapus admin ${item.name}?`)) return;
+  await adminStore.deleteAdmin(item.id);
+};
 </script>

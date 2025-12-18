@@ -20,8 +20,18 @@ class Driver extends Model
         'no_telp',
         'status',
         'tipe_kendaraan',
-        'plat_kendaraan'
+        'plat_kendaraan',
+        'gambar_driver'
     ];
+
+    protected $appends = ['gambar_url'];
+
+    public function getGambarUrlAttribute()
+    {
+        return $this->gambar_driver
+            ? asset('storage/' . $this->gambar_driver)
+            : null;
+    }
 
     public function pesanan()
     {

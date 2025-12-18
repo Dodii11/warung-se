@@ -44,11 +44,15 @@
 
       <!-- Empty State -->
       <BaseEmptyState
-      v-else
-      title="Tidak ada Pesanan Ditemukan"
-      description="Silahkan ubah filter pencarian Anda."
-      :icon="Receipt"
-      />
+        v-else
+        title="Tidak ada Pesanan Ditemukan"
+        description="Silahkan ubah filter pencarian Anda."
+      >
+        <template #icon>
+          <!-- gunakan component icon Vue bukan function -->
+          <Receipt class="w-12 h-12 text-gray-300" />
+        </template>
+      </BaseEmptyState>
     </BaseCard>
 
     <!-- MODAL ORDERS -->
@@ -57,68 +61,150 @@
       :mode="modalMode"
       :item-data="selectedItem"
       :status-options="statusOptions.filter(s => s !== 'Status')"
-      :driver-options="driverOptions"
+      :driver-options="driverOptions.map(d => d.nama_driver)"
       @save="handleSaveOrder"
     />
-
   </section>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+
+// ==============================
+// Base Components
+// ==============================
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
 import BaseStatusBadge from "@/components/base/BaseStatusBadge.vue";
+import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
+
+// ==============================
+// Orders Components
+// ==============================
 import OrdersSearch from "@/components/admin/orders/OrdersSearch.vue";
 import OrdersFilter from "@/components/admin/orders/OrdersFilter.vue";
 import OrdersRowActions from "@/components/admin/orders/OrdersRowActions.vue";
-import OrdersModal from "@/components/admin/orders/OrdersModal.vue"; // Modal Baru
+import OrdersModal from "@/components/admin/orders/OrdersModal.vue";
 
-// Import Data
-import { columns, rows, statusOptions } from "@/data/ordersData";
-import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
+// ==============================
+// Icons & API
+// ==============================
 import { Receipt } from "lucide-vue-next";
+import { OrdersAPI } from "@/api/orders.js";
 
-// Dummy Driver Options (Nanti bisa diambil dari data driver)
-const driverOptions = ["Belum ditetapkan", "Dodii", "Bagas", "Nopal", "Udin", "Supri"];
+// ==============================
+// TABLE CONFIG
+// ==============================
+const columns = [
+  { label: "ID Pesanan", field: "id" },
+  { label: "Pelanggan", field: "customer" },
+  { label: "Tanggal", field: "date" },
+  { label: "Status", field: "status" },
+  { label: "Driver", field: "driver" },
+  { label: "Aksi", field: "action" }
+];
 
-// State
+const statusOptions = ["Diproses", "Dikirim", "Selesai", "Dibatalkan"];
+const driverOptions = ref([]);
+
 const search = ref("");
 const filters = ref({ status: "", date: "" });
-const items = ref([...rows]);
+const items = ref([]);
 
-// Modal State
+// ==============================
+// MODAL STATE
+// ==============================
 const showModal = ref(false);
-const modalMode = ref('detail');
+const modalMode = ref("detail");
 const selectedItem = ref(null);
 
-// Logic Modal
+// ==============================
+// FETCH DATA
+// ==============================
+const fetchOrders = async () => {
+  try {
+    const data = await OrdersAPI.getAdminOrders();
+    // mapping sesuai columns
+    items.value = data.map(order => ({
+      id: order.id_pesanan.toString(), // pastikan string untuk filter search
+      customer: order.user?.nama_user || "-",
+      status: order.status,
+      driver: order.driver?.nama_driver || "Belum ditetapkan",
+      date: new Date(order.tanggal_pesanan).toLocaleDateString("id-ID"),
+      items: order.detail || [],
+      raw: order
+    }));
+  } catch (err) {
+    console.error("Gagal fetch pesanan admin:", err);
+    items.value = [];
+  }
+};
+
+const fetchDrivers = async () => {
+  try {
+    driverOptions.value = await OrdersAPI.getDrivers();
+  } catch (err) {
+    console.error("Gagal fetch driver:", err);
+  }
+};
+
+// ==============================
+// FILTER & MODAL
+// ==============================
 const openModal = (mode, item) => {
   modalMode.value = mode;
   selectedItem.value = item;
   showModal.value = true;
-}
-
-const handleSaveOrder = (formData) => {
-  console.log("Update Order:", formData);
-  // Update data lokal
-  const index = items.value.findIndex(i => i.id === formData.id);
-  if (index !== -1) {
-    items.value[index] = { ...items.value[index], ...formData };
-  }
-}
+};
 
 const updateFilter = (payload) => {
   filters.value = { ...filters.value, ...payload };
 };
 
 const filteredRows = computed(() => {
-  return items.value.filter((item) => {
+  return items.value.filter(item => {
     const q = search.value.toLowerCase();
-    const matchSearch = item.id.toLowerCase().includes(q) || item.customer.toLowerCase().includes(q);
-    const matchStatus = !filters.value.status || filters.value.status === "Status" || item.status === filters.value.status;
-    const matchDate = !filters.value.date || item.date === filters.value.date;
+    const matchSearch =
+      item.id.toLowerCase().includes(q) ||
+      item.customer.toLowerCase().includes(q);
+
+    const matchStatus =
+      !filters.value.status ||
+      filters.value.status === "Status" ||
+      item.status === filters.value.status;
+
+    const matchDate =
+      !filters.value.date || item.date === filters.value.date;
+
     return matchSearch && matchStatus && matchDate;
   });
+});
+
+// ==============================
+// SAVE UPDATE PESANAN
+// ==============================
+const handleSaveOrder = async ({ id, status, driver }) => {
+  try {
+    await OrdersAPI.updateStatus(id, status);
+
+    if (status === "Dikirim" && driver && driver !== "Belum ditetapkan") {
+      const d = driverOptions.value.find(dr => dr.nama_driver === driver);
+      if (d) {
+        await OrdersAPI.assignDriver(id, d.id_driver);
+      }
+    }
+
+    await fetchOrders();
+  } catch (err) {
+    console.error("Gagal update pesanan:", err);
+  }
+};
+
+// ==============================
+// MOUNT
+// ==============================
+onMounted(() => {
+  fetchOrders();
+  fetchDrivers();
 });
 </script>

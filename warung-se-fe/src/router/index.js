@@ -176,49 +176,67 @@ const router = createRouter({
   },
 });
 
-// ===== NAVIGATION GUARD FINAL =====
-router.beforeEach((to, from, next) => {
+// ===== NAVIGATION GUARD DENGAN TUNGGU INIT =====
+router.beforeEach(async (to, from, next) => {
   const auth = useAuth();
-  const token = localStorage.getItem("token");
 
-  // Public route
-  if (to.meta.public) return next();
+  // 1. Tunggu auth siap (Google Login / restore session)
+  await auth.waitForInitialization();
 
-  // Auth required
-  if (to.meta.requiresAuth && !token) {
+  // 2. Public route
+  if (to.meta.public) {
+    return next();
+  }
+
+  // 3. Route butuh login
+  if (to.meta.requiresAuth && !auth.isLoggedIn) {
+    console.log("Guard: Redirect to Login - Not authenticated.");
     return next({ name: "Login" });
   }
 
-  // Cegah login/register kalau sudah login
-  if (token && auth.user && (to.name === "Login" || to.name === "Register")) {
-    if (["admin", "superadmin"].includes(auth.user.role)) {
+  // 4. Cegah Login / Register kalau sudah login
+  if (auth.isLoggedIn && ["Login", "Register"].includes(to.name)) {
+    console.log("Guard: User already logged in.");
+
+    if (["admin", "superadmin", "super admin"].includes(auth.user?.role)) {
       return next("/admin/dashboard");
     }
+
     return next("/");
   }
 
-  // FORCE admin redirect kalau masuk "/"
-  if (to.path === "/" && auth.user) {
-    if (["admin", "superadmin"].includes(auth.user.role)) {
+  // 5. FORCE admin redirect kalau buka "/"
+  if (to.path === "/" && auth.isLoggedIn) {
+    if (["admin", "superadmin", "super admin"].includes(auth.user?.role)) {
       return next("/admin/dashboard");
     }
   }
 
-  // 4. Role check
+  // 6. Role-based access
   if (to.meta.role) {
-    const allowedRoles = Array.isArray(to.meta.role)
+    const userRole = auth.user?.role;
+    const requiredRoles = Array.isArray(to.meta.role)
       ? to.meta.role
       : [to.meta.role];
 
-    if (!allowedRoles.includes(auth.user?.role)) {
+    console.log(
+      `Guard: Checking role. User: ${userRole}, Required: ${requiredRoles}`
+    );
+
+    // Super admin selalu lolos
+    if (userRole === "super admin" || userRole === "superadmin") {
+      return next();
+    }
+
+    if (!requiredRoles.includes(userRole)) {
+      console.log("Guard: Role mismatch, redirecting to home.");
       return next("/");
     }
   }
 
+  // 7. Semua aman
+  console.log("Guard: Access granted.");
   next();
 });
-
-
-
 
 export default router;

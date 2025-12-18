@@ -37,7 +37,6 @@
               />
               <span class="ml-2 text-gray-900">Ingat saya</span>
             </label>
-            <a href="#" class="text-primary hover:underline">Lupa kata sandi Anda?</a>
           </div>
 
           <!-- Login Button -->
@@ -143,7 +142,7 @@ const handleLogin = async () => {
     }
 
     // redirect sesuai role
-    if (auth.user?.role === "admin") {
+    if (auth.user?.role === "admin" || auth.user?.role === "super admin") {
       router.push("/admin/dashboard");
     } else {
       router.push("/");
