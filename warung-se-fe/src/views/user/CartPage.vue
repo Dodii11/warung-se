@@ -7,111 +7,111 @@
 
     <!-- Daftar Item -->
     <div v-if="cartItems.length > 0" class="space-y-4">
-<UserAppCard padding="sm" v-for="(item, index) in cartItems" :key="index">
-  <!-- Flex Utama -->
-  <div class="flex flex-col sm:flex-row sm:flex-nowrap flex-wrap gap-4 w-full">
+      <UserAppCard padding="sm" v-for="(item, index) in cartItems" :key="index">
+        <!-- Flex Utama -->
+        <div class="flex flex-col sm:flex-row sm:flex-nowrap flex-wrap gap-4 w-full">
+          <!-- ===== KOLOM 1 — Gambar + Nama Produk ===== -->
+          <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0 sm:w-1/2">
+            <img
+              :src="item.image"
+              alt="Item Image"
+              class="w-16 sm:w-20 h-16 sm:h-20 object-cover rounded-xl border border-gray-100 shrink-0"
+            />
 
-    <!-- ===== KOLOM 1 — Gambar + Nama Produk ===== -->
-    <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0 sm:w-1/2">
-      <img
-        :src="item.image"
-        alt="Item Image"
-        class="w-16 sm:w-20 h-16 sm:h-20 object-cover rounded-xl border border-gray-100 shrink-0"
-      />
+            <!-- Nama Produk & Harga -->
+            <div class="flex-1 min-w-0">
+              <!-- Nama Produk -->
+              <h3
+                class="font-bold text-base sm:text-lg text-gray-900 leading-tight line-clamp-2 wrap-break-word"
+              >
+                {{ item.name }}
+              </h3>
 
-      <!-- Nama Produk & Harga -->
-      <div class="flex-1 min-w-0">
-        <!-- Nama Produk -->
-        <h3
-          class="font-bold text-base sm:text-lg text-gray-900 leading-tight line-clamp-2 wrap-break-word"
-        >
-          {{ item.name }}
-        </h3>
+              <!-- Harga satuan (now fully visible at small screens) -->
+              <p
+                class="text-red-600 font-semibold mt-1 text-sm wrap-break-word min-w-0 w-full leading-snug"
+              >
+                {{ formatCurrency(item.price) }} /item
+              </p>
+            </div>
+          </div>
 
-        <!-- Harga satuan (now fully visible at small screens) -->
-        <p class="text-red-600 font-semibold mt-1 text-sm wrap-break-word min-w-0 w-full leading-snug">
-          {{ formatCurrency(item.price) }} /item
-        </p>
-      </div>
-    </div>
+          <!-- ===== KOLOM 2 — Quantity Control ===== -->
+          <div
+            class="flex items-center gap-2 shrink sm:shrink-0 mt-2 sm:mt-0 sm:justify-center sm:w-1/4"
+          >
+            <button
+              class="p-1.5 sm:p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition disabled:opacity-50"
+              @click="decrementQty(index)"
+              :disabled="item.qty <= 1"
+            >
+              <Minus class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+            </button>
 
-    <!-- ===== KOLOM 2 — Quantity Control ===== -->
-    <div
-      class="flex items-center gap-2 shrink sm:shrink-0 mt-2 sm:mt-0 sm:justify-center sm:w-1/4"
-    >
-      <button
-        class="p-1.5 sm:p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition disabled:opacity-50"
-        @click="decrementQty(index)"
-        :disabled="item.qty <= 1"
-      >
-        <Minus class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-      </button>
+            <input
+              type="number"
+              v-model.number="item.qty"
+              min="1"
+              max="99"
+              class="w-10 sm:w-12 text-center text-sm sm:text-base font-semibold border-b border-gray-300 outline-none p-1 focus:border-red-600 bg-transparent"
+              @change="updateItemTotal(index)"
+            />
 
-      <input
-        type="number"
-        v-model.number="item.qty"
-        min="1"
-        max="99"
-        class="w-10 sm:w-12 text-center text-sm sm:text-base font-semibold border-b border-gray-300 outline-none p-1 focus:border-red-600 bg-transparent"
-        @change="updateItemTotal(index)"
-      />
+            <button
+              class="p-1.5 sm:p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition"
+              @click="incrementQty(index)"
+            >
+              <Plus class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+            </button>
+          </div>
 
-      <button
-        class="p-1.5 sm:p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition"
-        @click="incrementQty(index)"
-      >
-        <Plus class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-      </button>
-    </div>
+          <!-- ===== KOLOM 3 — Total & Delete (Desktop) ===== -->
+          <div class="hidden sm:flex sm:w-1/4 justify-end items-center mt-3 sm:mt-0 shrink">
+            <div class="text-right shrink min-w-0 mr-4">
+              <p class="text-sm text-gray-500 whitespace-nowrap">Total Item:</p>
+              <p class="font-extrabold text-xl text-red-700 wrap-break-word">
+                {{ formatCurrency(item.total) }}
+              </p>
+            </div>
 
-    <!-- ===== KOLOM 3 — Total & Delete (Desktop) ===== -->
-    <div
-      class="hidden sm:flex sm:w-1/4 justify-end items-center mt-3 sm:mt-0 shrink"
-    >
-      <div class="text-right shrink min-w-0 mr-4">
-        <p class="text-sm text-gray-500 whitespace-nowrap">Total Item:</p>
-        <p class="font-extrabold text-xl text-red-700 wrap-break-word">
-          {{ formatCurrency(item.total) }}
-        </p>
-      </div>
+            <button
+              class="p-2 text-gray-400 hover:text-red-600 rounded-full bg-white transition hover:bg-red-50 shadow-sm hover:shadow-md shrink-0"
+              @click="removeItem(index)"
+            >
+              <Trash2 class="w-5 h-5" />
+            </button>
+          </div>
 
-      <button
-        class="p-2 text-gray-400 hover:text-red-600 rounded-full bg-white transition hover:bg-red-50 shadow-sm hover:shadow-md shrink-0"
-        @click="removeItem(index)"
-      >
-        <Trash2 class="w-5 h-5" />
-      </button>
-    </div>
+          <!-- ===== KOLOM 3 — Total & Delete (Mobile) ===== -->
+          <div
+            class="sm:hidden w-full flex justify-between items-center pt-3 border-t border-gray-100 mt-2"
+          >
+            <div class="text-left min-w-0">
+              <p class="text-sm text-gray-500">Total Item:</p>
+              <p class="font-extrabold text-lg text-red-700 wrap-break-word">
+                {{ formatCurrency(item.total) }}
+              </p>
+            </div>
 
-    <!-- ===== KOLOM 3 — Total & Delete (Mobile) ===== -->
-    <div
-      class="sm:hidden w-full flex justify-between items-center pt-3 border-t border-gray-100 mt-2"
-    >
-      <div class="text-left min-w-0">
-        <p class="text-sm text-gray-500">Total Item:</p>
-        <p class="font-extrabold text-lg text-red-700 wrap-break-word">
-          {{ formatCurrency(item.total) }}
-        </p>
-      </div>
-
-      <button
-        class="p-2 text-gray-400 hover:text-red-600 rounded-full bg-white transition hover:bg-red-50 shadow-sm hover:shadow-md shrink-0"
-        @click="removeItem(index)"
-      >
-        <Trash2 class="w-5 h-5" />
-      </button>
-    </div>
-
-  </div>
-</UserAppCard>
-
-
+            <button
+              class="p-2 text-gray-400 hover:text-red-600 rounded-full bg-white transition hover:bg-red-50 shadow-sm hover:shadow-md shrink-0"
+              @click="removeItem(index)"
+            >
+              <Trash2 class="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </UserAppCard>
 
       <!-- Subtotal dan Tombol Checkout -->
-      <div class="pt-6 mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:items-center gap-4 sm:gap-6 bg-white p-5 sm:p-6 rounded-2xl shadow-lg border border-gray-100">
+      <div
+        class="pt-6 mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:items-center gap-4 sm:gap-6 bg-white p-5 sm:p-6 rounded-2xl shadow-lg border border-gray-100"
+      >
         <div class="text-right w-full sm:w-auto">
           <p class="text-lg sm:text-xl font-semibold text-gray-700">Subtotal Belanja:</p>
-          <p class="font-extrabold text-2xl sm:text-3xl text-red-600">{{ formatCurrency(subtotal) }}</p>
+          <p class="font-extrabold text-2xl sm:text-3xl text-red-600">
+            {{ formatCurrency(subtotal) }}
+          </p>
         </div>
 
         <UserAppButton
@@ -129,9 +129,14 @@
     </div>
 
     <!-- Jika keranjang kosong -->
-    <div v-else class="text-center py-12 sm:py-16 bg-white rounded-2xl shadow-lg border border-gray-100 px-4">
+    <div
+      v-else
+      class="text-center py-12 sm:py-16 bg-white rounded-2xl shadow-lg border border-gray-100 px-4"
+    >
       <ShoppingBag class="w-12 h-12 mx-auto text-red-400 mb-4" />
-      <p class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Keranjang Anda masih kosong.</p>
+      <p class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
+        Keranjang Anda masih kosong.
+      </p>
       <p class="text-gray-500">Ayo mulai belanja dan tambahkan produk favorit Anda!</p>
     </div>
   </div>
@@ -145,7 +150,7 @@ import { Trash2, Minus, Plus, ShoppingCart, ArrowRight, ShoppingBag } from "luci
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
 import UserAppButton from "@/components/baseUser/UserAppButton.vue";
 
-import { fetchCart, deleteCartItem } from "@/api/cart";
+import { fetchCart, deleteCartItem, updateCartQty } from "@/api/cart";
 
 const router = useRouter();
 const cartItems = ref([]);
@@ -153,7 +158,7 @@ const cartItems = ref([]);
 // ================= FETCH CART =================
 onMounted(async () => {
   const res = await fetchCart();
-  cartItems.value = res.data.data.map(item => ({
+  cartItems.value = res.data.data.map((item) => ({
     id_menu: item.id_menu,
     name: item.menu.menu,
     price: Number(item.menu.harga),
@@ -164,21 +169,30 @@ onMounted(async () => {
 });
 
 // ================= COMPUTED =================
-const subtotal = computed(() =>
-  cartItems.value.reduce((sum, item) => sum + item.total, 0)
-);
+const subtotal = computed(() => cartItems.value.reduce((sum, item) => sum + item.total, 0));
 
 // ================= METHODS =================
-function incrementQty(index) {
-  cartItems.value[index].qty++;
-  updateItemTotal(index);
+async function incrementQty(index) {
+  const item = cartItems.value[index];
+  const newQty = item.qty + 1;
+
+  await updateCartQty(item.id_menu, newQty);
+
+  item.qty = newQty;
+  item.total = item.price * newQty;
 }
 
-function decrementQty(index) {
-  if (cartItems.value[index].qty > 1) {
-    cartItems.value[index].qty--;
-    updateItemTotal(index);
-  }
+async function decrementQty(index) {
+  const item = cartItems.value[index];
+
+  if (item.qty <= 1) return;
+
+  const newQty = item.qty - 1;
+
+  await updateCartQty(item.id_menu, newQty);
+
+  item.qty = newQty;
+  item.total = item.price * newQty;
 }
 
 function updateItemTotal(index) {
@@ -212,10 +226,10 @@ const formatCurrency = (value) =>
 /* Menghilangkan panah spinner pada input number */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 input[type="number"] {
-    -moz-appearance: textfield;
+  -moz-appearance: textfield;
 }
 </style>

@@ -64,12 +64,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::get('/cart', [CartController::class, 'index']);
         Route::post('/cart', [CartController::class, 'store']);
+        Route::put('/cart/{id_menu}', [CartController::class, 'update']);
         Route::delete('/cart/{id_menu}', [CartController::class, 'destroy']);
         Route::delete('/cart', [CartController::class, 'clear']);
 
         Route::get('/user/pesanan', [PesananController::class, 'indexUser']);
         Route::get('/pesanan/{id}', [PesananController::class, 'show']);
         Route::post('/pesanan', [PesananController::class, 'checkout']);
+
 
         Route::delete('/account/me', [AccountController::class, 'destroy']);
     });
@@ -131,6 +133,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::get('/pesanan-terbaru', [PesananController::class, 'latest']);
         Route::get('/pesanan/status-options', [PesananController::class, 'statusOptions']);
-
     });
 });
