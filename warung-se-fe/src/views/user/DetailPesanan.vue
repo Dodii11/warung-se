@@ -61,12 +61,6 @@
           class="flex justify-between items-center text-sm"
         >
           <div class="flex items-center gap-3 flex-1 min-w-0">
-            <img
-              :src="resolveImage(item.image) || fallbackImage(item.name)"
-              :alt="item.name"
-              class="w-10 h-10 object-cover rounded-md shrink-0 border border-gray-100"
-              onerror="this.onerror=null;this.src='https://placehold.co/40x40/fef2f2/ef4444?text=Item';"
-            />
             <div class="min-w-0 flex-1">
               <p class="font-medium text-gray-900 truncate">{{ item.name }}</p>
               <p class="text-xs text-gray-500">x{{ item.qty }}</p>
@@ -101,11 +95,6 @@
 
     <!-- Tombol Aksi - Menyembunyikan "Lacak Pesanan" jika status final -->
     <div class="flex flex-col sm:flex-row gap-3 mt-8">
-      <UserAppButton variant="secondary" size="md" class="flex-1" @click="printReceipt">
-        <Printer class="w-5 h-5" />
-        Cetak Struk
-      </UserAppButton>
-      <!-- Tampilkan Lacak hanya jika status BUKAN Selesai atau Gagal -->
       <UserAppButton v-if="!isStatusFinal" size="md" class="flex-1" @click="trackOrder">
         <MapPin class="w-5 h-5" />
         Lacak Pesanan
@@ -171,11 +160,7 @@ const formatCurrency = (v) =>
     minimumFractionDigits: 0,
   }).format(v || 0);
 
-function printReceipt() {
-  console.log("Print:", props.orderId);
-}
-
 function trackOrder() {
-  router.push("/orders");
+  router.push("/profile");
 }
 </script>
