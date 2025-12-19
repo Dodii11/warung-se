@@ -1,19 +1,22 @@
+// src/main.js
 import "./assets/main.css";
 
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 
-import { useAuth } from "./stores/auth";
 import App from "./App.vue";
 import router from "./router";
+import { useAuth } from "@/stores/auth";
 
-const pinia = createPinia();
 const app = createApp(App);
+const pinia = createPinia();
 
 app.use(pinia);
-app.use(router);
 
-const authStore = useAuth(pinia);
-authStore.fetchUser();
+const auth = useAuth(pinia);
 
-app.mount("#app");
+// 🔥 INIT AUTH SEKALI SAJA
+auth.initializeAuth().finally(() => {
+  app.use(router);
+  app.mount("#app");
+});

@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Http\Request;
 // Controllers
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\MenuController;
@@ -10,6 +10,8 @@ use App\Http\Controllers\API\DetailPesananController;
 use App\Http\Controllers\API\DriverController;
 use App\Http\Controllers\API\AccountController;
 use App\Http\Controllers\API\CartController;
+use App\Http\Controllers\Auth\SocialiteController;
+
 use App\Http\Controllers\API\AlamatController;
 use App\Http\Controllers\API\StatistikController;
 
@@ -18,6 +20,10 @@ use App\Http\Controllers\API\StatistikController;
 | PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
+/**
+ * socialite auth
+ */
+
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

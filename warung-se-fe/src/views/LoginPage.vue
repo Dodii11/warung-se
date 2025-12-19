@@ -154,8 +154,6 @@ const handleLogin = async () => {
 
 /* Dummy Google tetap */
 const handleGoogleLogin = async () => {
-  isGoogleLoading.value = true;
-  await new Promise((res) => setTimeout(res, 1500));
-  isGoogleLoading.value = false;
+ window.location.href = "http://127.0.0.1:8000/auth/google";
 };
 </script>
