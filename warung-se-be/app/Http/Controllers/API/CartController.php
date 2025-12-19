@@ -95,4 +95,41 @@ class CartController extends Controller
             'message' => 'Cart cleared'
         ], 200);
     }
+
+    // PUT update jumlah item cart
+    public function update(Request $request, $id_menu)
+    {
+        $request->validate([
+            'jumlah' => 'required|integer|min:1',
+        ]);
+
+        $user = $request->user();
+
+        $cartItem = Cart::where('id_user', $user->id_user)
+            ->where('id_menu', $id_menu)
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'message' => 'Item tidak ditemukan di cart'
+            ], 404);
+        }
+
+        $menu = Menu::find($id_menu);
+
+        if ($menu->stok < $request->jumlah) {
+            return response()->json([
+                'message' => 'Stok tidak cukup'
+            ], 400);
+        }
+
+        $cartItem->jumlah = $request->jumlah;
+        $cartItem->subtotal = $menu->harga * $request->jumlah;
+        $cartItem->save();
+
+        return response()->json([
+            'message' => 'Cart updated',
+            'data' => $cartItem
+        ]);
+    }
 }
