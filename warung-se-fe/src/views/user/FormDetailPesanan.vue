@@ -54,22 +54,97 @@
                 :error="validationErrors.addressStreet"
               />
 
+             <!-- PROVINSI -->
+<div class="w-full">
+  <label class="block mb-1 text-sm text-gray-600">
+    Provinsi
+  </label>
+
+  <select
+  v-model="selectedProvinceId"
+  class="w-full h-11 px-4 border rounded-lg bg-white"
+>
+  <option value="" disabled>Pilih Provinsi</option>
+  <option
+    v-for="prov in provinces"
+    :key="prov.id"
+    :value="prov.id"
+  >
+    {{ prov.name }}
+  </option>
+</select>
+
+</div>
+
+
+
               <!-- 3. Kecamatan/Kota dan Kabupaten -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <UserAppInput
-                  label="Kecamatan/Kota"
-                  placeholder="Contoh: Kebon Jeruk"
-                  v-model="formData.addressDistrict"
-                  type="text"
-                  :error="validationErrors.addressDistrict"
-                />
-                <UserAppInput
-                  label="Kabupaten/Kecamatan"
-                  placeholder="Contoh: Jakarta Barat"
-                  v-model="formData.addressRegency"
-                  type="text"
-                  :error="validationErrors.addressRegency"
-                />
+                <div class="w-full">
+  <label class="block mb-1 text-sm text-gray-600">
+    Kota / Kabupaten
+  </label>
+
+  <select
+    v-model.number="selectedCityId"
+    :disabled="!selectedProvinceId || loadingCities"
+    class="w-full h-11 px-4
+           rounded-lg border border-gray-300
+           bg-white text-gray-800
+           focus:outline-none focus:ring-2 focus:ring-red-500
+           disabled:bg-gray-100 disabled:text-gray-400"
+  >
+    <option value="" disabled>
+      {{ loadingCities ? "Memuat kota..." : "Pilih Kota / Kabupaten" }}
+    </option>
+
+    <option
+      v-for="city in cities"
+      :key="city.id"
+      :value="city.id"
+    >
+      {{ city.name }}
+    </option>
+  </select>
+
+  <p v-if="validationErrors.addressDistrict" class="text-sm text-red-500 mt-1">
+    {{ validationErrors.addressDistrict }}
+  </p>
+</div>
+
+                <div class="w-full">
+  <label class="block mb-1 text-sm text-gray-600">
+    Kecamatan
+  </label>
+
+
+  <select
+    v-model.number="selectedDistrictId"
+    :disabled="!selectedCityId || loadingDistricts"
+    class="w-full h-11 px-4
+           rounded-lg border border-gray-300
+           bg-white text-gray-800
+           focus:outline-none focus:ring-2 focus:ring-red-500
+           disabled:bg-gray-100 disabled:text-gray-400"
+  >
+    <option value="" disabled>
+      {{ loadingDistricts ? "Memuat kecamatan..." : "Pilih Kecamatan" }}
+    </option>
+
+    <option
+      v-for="district in districts"
+      :key="district.id"
+      :value="district.id"
+    >
+      {{ district.name }}
+    </option>
+  </select>
+
+  <p v-if="validationErrors.addressDistrict" class="text-sm text-red-500 mt-1">
+    {{ validationErrors.addressDistrict }}
+  </p>
+</div>
+
               </div>
             </div>
             <!-- AKHIR REVISI ALAMAT LENGKAP -->
@@ -196,11 +271,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { fetchCart, clearCart } from "@/api/cart";
 import { checkoutPesanan } from "@/api/pesanan";
 import { fetchCheckoutProfile } from "@/api/account";
+import { fetchProvinces, fetchCities, fetchDistricts   } from "@/api/rajaongkir";
 
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
 import UserAppInput from "@/components/baseUser/UserAppInput.vue";
@@ -223,6 +299,16 @@ const showOrderModal = ref(false);
 const latestOrderData = ref(null);
 const latestOrderId = ref(null);
 
+// ================= RAJA ONGKIR =================
+const provinces = ref([]);
+const cities = ref([]);
+const selectedProvinceId = ref("");
+const selectedCityId = ref("");
+const loadingCities = ref(false);
+const districts = ref([]);
+const selectedDistrictId = ref("");
+const loadingDistricts = ref(false);
+
 // ================= FORM =================
 const formData = ref({
   name: "",
@@ -240,6 +326,7 @@ const validationErrors = ref({});
 onMounted(async () => {
   await autofillCheckout();
   const res = await fetchCart();
+  loadProvinces();
 
   cartItems.value = (res.data.data || []).map((item) => ({
     id_menu: item.id_menu,
@@ -314,6 +401,18 @@ async function submitOrder() {
   }
 }
 
+async function loadProvinces() {
+  try {
+    const res = await fetchProvinces();
+    provinces.value = res.data.data ?? [];
+  } catch (e) {
+    console.error("Gagal load provinsi", e);
+  }
+}
+
+onMounted(loadProvinces);
+
+
 async function autofillCheckout() {
   try {
     const res = await fetchCheckoutProfile();
@@ -338,4 +437,59 @@ async function autofillCheckout() {
 function goBackToCart() {
   router.push("/cart");
 }
+
+watch(selectedProvinceId, async (provinceId) => {
+  if (!provinceId) return;
+
+  selectedCityId.value = "";
+  selectedDistrictId.value = "";
+  cities.value = [];
+  districts.value = [];
+
+  loadingCities.value = true;
+  loadingDistricts.value = false; // ⬅️ PENTING
+
+  try {
+    const res = await fetchCities(provinceId);
+    cities.value = res.data ?? [];
+  } catch (e) {
+    console.error("Gagal load kota", e);
+  } finally {
+    loadingCities.value = false;
+  }
+});
+
+
+
+watch(selectedCityId, async (cityId) => {
+  if (!cityId) return;
+
+  selectedDistrictId.value = "";
+  districts.value = [];
+  loadingDistricts.value = true;
+
+  try {
+    const res = await fetchDistricts(cityId);
+
+    // ⬇️ karena API kamu return ARRAY LANGSUNG
+    districts.value = res.data ?? [];
+
+    console.log("DISTRICTS:", districts.value);
+  } catch (e) {
+    console.error("Gagal load kecamatan", e);
+  } finally {
+    loadingDistricts.value = false;
+  }
+});
+
+watch(selectedDistrictId, (districtId) => {
+  const district = districts.value.find(d => d.id == districtId);
+  if (district) {
+    formData.value.addressDistrict = district.name;
+  }
+});
+watch(selectedDistrictId, (v) => {
+  console.log("SELECTED DISTRICT:", v, typeof v);
+});
+
 </script>

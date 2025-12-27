@@ -11,7 +11,7 @@ use App\Http\Controllers\API\DriverController;
 use App\Http\Controllers\API\AccountController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\Auth\SocialiteController;
-
+use App\Http\Controllers\RajaOngkirController;
 use App\Http\Controllers\API\AlamatController;
 use App\Http\Controllers\API\StatistikController;
 
@@ -71,7 +71,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/user/pesanan', [PesananController::class, 'indexUser']);
         Route::get('/pesanan/{id}', [PesananController::class, 'show']);
         Route::post('/pesanan', [PesananController::class, 'checkout']);
-
+        Route::get('/rajaongkir/provinces', [RajaOngkirController::class, 'provinces']);
+        Route::get('/rajaongkir/cities/{provinceId}', [RajaOngkirController::class, 'cities']);
+        Route::get('/rajaongkir/districts/{cityId}', [App\Http\Controllers\RajaOngkirController::class, 'getDistricts']);
+        
 
         Route::delete('/account/me', [AccountController::class, 'destroy']);
     });
