@@ -74,7 +74,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/rajaongkir/provinces', [RajaOngkirController::class, 'provinces']);
         Route::get('/rajaongkir/cities/{provinceId}', [RajaOngkirController::class, 'cities']);
         Route::get('/rajaongkir/districts/{cityId}', [App\Http\Controllers\RajaOngkirController::class, 'getDistricts']);
-        
+        Route::post('/rajaongkir/check-ongkir', [App\Http\Controllers\RajaOngkirController::class, 'checkOngkir']);
 
         Route::delete('/account/me', [AccountController::class, 'destroy']);
     });

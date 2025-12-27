@@ -55,98 +55,151 @@
               />
 
              <!-- PROVINSI -->
-<div class="w-full">
-  <label class="block mb-1 text-sm text-gray-600">
-    Provinsi
-  </label>
+              <div class="w-full">
+                <label class="block mb-1 text-sm text-gray-600">
+                  Provinsi
+                </label>
 
-  <select
-  v-model="selectedProvinceId"
-  class="w-full h-11 px-4 border rounded-lg bg-white"
->
-  <option value="" disabled>Pilih Provinsi</option>
-  <option
-    v-for="prov in provinces"
-    :key="prov.id"
-    :value="prov.id"
-  >
-    {{ prov.name }}
-  </option>
-</select>
+                <select
+                v-model="selectedProvinceId"
+                class="w-full h-11 px-4 border rounded-lg bg-white"
+                >
+                  <option value="" disabled>Pilih Provinsi</option>
+                    <option
+                      v-for="prov in provinces"
+                      :key="prov.id"
+                      :value="prov.id"
+                    >
+                    {{ prov.name }}
+                  </option>
+              </select>
 
-</div>
+              </div>
 
 
 
               <!-- 3. Kecamatan/Kota dan Kabupaten -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="w-full">
-  <label class="block mb-1 text-sm text-gray-600">
-    Kota / Kabupaten
-  </label>
+                  <label class="block mb-1 text-sm text-gray-600">
+                    Kota / Kabupaten
+                  </label>
 
-  <select
-    v-model.number="selectedCityId"
-    :disabled="!selectedProvinceId || loadingCities"
-    class="w-full h-11 px-4
-           rounded-lg border border-gray-300
-           bg-white text-gray-800
-           focus:outline-none focus:ring-2 focus:ring-red-500
-           disabled:bg-gray-100 disabled:text-gray-400"
-  >
-    <option value="" disabled>
-      {{ loadingCities ? "Memuat kota..." : "Pilih Kota / Kabupaten" }}
-    </option>
+                    <select
+                      v-model.number="selectedCityId"
+                      :disabled="!selectedProvinceId || loadingCities"
+                      class="w-full h-11 px-4
+                            rounded-lg border border-gray-300
+                            bg-white text-gray-800
+                            focus:outline-none focus:ring-2 focus:ring-red-500
+                            disabled:bg-gray-100 disabled:text-gray-400"
+                    >
+                      <option value="" disabled>
+                        {{ loadingCities ? "Memuat kota..." : "Pilih Kota / Kabupaten" }}
+                      </option>
 
-    <option
-      v-for="city in cities"
-      :key="city.id"
-      :value="city.id"
-    >
-      {{ city.name }}
-    </option>
-  </select>
+                      <option
+                        v-for="city in cities"
+                        :key="city.id"
+                        :value="city.id"
+                      >
+                        {{ city.name }}
+                      </option>
+                    </select>
 
-  <p v-if="validationErrors.addressDistrict" class="text-sm text-red-500 mt-1">
-    {{ validationErrors.addressDistrict }}
-  </p>
-</div>
-
+                    <p v-if="validationErrors.addressDistrict" class="text-sm text-red-500 mt-1">
+                      {{ validationErrors.addressDistrict }}
+                    </p>
+                  </div>
                 <div class="w-full">
-  <label class="block mb-1 text-sm text-gray-600">
-    Kecamatan
-  </label>
+                  <label class="block mb-1 text-sm text-gray-600">
+                    Kecamatan
+                  </label>
+                  <select
+                    v-model.number="selectedDistrictId"
+                    :disabled="!selectedCityId || loadingDistricts"
+                    class="w-full h-11 px-4
+                          rounded-lg border border-gray-300
+                          bg-white text-gray-800
+                          focus:outline-none focus:ring-2 focus:ring-red-500
+                          disabled:bg-gray-100 disabled:text-gray-400"
+                    >
+                    <option value="" disabled>
+                      {{ loadingDistricts ? "Memuat kecamatan..." : "Pilih Kecamatan" }}
+                    </option>
 
+                    <option
+                      v-for="district in districts"
+                      :key="district.id"
+                      :value="district.id"
+                    >
+                      {{ district.name }}
+                    </option>
+                  </select>
 
-  <select
-    v-model.number="selectedDistrictId"
-    :disabled="!selectedCityId || loadingDistricts"
-    class="w-full h-11 px-4
-           rounded-lg border border-gray-300
-           bg-white text-gray-800
-           focus:outline-none focus:ring-2 focus:ring-red-500
-           disabled:bg-gray-100 disabled:text-gray-400"
-  >
-    <option value="" disabled>
-      {{ loadingDistricts ? "Memuat kecamatan..." : "Pilih Kecamatan" }}
-    </option>
-
-    <option
-      v-for="district in districts"
-      :key="district.id"
-      :value="district.id"
-    >
-      {{ district.name }}
-    </option>
-  </select>
-
-  <p v-if="validationErrors.addressDistrict" class="text-sm text-red-500 mt-1">
-    {{ validationErrors.addressDistrict }}
-  </p>
-</div>
-
+                  <p v-if="validationErrors.addressDistrict" class="text-sm text-red-500 mt-1">
+                    {{ validationErrors.addressDistrict }}
+                  </p>
+                </div>
               </div>
             </div>
+
+            <!-- ONGKIR -->
+<div class="space-y-3 pt-4 border-t">
+  <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+    <Truck class="w-4 h-4 text-red-500" />
+    Ongkos Kirim
+  </h3>
+
+  <!-- Berat -->
+  <div>
+    <label class="text-sm text-gray-600">Berat (gram)</label>
+    <input
+      type="number"
+      v-model.number="weight"
+      class="w-full h-10 px-3 border rounded-lg"
+      min="1"
+    />
+  </div>
+
+  <!-- Kurir -->
+  <div>
+    <label class="text-sm text-gray-600">Kurir</label>
+    <select
+      v-model="selectedCourier"
+      class="w-full h-10 px-3 border rounded-lg bg-white"
+    >
+      <option value="" disabled>Pilih Kurir</option>
+      <option v-for="c in couriers" :key="c" :value="c">
+        {{ c.toUpperCase() }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Button -->
+  <button
+    type="button"
+    @click="handleCheckOngkir"
+    :disabled="!selectedDistrictId || !selectedCourier || loadingOngkir"
+    class="w-full h-10 rounded-lg bg-red-600 text-white font-semibold disabled:bg-gray-300"
+  >
+    {{ loadingOngkir ? "Menghitung..." : "Cek Ongkir" }}
+  </button>
+
+  <!-- Result -->
+  <div v-if="ongkirResults.length" class="space-y-2">
+    <div
+      v-for="item in ongkirResults"
+      :key="item.service"
+      class="flex justify-between p-2 border rounded-lg cursor-pointer hover:bg-red-50"
+      @click="selectOngkir(item)"
+    >
+      <span class="font-medium">{{ item.service }}</span>
+      <span class="font-semibold">{{ formatCurrency(item.cost) }}</span>
+    </div>
+  </div>
+</div>
+
             <!-- AKHIR REVISI ALAMAT LENGKAP -->
 
             <!-- Catatan Tambahan -->
@@ -276,7 +329,8 @@ import { useRouter } from "vue-router";
 import { fetchCart, clearCart } from "@/api/cart";
 import { checkoutPesanan } from "@/api/pesanan";
 import { fetchCheckoutProfile } from "@/api/account";
-import { fetchProvinces, fetchCities, fetchDistricts   } from "@/api/rajaongkir";
+import { fetchProvinces, fetchCities, fetchDistricts, checkOngkir } from "@/api/rajaongkir";
+
 
 import UserAppCard from "@/components/baseUser/UserAppCard.vue";
 import UserAppInput from "@/components/baseUser/UserAppInput.vue";
@@ -308,6 +362,11 @@ const loadingCities = ref(false);
 const districts = ref([]);
 const selectedDistrictId = ref("");
 const loadingDistricts = ref(false);
+const couriers = ["jne", "jnt", "sicepat"];
+const selectedCourier = ref("");
+const weight = ref(1000); // gram
+const ongkirResults = ref([]);
+const loadingOngkir = ref(false);
 
 // ================= FORM =================
 const formData = ref({
@@ -437,6 +496,31 @@ async function autofillCheckout() {
 function goBackToCart() {
   router.push("/cart");
 }
+
+async function handleCheckOngkir() {
+  try {
+    loadingOngkir.value = true;
+    ongkirResults.value = [];
+
+    const res = await checkOngkir({
+      district_id: selectedDistrictId.value,
+      weight: weight.value,
+      courier: selectedCourier.value,
+    });
+
+    ongkirResults.value = res.data ?? [];
+  } catch (e) {
+    console.error("Gagal cek ongkir", e);
+    alert("Gagal menghitung ongkir");
+  } finally {
+    loadingOngkir.value = false;
+  }
+}
+
+function selectOngkir(item) {
+  shippingFee.value = Number(item.cost || 0);
+}
+
 
 watch(selectedProvinceId, async (provinceId) => {
   if (!provinceId) return;

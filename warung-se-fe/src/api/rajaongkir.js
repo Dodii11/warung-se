@@ -40,3 +40,9 @@ export function fetchDistricts(cityId) {
     headers: getAuthHeader(),
   });
 }
+
+export function checkOngkir(payload) {
+  return axios.post(`${API_URL}/rajaongkir/check-ongkir`, payload, {
+    headers: getAuthHeader(),
+  });
+}
