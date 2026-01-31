@@ -1,163 +1,221 @@
 <template>
-  <div class="max-w-6xl mx-auto p-4 sm:p-6">
+  <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3">
+      <ShoppingCart class="w-7 h-7 text-red-600" />
+      Keranjang Anda
+    </h1>
 
-    <!-- Judul -->
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Keranjang Anda</h1>
+    <!-- Daftar Item -->
+    <div v-if="cartItems.length > 0" class="space-y-4">
+<UserAppCard padding="sm" v-for="(item, index) in cartItems" :key="index">
+  <!-- Flex Utama -->
+  <div class="flex flex-col sm:flex-row sm:flex-nowrap flex-wrap gap-4 w-full">
 
-    <!-- Kontainer Utama -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- ===== KOLOM 1 — Gambar + Nama Produk ===== -->
+    <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0 sm:w-1/2">
+      <img
+        :src="item.image"
+        alt="Item Image"
+        class="w-16 sm:w-20 h-16 sm:h-20 object-cover rounded-xl border border-gray-100 shrink-0"
+      />
 
-      <!-- Daftar Item -->
-      <div class="md:col-span-2 space-y-4">
-        <div
-          v-for="(item, index) in cartItems"
-          :key="index"
-          class="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white rounded-lg shadow-sm"
+      <!-- Nama Produk & Harga -->
+      <div class="flex-1 min-w-0">
+        <!-- Nama Produk -->
+        <h3
+          class="font-bold text-base sm:text-lg text-gray-900 leading-tight line-clamp-2 wrap-break-word"
         >
-          <!-- Gambar -->
-          <img
-            :src="item.image"
-            alt="Item Image"
-            class="w-full sm:w-16 h-16 object-cover rounded-md"
-          />
+          {{ item.name }}
+        </h3>
 
-          <!-- Detail -->
-          <div class="flex-1 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 w-full">
-            <div>
-              <h3 class="font-semibold text-gray-900">{{ item.name }}</h3>
-              <p class="text-gray-600">Rp {{ item.price }}</p>
-            </div>
+        <!-- Harga satuan (now fully visible at small screens) -->
+        <p class="text-red-600 font-semibold mt-1 text-sm wrap-break-word min-w-0 w-full leading-snug">
+          {{ formatCurrency(item.price) }} /item
+        </p>
+      </div>
+    </div>
 
-            <!-- Quantity + Hapus -->
-            <div class="flex items-center gap-2 mt-2 sm:mt-0">
-              <div class="flex items-center border border-gray-300 rounded-md overflow-hidden">
-                <button
-                  class="px-2 py-1 text-gray-600 hover:bg-gray-200 transition"
-                  @click="decrementQty(index)"
-                  :disabled="item.qty <= 1"
-                >-</button>
-                <input
-                  type="number"
-                  v-model.number="item.qty"
-                  min="1"
-                  max="99"
-                  class="w-10 text-center outline-none"
-                />
-                <button
-                  class="px-2 py-1 text-gray-600 hover:bg-gray-200 transition"
-                  @click="incrementQty(index)"
-                >+</button>
-              </div>
+    <!-- ===== KOLOM 2 — Quantity Control ===== -->
+    <div
+      class="flex items-center gap-2 shrink sm:shrink-0 mt-2 sm:mt-0 sm:justify-center sm:w-1/4"
+    >
+      <button
+        class="p-1.5 sm:p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition disabled:opacity-50"
+        @click="decrementQty(index)"
+        :disabled="item.qty <= 1"
+      >
+        <Minus class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+      </button>
 
-              <button
-                class="text-red-600 hover:text-red-800 text-sm font-medium"
-                @click="removeItem(index)"
-              >
-                del
-              </button>
-            </div>
+      <input
+        type="number"
+        v-model.number="item.qty"
+        min="1"
+        max="99"
+        class="w-10 sm:w-12 text-center text-sm sm:text-base font-semibold border-b border-gray-300 outline-none p-1 focus:border-red-600 bg-transparent"
+        @change="updateItemTotal(index)"
+      />
 
-            <!-- Harga Total -->
-            <p class="font-bold text-gray-900 mt-2 sm:mt-0">Rp {{ item.total }}</p>
-          </div>
-        </div>
+      <button
+        class="p-1.5 sm:p-2 text-gray-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition"
+        @click="incrementQty(index)"
+      >
+        <Plus class="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+      </button>
+    </div>
 
-        <!-- Jika keranjang kosong -->
-        <div v-if="cartItems.length === 0" class="text-center py-10 text-gray-500">
-          Keranjang Anda masih kosong.
-        </div>
+    <!-- ===== KOLOM 3 — Total & Delete (Desktop) ===== -->
+    <div
+      class="hidden sm:flex sm:w-1/4 justify-end items-center mt-3 sm:mt-0 shrink"
+    >
+      <div class="text-right shrink min-w-0 mr-4">
+        <p class="text-sm text-gray-500 whitespace-nowrap">Total Item:</p>
+        <p class="font-extrabold text-xl text-red-700 wrap-break-word">
+          {{ formatCurrency(item.total) }}
+        </p>
       </div>
 
-      <!-- Ringkasan Pesanan -->
-      <div class="bg-white rounded-lg shadow-sm p-6 w-full">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Ringkasan Pesanan</h2>
+      <button
+        class="p-2 text-gray-400 hover:text-red-600 rounded-full bg-white transition hover:bg-red-50 shadow-sm hover:shadow-md shrink-0"
+        @click="removeItem(index)"
+      >
+        <Trash2 class="w-5 h-5" />
+      </button>
+    </div>
 
-        <div class="space-y-3">
-          <div class="flex justify-between">
-            <span>Subtotal</span>
-            <span>Rp {{ formatCurrency(subtotal) }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>Biaya Pengiriman</span>
-            <span>Rp {{ formatCurrency(shippingFee) }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>PPN</span>
-            <span>Rp {{ formatCurrency(ppn) }}</span>
-          </div>
-          <hr class="my-3 border-gray-200" />
-          <div class="flex justify-between font-bold text-xl">
-            <span>Total</span>
-            <span>Rp {{ formatCurrency(total) }}</span>
-          </div>
+    <!-- ===== KOLOM 3 — Total & Delete (Mobile) ===== -->
+    <div
+      class="sm:hidden w-full flex justify-between items-center pt-3 border-t border-gray-100 mt-2"
+    >
+      <div class="text-left min-w-0">
+        <p class="text-sm text-gray-500">Total Item:</p>
+        <p class="font-extrabold text-lg text-red-700 wrap-break-word">
+          {{ formatCurrency(item.total) }}
+        </p>
+      </div>
+
+      <button
+        class="p-2 text-gray-400 hover:text-red-600 rounded-full bg-white transition hover:bg-red-50 shadow-sm hover:shadow-md shrink-0"
+        @click="removeItem(index)"
+      >
+        <Trash2 class="w-5 h-5" />
+      </button>
+    </div>
+
+  </div>
+</UserAppCard>
+
+
+
+      <!-- Subtotal dan Tombol Checkout -->
+      <div class="pt-6 mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:items-center gap-4 sm:gap-6 bg-white p-5 sm:p-6 rounded-2xl shadow-lg border border-gray-100">
+        <div class="text-right w-full sm:w-auto">
+          <p class="text-lg sm:text-xl font-semibold text-gray-700">Subtotal Belanja:</p>
+          <p class="font-extrabold text-2xl sm:text-3xl text-red-600">{{ formatCurrency(subtotal) }}</p>
         </div>
 
-        <!-- Tombol Checkout -->
-        <button
+        <UserAppButton
           @click="proceedToCheckout"
-          class="w-full mt-6 bg-red-600 text-white py-3 rounded-full font-semibold hover:bg-red-700 transition"
+          size="lg"
+          :disabled="cartItems.length === 0"
+          class="w-full sm:w-auto"
         >
           Lanjutkan ke Pembayaran
-        </button>
+          <template #icon-right>
+            <ArrowRight class="w-5 h-5" />
+          </template>
+        </UserAppButton>
       </div>
+    </div>
+
+    <!-- Jika keranjang kosong -->
+    <div v-else class="text-center py-12 sm:py-16 bg-white rounded-2xl shadow-lg border border-gray-100 px-4">
+      <ShoppingBag class="w-12 h-12 mx-auto text-red-400 mb-4" />
+      <p class="text-lg sm:text-xl font-semibold text-gray-700 mb-2">Keranjang Anda masih kosong.</p>
+      <p class="text-gray-500">Ayo mulai belanja dan tambahkan produk favorit Anda!</p>
     </div>
   </div>
 </template>
 
-
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { Trash2, Minus, Plus, ShoppingCart, ArrowRight, ShoppingBag } from "lucide-vue-next";
 
-const router = useRouter()
+import UserAppCard from "@/components/baseUser/UserAppCard.vue";
+import UserAppButton from "@/components/baseUser/UserAppButton.vue";
 
-// Dummy data keranjang
-const cartItems = ref([
-  { name: "Ayam Geprek Original", price: 15000, qty: 2, image: "https://placehold.co/100x100/png?text=/ayam" },
-  { name: "Es Teh", price: 3000, qty: 1, image: "https://placehold.co/100x100/png?text=es+teh" },
-  { name: "Es Jeruk", price: 4000, qty: 1, image: "https://placehold.co/100x100/png?text=es+jeruk" },
-])
+import { fetchCart, deleteCartItem } from "@/api/cart";
 
-// Hitung total per item
-cartItems.value.forEach(item => {
-  item.total = item.price * item.qty
-})
+const router = useRouter();
+const cartItems = ref([]);
 
-// Hitung subtotal, biaya pengiriman, ppn, total
-const subtotal = computed(() => cartItems.value.reduce((sum, item) => sum + item.price * item.qty, 0))
-const shippingFee = computed(() => 5000)
-const ppn = computed(() => 0)
-const total = computed(() => subtotal.value + shippingFee.value + ppn.value)
+// ================= FETCH CART =================
+onMounted(async () => {
+  const res = await fetchCart();
+  cartItems.value = res.data.data.map(item => ({
+    id_menu: item.id_menu,
+    name: item.menu.menu,
+    price: Number(item.menu.harga),
+    qty: item.jumlah,
+    image: item.menu.gambar_url || "https://placehold.co/100x100",
+    total: Number(item.subtotal),
+  }));
+});
 
-// Format currency
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(value).replace('Rp', 'Rp ').replace(',00', '')
-}
+// ================= COMPUTED =================
+const subtotal = computed(() =>
+  cartItems.value.reduce((sum, item) => sum + item.total, 0)
+);
 
-// Update quantity
+// ================= METHODS =================
 function incrementQty(index) {
-  cartItems.value[index].qty++
-  cartItems.value[index].total = cartItems.value[index].price * cartItems.value[index].qty
+  cartItems.value[index].qty++;
+  updateItemTotal(index);
 }
+
 function decrementQty(index) {
   if (cartItems.value[index].qty > 1) {
-    cartItems.value[index].qty--
-    cartItems.value[index].total = cartItems.value[index].price * cartItems.value[index].qty
+    cartItems.value[index].qty--;
+    updateItemTotal(index);
   }
 }
 
-// Hapus item
-function removeItem(index) {
-  cartItems.value.splice(index, 1)
+function updateItemTotal(index) {
+  const item = cartItems.value[index];
+  item.total = item.price * item.qty;
 }
 
-// **Navigasi ke FormDetailPesanan terlebih dahulu**
+async function removeItem(index) {
+  const item = cartItems.value[index];
+  await deleteCartItem(item.id_menu);
+  cartItems.value.splice(index, 1);
+}
+
 function proceedToCheckout() {
-  router.push({ name: 'FormDetailPesanan' })
+  router.push({ name: "FormDetailPesanan" });
 }
 
+// ================= FORMAT =================
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  })
+    .format(value)
+    .replace("Rp", "Rp ")
+    .replace(",00", "");
 </script>
+
+<style scoped>
+/* Menghilangkan panah spinner pada input number */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+</style>

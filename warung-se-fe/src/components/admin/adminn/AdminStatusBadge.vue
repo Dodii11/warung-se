@@ -1,34 +1,51 @@
 <template>
-  <span :class="badgeClass">
+  <span
+    class="px-3 py-1 text-xs font-semibold rounded-full whitespace-nowrap inline-flex items-center gap-1.5"
+    :class="badgeClass.classes"
+  >
+    <component :is="badgeClass.icon" class="w-3 h-3" />
     {{ status }}
   </span>
 </template>
 
 <script setup>
 import { computed } from 'vue';
+import {
+    CheckCircleIcon, XCircleIcon, ShieldCheckIcon, UserIcon
+} from 'lucide-vue-next';
 
 const props = defineProps({
   status: {
     type: String,
     required: true,
-    // Validator untuk memastikan nilai status yang diterima adalah salah satu dari daftar
     validator: (value) => ['Aktif', 'Nonaktif', 'SuperAdmin', 'Admin'].includes(value),
   }
 });
 
 const badgeClass = computed(() => {
-  const base = "px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap";
+  const base = "font-medium border";
   switch (props.status) {
     case 'Aktif':
-      return `${base} bg-green-100 text-green-800`;
+      return {
+        classes: `${base} bg-green-100 text-green-800 border-green-200`,
+        icon: CheckCircleIcon,
+      };
     case 'Nonaktif':
-      return `${base} bg-red-100 text-red-800`;
-    case 'SuperAdmin':
-      return `${base} bg-yellow-100 text-yellow-800`;
+      return {
+        classes: `${base} bg-red-100 text-red-800 border-red-200`,
+        icon: XCircleIcon,
+      };
     case 'Admin':
-      return `${base} bg-blue-100 text-blue-800`;
+    case 'SuperAdmin': // Role: Menggunakan warna yang sama untuk peran admin
+      return {
+        classes: `${base} bg-blue-100 text-blue-800 border-blue-200`,
+        icon: ShieldCheckIcon,
+      };
     default:
-      return `${base} bg-gray-100 text-gray-800`;
+      return {
+        classes: `${base} bg-gray-100 text-gray-800 border-gray-200`,
+        icon: UserIcon,
+      };
   }
 });
 </script>

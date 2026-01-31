@@ -1,7 +1,9 @@
 <!--  eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="bg-bg min-h-screen flex justify-center items-center py-12 px-4">
-    <div class="bg-white w-full max-w-5xl rounded-2xl shadow-lg grid md:grid-cols-2 overflow-hidden">
+    <div
+      class="bg-white w-full max-w-5xl rounded-2xl shadow-lg grid md:grid-cols-2 overflow-hidden"
+    >
       <!-- Left Form Section -->
       <div class="p-8 md:p-12 flex flex-col justify-center">
         <h2 class="heading-1 mb-2">Buat Akun</h2>
@@ -92,9 +94,12 @@ import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import BaseInput from "@/components/base/BaseInput.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
+import { useAuth } from "@/stores/auth";
 
 const router = useRouter();
+const auth = useAuth();
 
+/* Form tetap sesuai file asli */
 const formData = reactive({
   name: "",
   email: "",
@@ -103,20 +108,44 @@ const formData = reactive({
   confirmPassword: "",
 });
 
+/* Loading state */
 const isLoading = ref(false);
 const isGoogleLoading = ref(false);
 
+/* Integrasi API */
 const handleRegister = async () => {
-  isLoading.value = true;
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-  isLoading.value = false;
-  router.push("/login");
+  try {
+    isLoading.value = true;
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("Password tidak sama.");
+      return;
+    }
+
+    const payload = {
+      nama_user: formData.name,
+      email_user: formData.email,
+      no_telp: formData.phone,
+      password: formData.password,
+    };
+
+    const res = await auth.register(payload);
+
+    if (!res.success) {
+      alert(res.error || "Registrasi gagal.");
+      return;
+    }
+
+    router.push("/login");
+  } finally {
+    isLoading.value = false;
+  }
 };
 
+/* Dummy Google tetap */
 const handleGoogleRegister = async () => {
   isGoogleLoading.value = true;
   await new Promise((resolve) => setTimeout(resolve, 1500));
   isGoogleLoading.value = false;
-  router.push("/login");
 };
 </script>

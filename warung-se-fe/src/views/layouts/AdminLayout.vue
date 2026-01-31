@@ -1,6 +1,5 @@
 <template>
   <div class="flex min-h-screen bg-bg-base text-gray-900">
-
     <!-- Mobile Drawer Overlay -->
     <div
       v-if="isMobileSidebarOpen"

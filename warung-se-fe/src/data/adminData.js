@@ -8,10 +8,10 @@ export const adminColumns = [
 
 export const adminRows = [
   {
-    id: "SA001",
-    name: "Super Admin",
-    email: "SuperAdmin@gmail.com",
-    role: "SuperAdmin",
+    id: "AD001",
+    name: "Edi Kuah Telur",
+    email: "Edi@gmail.com",
+    role: "Admin",
     status: "Aktif",
   },
   {

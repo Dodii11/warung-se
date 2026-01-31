@@ -3,11 +3,10 @@
   <BaseButton
     variant="primary"
     size="sm"
-    class="rounded-full px-4 py-2 flex items-center gap-2"
     @click="create"
   >
     <Plus class="w-4 h-4" />
-    Tambahkan Admin
+    Tambah Admin
   </BaseButton>
 </template>
 

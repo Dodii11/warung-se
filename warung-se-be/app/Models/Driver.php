@@ -2,27 +2,35 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Driver extends Model
 {
+    use HasFactory;
+
     protected $table = 'driver';
     protected $primaryKey = 'id_driver';
     public $incrementing = false;
     protected $keyType = 'string';
+
     protected $fillable = [
-        'id_driver', 'nama_driver', 'no_telp'
+        'id_driver',
+        'nama_driver',
+        'no_telp',
+        'status',
+        'tipe_kendaraan',
+        'plat_kendaraan',
+        'gambar_driver'
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
+    protected $appends = ['gambar_url'];
 
-        static::creating(function ($driver) {
-            if (empty($driver->id_driver)) {
-                $driver->id_driver = 'DR' . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
-            }
-        });
+    public function getGambarUrlAttribute()
+    {
+        return $this->gambar_driver
+            ? asset('storage/' . $this->gambar_driver)
+            : null;
     }
 
     public function pesanan()

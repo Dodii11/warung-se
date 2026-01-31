@@ -24,10 +24,10 @@
       <div class="flex justify-between items-center mb-5">
         <h2 class="heading-2">Daftar Driver</h2>
         <div class="flex items-center">
-          <DriverAddButton />
+          <DriverAddButton @click="openModal('add')" v-if="isSuperAdmin" />
         </div>
       </div>
-      <BaseTable :columns="driverColumns" :rows="filteredRows">
+      <BaseTable v-if="filteredRows.length > 0" :columns="driverColumns" :rows="filteredRows">
         <!-- STATUS -->
         <template #status="{ row }">
           <DriverStatusBadge :status="row.status" />
@@ -35,44 +35,152 @@
 
         <!-- ACTION -->
         <template #action="{ row }">
-          <DriverRowActions :row="row" />
+          <DriverRowActions
+            :item="row"
+            @edit="openModal('edit', row)"
+            @detail="openModal('detail', row)"
+            @delete="handleDelete(row)"
+          />
         </template>
       </BaseTable>
+
+      <!-- Empty State ketika filteredRows.length === 0 -->
+      <BaseEmptyState
+        v-else
+        title="Tidak ada Driver Ditemukan"
+        description="Silahkan ubah filter pencarian Anda atau tambahkan driver baru untuk memulai."
+        :icon="Motorbike"
+      >
+        <!-- Tombol Tambah Driver di dalam slot -->
+        <div class="flex items-center justify-center">
+          <DriverAddButton @click="openModal('add')" v-if="isSuperAdmin" />
+        </div>
+      </BaseEmptyState>
     </BaseCard>
+
+    <!-- Modal Tambah Driver (Terpisah dari Row Actions) -->
+    <DriverModal
+      v-model="isModalOpen"
+      :mode="modalMode"
+      :item-data="selectedDriver"
+      @save="handleSave"
+    />
   </section>
 </template>
 
 <script setup>
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
-
+import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
 import DriverStatusBadge from "@/components/admin/driver/DriverStatusBadge.vue";
 import DriverRowActions from "@/components/admin/driver/DriverRowActions.vue";
-import DriverAddButton from "@/components/admin/driver/DriverAddButton.vue";
+
 import DriverFilter from "@/components/admin/driver/DriverFilter.vue";
 import DriverSearch from "@/components/admin/driver/DriverSearch.vue";
+import DriverModal from "@/components/admin/driver/DriverModal.vue";
+import DriverAddButton from "@/components/admin/driver/DriverAddButton.vue";
 
-import { ref, computed } from "vue";
-import { driverColumns, driverRows } from "@/data/driverData";
+import { ref, computed, onMounted } from "vue";
+import { Motorbike } from "lucide-vue-next";
+import { driverColumns } from "@/data/driverData";
+import driverApi from "@/api/driver";
+import { useAuth } from "@/stores/auth";
 
+// auth permission
+const auth = useAuth();
+const isSuperAdmin = computed(() => auth.isSuperAdmin);
+
+// ================= STATE =================
 const search = ref("");
 const filterStatus = ref("Status");
 
-// FILTER + SEARCH
+// ⬅️ tetap pakai driverList seperti sebelumnya
+const driverList = ref([]);
+
+const isModalOpen = ref(false);
+const modalMode = ref("add");
+const selectedDriver = ref(null);
+
+// ================= MAPPER (PENTING) =================
+const mapDriverApiToRow = (driver) => ({
+  // field lama (WAJIB ADA)
+  id: driver.id_driver,
+  name: driver.nama_driver,
+  phone: driver.no_telp,
+  vehicleName: driver.plat_kendaraan,
+  vehicleType: driver.tipe_kendaraan === "motor" ? "Sepeda Motor" : "Truk Pick Up",
+  status: driver.status === "aktif" ? "Tersedia" : "Tidak Aktif",
+  image: driver.gambar_url,
+  lastUpdate: driver.updated_at ? new Date(driver.updated_at).toLocaleDateString("id-ID") : "-",
+
+  // simpan raw data kalau dibutuhkan
+  _raw: driver,
+});
+
+// ================= API =================
+const fetchDrivers = async () => {
+  try {
+    const res = await driverApi.getAll();
+    driverList.value = res.data.map(mapDriverApiToRow);
+  } catch (e) {
+    console.error("Gagal ambil driver:", e);
+  }
+};
+
+onMounted(fetchDrivers);
+
+// ================= MODAL =================
+const openModal = (mode, item = null) => {
+  modalMode.value = mode;
+  selectedDriver.value = item?._raw || null;
+  isModalOpen.value = true;
+};
+
+const handleSave = async (formData) => {
+  if (!isSuperAdmin.value) return;
+
+  try {
+    if (modalMode.value === "add") {
+      await driverApi.create(formData);
+    } else {
+      await driverApi.update(selectedDriver.value.id_driver, formData);
+    }
+    isModalOpen.value = false;
+    await fetchDrivers();
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+const handleDelete = async (item) => {
+  if (!isSuperAdmin.value) return;
+
+  if (!confirm(`Hapus driver ${item.name}?`)) return;
+
+  try {
+    await driverApi.remove(item.id);
+    await fetchDrivers();
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+// ================= FILTER + SEARCH (TIDAK DIUBAH) =================
 const filteredRows = computed(() => {
-  return driverRows
+  return driverList.value
     .filter((d) => {
-      // Filter Status
       if (filterStatus.value !== "Status") {
         return d.status === filterStatus.value;
       }
       return true;
     })
     .filter((d) => {
-      // Filter Search
       const key = search.value.toLowerCase();
-      // Melakukan pencarian berdasarkan ID atau Nama driver
-      return d.id.toLowerCase().includes(key) || d.name.toLowerCase().includes(key);
+      return (
+        d.id.toLowerCase().includes(key) ||
+        d.name.toLowerCase().includes(key) ||
+        d.vehicleName.toLowerCase().includes(key)
+      );
     });
 });
 </script>

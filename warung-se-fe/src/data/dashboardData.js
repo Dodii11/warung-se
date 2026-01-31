@@ -1,22 +1,38 @@
-export const stats = [
-  { label: 'Pengguna', value: 1289, change: 12 },
-  { label: 'Pesanan', value: 457, change: -3 },
-  { label: 'Pendapatan', value: 1100000, change: 8 },
-  { label: 'Driver', value: 19, change: -5 },
-]
+import {
+  Users,
+  ShoppingCart,
+  Wallet,
+  Truck,
+} from "lucide-vue-next";
 
-export const tableColumns = [
-  { label: "ID Pesanan", key: "id" },
-  { label: "Pelanggan", key: "customer" },
-  { label: "Tanggal", key: "date" },
-  { label: "Status", key: "status" },
-  { label: "Total", key: "total" },
-]
-
-export const tableRows = [
-  { id: "#12345", customer: "Edi", date: "2024-01-15", status: "Selesai", total: "50.000",  },
-  { id: "#12346", customer: "Yanto", date: "2024-01-16", status: "Tertunda", total: "25.000", },
-  { id: "#12347", customer: "Yono", date: "2024-01-17", status: "Diproses", total: "100.000", },
-  { id: "#12348", customer: "Ferdi", date: "2024-01-18", status: "Gagal", total: "75.000", },
-  { id: "#12349", customer: "Udin", date: "2024-01-19", status: "Dikirim", total: "150.000",},
-]
+export const buildDashboardStats = (statistik) => [
+  {
+    label: "Total User",
+    value: statistik.total_user,
+    icon: Users,
+    color: { bg: "bg-blue-100", text: "text-blue-600" },
+    change: 0,
+  },
+  {
+    label: "Total Pesanan",
+    value: statistik.total_pesanan,
+    icon: ShoppingCart,
+    color: { bg: "bg-green-100", text: "text-green-600" },
+    change: 0,
+  },
+  {
+    label: "Pendapatan",
+    value: statistik.total_pendapatan,
+    valueDisplay: `Rp ${Number(statistik.total_pendapatan).toLocaleString("id-ID")}`,
+    icon: Wallet,
+    color: { bg: "bg-yellow-100", text: "text-yellow-600" },
+    change: 0,
+  },
+  {
+    label: "Total Driver",
+    value: statistik.total_driver,
+    icon: Truck,
+    color: { bg: "bg-purple-100", text: "text-purple-600" },
+    change: 0,
+  },
+];

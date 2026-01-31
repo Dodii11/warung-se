@@ -33,7 +33,7 @@
     <!-- Navigation -->
     <nav class="flex-1 overflow-y-auto p-4 space-y-1">
       <AdminSidebarItem
-        v-for="item in navItems"
+        v-for="item in filteredNavItems"
         :key="item.path"
         :item="item"
         :collapsed="collapsed"
@@ -42,11 +42,7 @@
 
     <!-- Logout -->
     <div class="p-4 border-t border-gray-100">
-      <BaseButton
-        variant="outline-gray"
-        class="w-full"
-        @click="handleLogout"
-      >
+      <BaseButton variant="outline-gray" class="w-full" @click="handleLogout">
         <template #icon-left>
           <LogOut class="w-5 h-5" />
         </template>
@@ -66,13 +62,20 @@
 </template>
 
 <script setup>
-import { LayoutDashboard, Receipt, Users, LogOut, Motorbike, UtensilsCrossed, UserRoundCog } from "lucide-vue-next";
+import {
+  LayoutDashboard,
+  Receipt,
+  Users,
+  LogOut,
+  Motorbike,
+  UtensilsCrossed,
+  UserRoundCog,
+} from "lucide-vue-next";
 import AdminSidebarItem from "./AdminSidebarItem.vue";
 import BaseButton from "@/components/base/BaseButton.vue";
-
-
-import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
+import { useAuth } from "@/stores/auth";
+import { computed } from "vue";
 
 defineProps({
   collapsed: Boolean,
@@ -80,21 +83,35 @@ defineProps({
 });
 
 const navItems = [
-  { label: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Pesanan", path: "/admin/orders", icon: Receipt },
-  { label: "Menu", path: "/admin/menu", icon: UtensilsCrossed },
-  { label: "Pengguna", path: "/admin/user", icon: Users },
-  { label: "Driver", path: "/admin/driver", icon: Motorbike },
-  { label: "Admin", path: "/admin/managementAdmin", icon: UserRoundCog },
+  {
+    label: "Dashboard",
+    path: "/admin/dashboard",
+    icon: LayoutDashboard,
+    roles: ["admin", "super admin"],
+  },
+  { label: "Pesanan", path: "/admin/orders", icon: Receipt, roles: ["admin", "super admin"] },
+  { label: "Menu", path: "/admin/menu", icon: UtensilsCrossed, roles: ["admin", "super admin"] },
+  { label: "Pengguna", path: "/admin/user", icon: Users, roles: ["super admin"] },
+  { label: "Driver", path: "/admin/driver", icon: Motorbike, roles: ["admin", "super admin"] },
+  { label: "Admin", path: "/admin/managementAdmin", icon: UserRoundCog, roles: ["super admin"] },
 ];
 
-const authStore = useAuthStore();
-const router = useRouter()
+const auth = useAuth();
+const router = useRouter();
 
 const handleLogout = async () => {
-  await authStore.logout();
+  await auth.logout();
+  router.push("/login");
+};
 
-  router.push('/login')
-}
+// Ambil role user
+const userRole = computed(() => auth.user?.role?.role_name || auth.user?.role);
 
+// Filter nav items berdasarkan role
+const filteredNavItems = computed(() => {
+  // Jika masih loading user data, kembalikan empty array
+  if (auth.initializing) return [];
+  if (!userRole.value) return [];
+  return navItems.filter((item) => item.roles.includes(userRole.value));
+});
 </script>

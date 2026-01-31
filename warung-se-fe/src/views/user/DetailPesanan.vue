@@ -1,134 +1,181 @@
 <template>
-  <div class="max-w-md sm:max-w-lg mx-auto p-4 sm:p-6 bg-white rounded-xl shadow-md mt-8">
-
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-4">
-      <div>
-        <h1 class="text-lg sm:text-xl font-bold text-gray-800">Detail Pesanan</h1>
-        <p class="text-xs sm:text-sm text-gray-500">Pesanan #{{ orderId }}</p>
+  <div class="p-6 sm:p-8 md:p-10 bg-white rounded-2xl">
+    <!-- Header & Status (Dinamis) -->
+    <div class="text-center mb-8">
+      <div
+        :class="[
+          statusClass.bg,
+          'mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4',
+        ]"
+      >
+        <!-- Ikon berubah berdasarkan status: Ceklis (Selesai/Aktif) atau Silang (Gagal) -->
+        <component :is="statusClass.icon" class="w-8 h-8" :class="statusClass.text" />
       </div>
-      <div class="bg-green-100 rounded-full p-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
+
+      <h1 class="text-2xl font-extrabold text-gray-900">
+        Detail Pesanan #{{ order?.orderNumber || orderId }}
+      </h1>
+      <p class="text-sm text-gray-500 mt-1 font-semibold">
+        Status: <span :class="statusClass.text">{{ order?.status || "Memuat..." }}</span>
+      </p>
+    </div>
+
+    <!-- Detail Pelanggan & Pengiriman -->
+    <div
+      class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 mb-8 p-4 border border-gray-100 bg-gray-50 rounded-lg"
+    >
+      <div class="flex items-center gap-3">
+        <User class="w-5 h-5 text-red-500 shrink-0" />
+        <div>
+          <span class="text-xs text-gray-500 block">Nama Penerima</span>
+          <p class="font-semibold text-sm text-gray-800">{{ order?.customer?.name || "N/A" }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <Phone class="w-5 h-5 text-red-500 shrink-0" />
+        <div>
+          <span class="text-xs text-gray-500 block">Nomor Kontak</span>
+          <p class="font-semibold text-sm text-gray-800">{{ order?.customer?.phone || "N/A" }}</p>
+        </div>
+      </div>
+      <div class="sm:col-span-2 flex items-start gap-3 mt-2">
+        <MapPin class="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+        <div>
+          <span class="text-xs text-gray-500 block">Alamat Pengiriman</span>
+          <p class="font-medium text-sm text-gray-800 leading-snug">
+            {{ order?.customer?.address || "N/A" }}
+          </p>
+        </div>
       </div>
     </div>
 
-    <!-- Garis Pemisah -->
-    <hr class="my-4 border-gray-200" />
-
-    <!-- Detail Pelanggan -->
-    <div class="mb-4">
-      <h2 class="font-semibold text-gray-800 text-sm sm:text-base mb-2">Detail Pelanggan</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
-        <div>
-          <span class="text-gray-600">Nama</span>
-          <p class="font-medium">{{ order?.customer.name || 'Edi Jumping' }}</p>
-        </div>
-        <div>
-          <span class="text-gray-600">Nomor Telepon</span>
-          <p class="font-medium">{{ order?.customer.phone || '081234567890' }}</p>
-        </div>
-        <div class="col-span-1 sm:col-span-2">
-          <span class="text-gray-600">Alamat</span>
-          <p class="font-medium">{{ order?.customer.address || 'JL. Kartika No. 17, Jebres, Surakarta' }}</p>
-        </div>
-      </div>
-    </div>
-
-    <hr class="my-4 border-gray-200" />
-
-    <!-- Ordered Items -->
-    <div class="mb-4">
-      <h2 class="font-semibold text-gray-800 text-sm sm:text-base mb-2">Ordered Items</h2>
-      <div class="space-y-3">
+    <!-- Ringkasan Item (Dinamis) -->
+    <div class="mb-8">
+      <h2 class="font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
+        <Package class="w-5 h-5 text-gray-600" /> Rincian Produk
+      </h2>
+      <div class="space-y-3 max-h-48 overflow-y-auto pr-2">
         <div
           v-for="(item, index) in order?.items || defaultItems"
           :key="index"
-          class="flex flex-col sm:flex-row items-start sm:items-center gap-3 py-2"
+          class="flex justify-between items-center text-sm"
         >
-          <img
-            :src="item.image"
-            :alt="item.name"
-            class="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-md"
-          />
-          <div class="flex-1">
-            <h3 class="font-medium text-gray-900 text-sm sm:text-base">{{ item.name }}</h3>
-            <p class="text-xs sm:text-sm text-gray-600">Jumlah: {{ item.qty }}</p>
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <img
+              :src="resolveImage(item.image) || fallbackImage(item.name)"
+              :alt="item.name"
+              class="w-10 h-10 object-cover rounded-md shrink-0 border border-gray-100"
+              onerror="this.onerror=null;this.src='https://placehold.co/40x40/fef2f2/ef4444?text=Item';"
+            />
+            <div class="min-w-0 flex-1">
+              <p class="font-medium text-gray-900 truncate">{{ item.name }}</p>
+              <p class="text-xs text-gray-500">x{{ item.qty }}</p>
+            </div>
           </div>
-          <p class="font-bold text-red-600 text-sm sm:text-base"> {{ formatCurrency(item.total) }}</p>
+          <p class="font-semibold text-gray-800 shrink-0 whitespace-nowrap">
+            {{ formatCurrency(item.total) }}
+          </p>
         </div>
       </div>
     </div>
 
-    <hr class="my-4 border-gray-200" />
-
-    <!-- Ringkasan Biaya -->
-    <div class="mb-4 text-sm sm:text-base">
-      <div class="flex justify-between mb-1">
-        <span>Subtotal</span>
-        <span> {{ formatCurrency(order?.subtotal || 37000) }}</span>
+    <!-- Total Biaya (Dinamis) -->
+    <div class="bg-red-50 p-4 rounded-xl border-t border-red-200">
+      <div class="space-y-2 mb-3">
+        <div class="flex justify-between text-sm text-gray-700">
+          <span>Subtotal</span>
+          <span> {{ formatCurrency(order?.subtotal || 0) }}</span>
+        </div>
+        <div class="flex justify-between text-sm text-gray-700">
+          <span>Biaya Pengiriman</span>
+          <span> {{ formatCurrency(order?.shippingFee || 0) }}</span>
+        </div>
       </div>
-      <div class="flex justify-between mb-1">
-        <span class="text-gray-600">Biaya Pengiriman</span>
-        <span> {{ formatCurrency(order?.shippingFee || 5000) }}</span>
-      </div>
-      <hr class="my-2 border-gray-300" />
-      <div class="flex justify-between font-bold text-base sm:text-lg">
-        <span>Total</span>
-        <span class="text-red-600"> {{ formatCurrency(order?.total || 42000) }}</span>
+      <div class="flex justify-between pt-3 border-t border-red-200 items-baseline">
+        <span class="text-base sm:text-lg font-bold text-red-700">Total Pembayaran:</span>
+        <span class="text-base sm:text-lg font-bold text-red-700">
+          {{ formatCurrency(order?.total || 0) }}
+        </span>
       </div>
     </div>
 
-    <!-- Tombol Aksi -->
-    <div class="flex flex-col sm:flex-row gap-2 mt-6">
-      <button
-        class="flex-1 bg-red-600 text-white py-2 rounded-full font-semibold hover:bg-red-700 transition text-sm sm:text-base"
-        @click="trackOrder"
-      >
-        Lacak Pesanan
-      </button>
-      <button
-        class="flex-1 bg-pink-100 text-pink-800 py-2 rounded-full font-semibold hover:bg-pink-200 transition text-sm sm:text-base"
-        @click="printReceipt"
-      >
+    <!-- Tombol Aksi - Menyembunyikan "Lacak Pesanan" jika status final -->
+    <div class="flex flex-col sm:flex-row gap-3 mt-8">
+      <UserAppButton variant="secondary" size="md" class="flex-1" @click="printReceipt">
+        <Printer class="w-5 h-5" />
         Cetak Struk
-      </button>
+      </UserAppButton>
+      <!-- Tampilkan Lacak hanya jika status BUKAN Selesai atau Gagal -->
+      <UserAppButton v-if="!isStatusFinal" size="md" class="flex-1" @click="trackOrder">
+        <MapPin class="w-5 h-5" />
+        Lacak Pesanan
+      </UserAppButton>
     </div>
-
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from "vue";
+import { OrdersAPI } from "@/api/orders";
+import { CheckCircle, XCircle, User, Phone, MapPin, Package, Printer } from "lucide-vue-next";
+import UserAppButton from "@/components/baseUser/UserAppButton.vue";
+import { useRouter } from "vue-router";
 
-const router = useRouter()
+const router = useRouter();
 
-const defaultItems = [
-  { name: 'Ayam Geprek Original', qty: 2, total: 30000, image: 'https://placehold.co/60x60/png?text=ayam' },
-  { name: 'Mie Kuah Pedas', qty: 1, total: 3000, image: 'https://placehold.co/60x60/png?text=mie' },
-  { name: 'Es Teh', qty: 1, total: 4000, image: 'https://placehold.co/60x60/png?text=es' }
-]
+const props = defineProps({
+  orderData: { type: Object, default: null },
+  orderId: { type: [String, Number], default: null },
+});
 
-const order = ref(null)
-const orderId = Math.floor(Math.random() * 90000) + 10000
+const order = ref(null);
 
-onMounted(() => {
-  const saved = localStorage.getItem("latestOrder")
-  if (saved) order.value = JSON.parse(saved)
-})
+onMounted(async () => {
+  if (props.orderData) {
+    order.value = props.orderData;
+  } else if (props.orderId) {
+    order.value = await OrdersAPI.getOrder(props.orderId);
+  }
+});
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 })
-    .format(value).replace('Rp', 'Rp ').replace(',00', '')
+const isStatusFinal = computed(() => ["Selesai", "Gagal"].includes(order.value?.status));
+
+const statusClass = computed(() => {
+  switch (order.value?.status) {
+    case "Selesai":
+      return { bg: "bg-green-100", text: "text-green-600", icon: CheckCircle };
+    case "Gagal":
+      return { bg: "bg-red-100", text: "text-red-600", icon: XCircle };
+    default:
+      return { bg: "bg-yellow-100", text: "text-yellow-600", icon: CheckCircle };
+  }
+});
+
+const resolveImage = (img) => {
+  if (!img) return null;
+  if (img.startsWith("http")) return img;
+
+  const normalized = img.startsWith("/") ? img : `/storage/${img}`;
+
+  return `${import.meta.env.VITE_API_BASE_URL}${normalized}`;
+};
+
+const fallbackImage = (name = "Item") =>
+  `https://placehold.co/40x40/fef2f2/ef4444?text=${name.charAt(0)}`;
+
+
+const formatCurrency = (v) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(v || 0);
+
+function printReceipt() {
+  console.log("Print:", props.orderId);
 }
 
 function trackOrder() {
-  alert("Fitur Lacak Pesanan akan segera hadir!")
-}
-
-function printReceipt() {
-  router.push('/struk')
+  router.push("/orders");
 }
 </script>

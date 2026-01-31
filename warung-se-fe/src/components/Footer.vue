@@ -1,42 +1,92 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <footer class="w-full bg-red-600 text-white py-6 relative top-24">
-    <div class="max-w-md mx-auto px-4 flex flex-col items-center gap-4">
+  <footer class="w-full bg-gray-900 text-white pt-10 pb-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- GRID SECTION -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 pb-10 border-b border-gray-700">
+        <!-- Kolom 1: Brand & Lokasi -->
+        <div class="space-y-3">
+          <h3 class="text-2xl font-extrabold text-warning">WarungSE</h3>
+          <p class="text-sm text-gray-400">
+            Pelopor Geprek Surakarta. Rasa Pedas Otentik yang Tak Tertandingi.
+          </p>
+          <p class="text-sm text-gray-400 flex items-center gap-2">
+            <MapPinIcon class="w-4 h-4 text-primary" /> Surakarta, Indonesia
+          </p>
+        </div>
 
-      <!-- Ikon Media Sosial -->
-      <div class="flex items-center gap-5">
+        <!-- Kolom 2: Menu Cepat -->
+        <div class="space-y-4">
+          <h4 class="text-base font-semibold text-white">Menu Cepat</h4>
+          <ul class="space-y-2 text-sm">
+            <li>
+              <router-link to="/" class="text-gray-400 hover:text-warning transition"
+                >Beranda</router-link
+              >
+            </li>
+            <li>
+              <router-link to="/menu" class="text-gray-400 hover:text-warning transition"
+                >Daftar Menu</router-link
+              >
+            </li>
+            <li>
+              <!-- Menggunakan router-link untuk #contact agar memanfaatkan scrollBehavior -->
+              <router-link to="/#contact" class="text-gray-400 hover:text-warning transition"
+                >Kontak Kami</router-link
+              >
+            </li>
+          </ul>
+        </div>
 
-        <!-- Like (Heart Icon) -->
-        <a href="#" class="hover:text-yellow-300 transition" aria-label="Like">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-300" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-        </a>
+        <!-- Kolom 3: Layanan & Akun -->
+        <div class="space-y-4">
+          <h4 class="text-base font-semibold text-white">Akun</h4>
+          <ul class="space-y-2 text-sm">
+            <li>
+              <router-link to="/cart" class="text-gray-400 hover:text-warning transition"
+                >Keranjang</router-link
+              >
+            </li>
+            <li>
+              <router-link to="/akun-saya" class="text-gray-400 hover:text-warning transition"
+                >Akun Saya</router-link
+              >
+            </li>
+            <li>
+              <a href="#" class="text-gray-400 hover:text-warning transition">Syarat & Ketentuan</a>
+            </li>
+          </ul>
+        </div>
 
-        <!-- Instagram -->
-        <a href="#" class="hover:text-yellow-300 transition" aria-label="Instagram">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-300" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2.163c3.204 0 3.584.012 4.847.07 3.242.148 4.669 1.723 4.847 3.106.178 1.382.07 1.694.07 5.102v1.623c0 3.408-.012 3.72-.07 5.102-.178 1.383-1.605 2.958-4.847 3.106-1.263.058-1.643.07-4.847.07v-8.452H12V2.163z"/>
-          </svg>
-        </a>
-
-        <!-- Facebook -->
-        <a href="#" class="hover:text-yellow-300 transition" aria-label="Facebook">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-300" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.991 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83z"/>
-          </svg>
-        </a>
-
+        <!-- Kolom 4: Media Sosial & Like -->
+        <div class="space-y-4">
+          <h4 class="text-base font-semibold text-white">Ikuti Kami</h4>
+          <div class="flex items-center gap-4">
+            <!-- Social Icons: hover effect menggunakan warna primary -->
+            <a href="#" class="text-gray-400 hover:text-primary transition" aria-label="Instagram">
+              <InstagramIcon class="w-6 h-6" />
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition" aria-label="Facebook">
+              <FacebookIcon class="w-6 h-6" />
+            </a>
+            <!-- Heart Icon: Menggunakan warna primary untuk tampilan default -->
+            <a href="#" class="text-primary hover:text-primary-dark transition" aria-label="Like">
+              <HeartIcon class="w-6 h-6 fill-primary" />
+            </a>
+          </div>
+        </div>
       </div>
 
       <!-- Copyright -->
-      <div class="text-xs text-center leading-tight">
-        © 2025 WarungSE . Semua hak dilindungi undang-undang.
+      <div class="mt-4 pt-4">
+        <p class="text-center text-sm text-gray-500">
+          © {{ new Date().getFullYear() }} WarungSE. Semua hak dilindungi undang-undang.
+        </p>
       </div>
-
     </div>
   </footer>
 </template>
 
 <script setup>
-// Tidak perlu script tambahan
+import { HeartIcon, InstagramIcon, FacebookIcon, MapPinIcon } from "lucide-vue-next";
 </script>

@@ -3,8 +3,8 @@
     <!-- HEADER -->
     <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-gray-800">Manajemen Admin</h1>
-        <p class="text-gray-600 text-sm">Hanya SuperAdmin yang dapat mengelola halaman ini.</p>
+        <h1 class="heading-1">Manajemen Admin</h1>
+        <p class="text-gray-600 text-sm">Kelola akun Admin pada halaman ini.</p>
       </div>
     </header>
 
@@ -13,11 +13,13 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <!-- Filter Status -->
         <div class="flex items-center gap-4">
+          <!-- Asumsi AdminFilterStatus ada, jika tidak, ganti dengan BaseDropdown -->
           <AdminFilterStatus v-model="filterStatus" />
         </div>
 
         <!-- Search -->
         <div class="flex items-center">
+          <!-- Asumsi AdminSearch ada, jika tidak, ganti dengan BaseInput -->
           <AdminSearch v-model="search" />
         </div>
       </div>
@@ -26,14 +28,14 @@
     <!-- TABLE -->
     <BaseCard class="p-4 overflow-hidden">
       <div class="flex justify-between items-center mb-5">
-        <h2 class="text-xl font-semibold text-gray-700">Daftar Admin</h2>
+        <h2 class="heading-2">Daftar Admin</h2>
         <div class="flex items-center">
-          <AdminAddButton @click="openAddAdminModal" />
+          <AdminAddButton @click="openModal('add')" />
         </div>
       </div>
 
       <!-- Tabel Admin -->
-      <BaseTable :columns="adminColumns" :rows="filteredUsers">
+      <BaseTable v-if="filteredUsers.length > 0" :columns="adminColumns" :rows="filteredUsers">
         <!-- SLOT: Peran (Role) -->
         <template #role="{ row }">
           <AdminStatusBadge :status="row.role" />
@@ -46,69 +48,131 @@
 
         <!-- SLOT: Aksi -->
         <template #action="{ row }">
-          <AdminRowActions :user="row" @edit="handleEdit" @toggle-status="handleToggleStatus" />
+          <!-- MEMPERBAIKI: Menambahkan listener @detail yang hilang -->
+          <AdminRowActions
+            :item="row"
+            @detail="openModal('detail', row)"
+            @edit="openModal('edit', row)"
+            @delete="handleDelete(row)"
+          />
         </template>
       </BaseTable>
+      <BaseEmptyState
+        v-else
+        title="Tidak ada Admin Ditemukan"
+        description="Silahkan ubah filter pencarian Anda atau tambahkan Admin baru untuk memulai."
+        :icon="UserRoundCog"
+      >
+        <div class="flex items-center justify-center">
+          <AdminAddButton @click="openModal('add')" />
+        </div>
+      </BaseEmptyState>
     </BaseCard>
+
+    <!-- Modal Admin (Untuk Add, Edit, Detail) -->
+    <AdminModal
+      v-model="isModalOpen"
+      :mode="modalMode"
+      :item-data="selectedUser"
+      @save="handleSave"
+    />
   </section>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import BaseCard from "@/components/base/BaseCard.vue";
 import BaseTable from "@/components/base/BaseTable.vue";
+import BaseEmptyState from "@/components/base/BaseEmptyState.vue";
+import { UserRoundCog } from "lucide-vue-next";
 
-// Komponen Manajemen Admin
+// UI Components
 import AdminStatusBadge from "@/components/admin/adminn/AdminStatusBadge.vue";
 import AdminRowActions from "@/components/admin/adminn/AdminRowActions.vue";
-import AdminSearch from "@/components/admin/adminn/AdminSearch.vue";
+import AdminModal from "@/components/admin/adminn/AdminModal.vue";
 import AdminAddButton from "@/components/admin/adminn/AdminAddButton.vue";
-
-// Komponen Filter Baru (Hanya Status)
+import AdminSearch from "@/components/admin/adminn/AdminSearch.vue";
 import AdminFilterStatus from "@/components/admin/adminn/AdminFilter.vue";
 
-// Impor data
-import { adminColumns, adminRows } from "@/data/adminData";
+// API STORE
+import { adminApi } from "@/api/admin";
 
-const users = ref([...adminRows]);
+// TABLE COLUMNS (tetap pakai yang lama)
+import { adminColumns } from "@/data/adminData";
+
+// STATE
+const adminStore = adminApi();
+
 const search = ref("");
-const filterStatus = ref("Semua"); // Default ke 'Semua'
-// const filterRole = ref("Semua"); // Dihapus
+const filterStatus = ref("Semua");
 
-// LOGIKA FILTER DAN PENCARIAN
+const isModalOpen = ref(false);
+const modalMode = ref("add");
+const selectedUser = ref(null);
+
+// FETCH
+onMounted(() => {
+  adminStore.fetchAdmins();
+});
+
+// MAPPING API → UI
+const admins = computed(() =>
+  adminStore.admins.map((a) => ({
+    id: a.id_user,
+    name: a.nama_user,
+    email: a.email_user,
+    role: "Admin",
+    status: a.status === "aktif" ? "Aktif" : "Nonaktif",
+  }))
+);
+
+// FILTER
 const filteredUsers = computed(() => {
-  return users.value.filter((user) => {
-    // 1. Filter berdasarkan Status
-    const matchStatus = filterStatus.value === "Semua" || user.status === filterStatus.value;
+  return admins.value.filter((u) => {
+    const matchStatus = filterStatus.value === "Semua" || u.status === filterStatus.value;
 
-    // 2. Filter berdasarkan Pencarian (ID atau Nama)
     const key = search.value.toLowerCase();
     const matchSearch =
-      user.id.toLowerCase().includes(key) || user.name.toLowerCase().includes(key);
+      u.id.toString().includes(key) ||
+      u.name.toLowerCase().includes(key) ||
+      u.email.toLowerCase().includes(key);
 
-    // Filter Peran (Role) dihapus, hanya Status dan Search
     return matchStatus && matchSearch;
   });
 });
 
-// HANDLER Aksi
-const openAddAdminModal = () => {
-  console.log("Aksi Tambah Admin: Membuka modal");
-  // Di sini nanti akan memanggil modal untuk menambah admin
+// MODAL
+const openModal = (mode, item = null) => {
+  modalMode.value = mode;
+  selectedUser.value = item ? { ...item } : null;
+  isModalOpen.value = true;
 };
 
-const handleEdit = (user) => {
-  console.log("Aksi Edit Admin: Mengedit pengguna:", user.name);
-};
-
-const handleToggleStatus = (user) => {
-  // Logic untuk mengubah status secara lokal
-  const newStatus = user.status === "Aktif" ? "Nonaktif" : "Aktif";
-  // Memastikan reaktivitas dengan mencari indeks dan memperbarui array
-  const index = users.value.findIndex((u) => u.id === user.id);
-  if (index !== -1) {
-    users.value[index].status = newStatus;
+// SAVE
+const handleSave = async (form) => {
+  if (modalMode.value === "add") {
+    await adminStore.createAdmin({
+      nama_user: form.name,
+      email_user: form.email,
+      password: form.password,
+    });
   }
-  console.log(`Aksi Toggle Status: Status ${user.name} diubah menjadi ${newStatus}`);
+
+  if (modalMode.value === "edit") {
+    await adminStore.updateAdmin(form.id, {
+      nama_user: form.name,
+      email_user: form.email,
+      status: form.status === "Aktif" ? "aktif" : "tidak aktif",
+      password: form.password || null,
+    });
+  }
+
+  isModalOpen.value = false;
+};
+
+// DELETE
+const handleDelete = async (item) => {
+  if (!confirm(`Hapus admin ${item.name}?`)) return;
+  await adminStore.deleteAdmin(item.id);
 };
 </script>

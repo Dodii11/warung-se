@@ -20,20 +20,33 @@
     <!-- User Area -->
     <div class="flex items-center gap-3">
       <div class="text-right">
-        <p class="text-sm font-medium text-gray-900">Admin</p>
-        <p class="text-xs text-gray-500">Administrator</p>
+        <p class="text-sm font-medium text-gray-900">
+          {{ auth.user?.nama_user || "Admin" }}
+        </p>
+        <p class="text-xs text-gray-500">
+          {{ roleLabel }}
+        </p>
       </div>
 
-      <UserRound alt="User Avatar" class="w-10 h-10" />
+      <UserRound alt="User Avatar" class="w-10 h-10 text-red-600" />
     </div>
   </header>
 </template>
 
 <script setup>
+import { computed } from "vue";
 import { Menu, UserRound } from "lucide-vue-next";
-// import { ChevronLeft } from "lucide-vue-next";
+import { useAuth } from "@/stores/auth";
 
-// defineProps({
-//   collapsed: Boolean
-// });
+const auth = useAuth();
+
+/**
+ * Label role untuk UI
+ * Aman walau user belum keload (refresh page)
+ */
+const roleLabel = computed(() => {
+  if (!auth.user?.role) return "-";
+
+  return auth.user.role === "super admin" ? "SuperAdmin" : "Admin";
+});
 </script>

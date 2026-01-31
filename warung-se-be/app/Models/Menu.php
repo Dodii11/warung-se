@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Cart;
 
 class Menu extends Model
 {
@@ -11,18 +12,34 @@ class Menu extends Model
 
     protected $table = 'menu';
     protected $primaryKey = 'id_menu';
-    public $timestamps = true;
 
     protected $fillable = [
         'menu',
+        'deskripsi',
         'harga',
         'kategori',
+        'status',
+        'stok',
         'gambar_menu'
     ];
 
-    // 🔥 Relasi ke tabel stok_menu
-    public function stok()
+    protected $appends = ['gambar_url'];
+
+    public function getGambarUrlAttribute()
     {
-        return $this->hasOne(StokMenu::class, 'id_menu', 'id_menu');
+        return $this->gambar_menu
+            ? asset('storage/' . $this->gambar_menu)
+            : null;
+    }
+
+    public function detailPesanan()
+    {
+        return $this->hasMany(DetailPesanan::class, 'id_menu', 'id_menu');
+    }
+
+
+    public function cart()
+    {
+        return $this->hasMany(Cart::class, 'id_menu', 'id_menu');
     }
 }
